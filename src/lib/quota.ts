@@ -9,11 +9,18 @@ export interface QuotaStatus {
   remaining: number;
 }
 
+// Una env var vuota, non numerica o <= 0 non deve mai azzerare la quota:
+// si ricade sul default.
+export function parseLimit(value: string | undefined, fallback: number): number {
+  const n = Number(value);
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) : fallback;
+}
+
 function dailyLimit(plan: Plan): number {
   if (plan === "premium") {
-    return Number(process.env.PREMIUM_DAILY_LIMIT ?? 50);
+    return parseLimit(process.env.PREMIUM_DAILY_LIMIT, 50);
   }
-  return Number(process.env.FREE_DAILY_LIMIT ?? 2);
+  return parseLimit(process.env.FREE_DAILY_LIMIT, 2);
 }
 
 // Inizio del giorno corrente in UTC: la quota si azzera a mezzanotte UTC.

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { isDemoMode } from "@/lib/config";
 import { getGenerationProvider } from "@/lib/generation";
-import { getQuotaStatus } from "@/lib/quota";
+import { getQuotaStatus, parseLimit } from "@/lib/quota";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -18,7 +18,7 @@ const bodySchema = z.object({
 const demoUsage = new Map<string, { day: string; count: number }>();
 
 function demoQuotaExceeded(request: Request): boolean {
-  const limit = Number(process.env.DEMO_DAILY_LIMIT ?? 10);
+  const limit = parseLimit(process.env.DEMO_DAILY_LIMIT, 10);
   const ip =
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";
   const day = new Date().toISOString().slice(0, 10);
