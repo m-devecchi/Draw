@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { demoStore } from "@/lib/demo-store";
 
@@ -95,11 +95,7 @@ export function PromptForm({
         </button>
       </div>
 
-      {loading && (
-        <p className="mt-3 animate-pulse text-sm font-semibold text-crayon-blue">
-          Il disegno sta arrivando, può volerci un minutino... 🎨
-        </p>
-      )}
+      {loading && <DrawingLoader />}
       {error && (
         <p className="mt-3 rounded-xl bg-red-50 p-3 text-sm text-red-600">
           {error}
@@ -120,5 +116,48 @@ export function PromptForm({
         ))}
       </div>
     </form>
+  );
+}
+
+const LOADER_STEPS = [
+  "Prendo le matite... ✏️",
+  "Traccio le linee... 〰️",
+  "Aggiungo i dettagli... ✨",
+  "Ci siamo quasi! 🎨",
+];
+
+// Attesa giocosa: matite che rimbalzano e messaggi che si alternano,
+// così i secondi passano meno lentamente per un bambino.
+function DrawingLoader() {
+  const [step, setStep] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(
+      () => setStep((s) => Math.min(s + 1, LOADER_STEPS.length - 1)),
+      2200
+    );
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <div
+      className="mt-4 flex flex-col items-center gap-3 rounded-3xl bg-crayon-yellow/20 p-6"
+      aria-live="polite"
+    >
+      <div className="flex gap-2 text-3xl">
+        {["🖍️", "✏️", "🖌️"].map((emoji, i) => (
+          <span
+            key={emoji}
+            className="crayon-bounce"
+            style={{ animationDelay: `${i * 160}ms` }}
+          >
+            {emoji}
+          </span>
+        ))}
+      </div>
+      <p className="text-sm font-extrabold text-crayon-purple">
+        {LOADER_STEPS[step]}
+      </p>
+    </div>
   );
 }

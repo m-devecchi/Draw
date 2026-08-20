@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { DrawingCard } from "@/components/DrawingCard";
 import { KidSwitcher } from "@/components/KidSwitcher";
 import { PromptForm } from "@/components/PromptForm";
 import { UpgradeButton } from "@/components/UpgradeButton";
@@ -41,14 +42,16 @@ export default async function HomePage({
     kind: string;
     created_at: string;
     kid_id?: string | null;
+    content: string;
+    fills: Record<string, string> | null;
   }
 
   let drawingsQuery = supabase
     .from("drawings")
     .select(
       kidsEnabled
-        ? "id, prompt, kind, created_at, kid_id"
-        : ("id, prompt, kind, created_at" as string)
+        ? "id, prompt, kind, created_at, kid_id, content, fills"
+        : ("id, prompt, kind, created_at, content, fills" as string)
     )
     .order("created_at", { ascending: false })
     .limit(30);
@@ -144,24 +147,22 @@ export default async function HomePage({
         ) : (
           <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3">
             {drawings.map((d) => (
-              <li key={d.id}>
-                <Link
-                  href={
-                    activeKidId
-                      ? `/color/${d.id}?kid=${encodeURIComponent(activeKidId)}`
-                      : `/color/${d.id}`
-                  }
-                  className="block rounded-3xl bg-white p-4 shadow transition hover:shadow-lg active:scale-95"
-                >
-                  <div className="mb-2 text-4xl">
-                    {(d.kid_id && kidById.get(d.kid_id)?.avatar) || "🎨"}
-                  </div>
-                  <p className="line-clamp-2 font-bold">{d.prompt}</p>
-                  <p className="mt-1 text-xs text-stone-400">
-                    {new Date(d.created_at).toLocaleDateString("it-IT")}
-                  </p>
-                </Link>
-              </li>
+              <DrawingCard
+                key={d.id}
+                id={d.id}
+                prompt={d.prompt}
+                content={d.content}
+                fills={d.fills ?? {}}
+                createdAt={d.created_at}
+                badge={
+                  d.kid_id ? kidById.get(d.kid_id)?.avatar ?? undefined : undefined
+                }
+                href={
+                  activeKidId
+                    ? `/color/${d.id}?kid=${encodeURIComponent(activeKidId)}`
+                    : `/color/${d.id}`
+                }
+              />
             ))}
           </ul>
         )}

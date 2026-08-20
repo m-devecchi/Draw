@@ -6,19 +6,11 @@ import {
   useImperativeHandle,
   useRef,
 } from "react";
+import { applyFills, indexRegions } from "@/lib/svg-regions";
 
 export interface SvgColoringHandle {
   /** Esporta il disegno colorato come PNG (data URL). */
   exportPng(): Promise<string>;
-}
-
-const SHAPE_SELECTOR = "path, circle, ellipse, rect, polygon";
-
-function isColorable(el: SVGElement): boolean {
-  const fill = el.getAttribute("fill");
-  // Colorabile = forma con un riempimento esplicito diverso da "none"
-  // (le linee decorative hanno fill="none").
-  return fill !== null && fill.toLowerCase() !== "none";
 }
 
 /**
@@ -44,61 +36,14 @@ export const SvgColoring = forwardRef<
     if (!container) return;
     container.innerHTML = content;
 
-    // Sfondo colorabile: i disegni generati spesso non hanno un fondale,
-    // ma i bambini vogliono colorare anche il cielo. Viene inserito come
-    // prima forma (dietro a tutto) e indicizzato per ULTIMO, così gli
-    // indici delle regioni già salvate restano stabili.
-    const svg = container.querySelector("svg");
-    let background: SVGElement | null = null;
-    const vb = svg?.viewBox?.baseVal;
-    if (svg && vb && vb.width > 0 && vb.height > 0) {
-      const first = svg.querySelector<SVGElement>(SHAPE_SELECTOR);
-      const alreadyHasBackground =
-        first instanceof SVGRectElement &&
-        Number(first.getAttribute("width")) >= vb.width &&
-        Number(first.getAttribute("height")) >= vb.height;
-      if (!alreadyHasBackground) {
-        background = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "rect"
-        );
-        background.setAttribute("x", String(vb.x));
-        background.setAttribute("y", String(vb.y));
-        background.setAttribute("width", String(vb.width));
-        background.setAttribute("height", String(vb.height));
-        background.setAttribute("fill", "#FFFFFF");
-        svg.insertBefore(background, svg.firstChild);
-      }
-    }
-
-    const shapes = container.querySelectorAll<SVGElement>(SHAPE_SELECTOR);
-    let index = 0;
-    shapes.forEach((el) => {
-      if (el === background) return; // indicizzato in coda, dopo il ciclo
-      if (isColorable(el)) {
-        el.setAttribute("data-colorable", "1");
-        el.setAttribute("data-region", String(index));
-        index += 1;
-      }
-    });
-    if (background) {
-      background.setAttribute("data-colorable", "1");
-      background.setAttribute("data-region", String(index));
-      index += 1;
-    }
-    onRegionCount?.(index);
+    onRegionCount?.(indexRegions(container));
   }, [content, onRegionCount]);
 
   // Applica i colori correnti alle regioni.
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
-    container
-      .querySelectorAll<SVGElement>("[data-colorable='1']")
-      .forEach((el) => {
-        const region = el.getAttribute("data-region")!;
-        el.setAttribute("fill", fills[region] ?? "#ffffff");
-      });
+    applyFills(container, fills);
   }, [fills, content]);
 
   useEffect(() => {

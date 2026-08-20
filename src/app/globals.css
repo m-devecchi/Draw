@@ -78,3 +78,19 @@ body {
     transform: translateY(-8px) scale(1.25);
   }
 }
+
+/* Matite che rimbalzano durante l'attesa della generazione */
+.crayon-bounce {
+  display: inline-block;
+  animation: crayon-bounce 900ms ease-in-out infinite;
+}
+
+@keyframes crayon-bounce {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-6deg);
+  }
+  50% {
+    transform: translateY(-12px) rotate(6deg);
+  }
+}

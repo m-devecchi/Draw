@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { DrawingThumb } from "@/components/DrawingThumb";
 import { PromptForm } from "@/components/PromptForm";
 import { demoStore, type DemoDrawing } from "@/lib/demo-store";
 import { SAMPLE_DRAWINGS } from "@/lib/samples";
@@ -98,11 +99,11 @@ export function DemoHome() {
               <li key={d.id} className="relative">
                 <Link
                   href={`/color/${d.id}`}
-                  className="block rounded-3xl bg-white p-4 shadow transition hover:shadow-lg active:scale-95"
+                  className="block rounded-3xl bg-white p-3 shadow transition hover:shadow-lg active:scale-95"
                 >
-                  <div className="mb-2 text-4xl">🎨</div>
-                  <p className="line-clamp-2 font-bold">{d.prompt}</p>
-                  <p className="mt-1 text-xs text-stone-400">
+                  <DrawingThumb content={d.content} fills={d.fills} />
+                  <p className="mt-2 line-clamp-2 text-sm font-bold">{d.prompt}</p>
+                  <p className="mt-0.5 text-xs text-stone-400">
                     {new Date(d.createdAt).toLocaleDateString("it-IT")}
                   </p>
                 </Link>
