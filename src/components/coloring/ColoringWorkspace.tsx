@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { demoStore } from "@/lib/demo-store";
 import { ColorPalette } from "./ColorPalette";
 import { ERASER, PALETTE } from "./palette";
 import { FloodFillCanvas, type FloodFillHandle } from "./FloodFillCanvas";
@@ -13,11 +14,14 @@ export function ColoringWorkspace({
   kind,
   content,
   initialFills,
+  mode = "cloud",
 }: {
   drawingId: string;
   kind: "svg" | "raster";
   content: string;
   initialFills: Fills;
+  /** "cloud": salvataggio su API/DB. "demo" (PoC): salvataggio in localStorage. */
+  mode?: "cloud" | "demo";
 }) {
   const [color, setColor] = useState<string>(PALETTE[0]);
   const [fills, setFills] = useState<Fills>(initialFills);
@@ -36,6 +40,11 @@ export function ColoringWorkspace({
   const scheduleSave = useCallback(
     (next: Fills) => {
       if (kind !== "svg") return;
+      if (mode === "demo") {
+        demoStore.saveFills(drawingId, next);
+        setSaveState("saved");
+        return;
+      }
       if (saveTimer.current) clearTimeout(saveTimer.current);
       setSaveState("saving");
       saveTimer.current = setTimeout(async () => {
@@ -51,7 +60,7 @@ export function ColoringWorkspace({
         }
       }, 800);
     },
-    [drawingId, kind]
+    [drawingId, kind, mode]
   );
 
   useEffect(() => {

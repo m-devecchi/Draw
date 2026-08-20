@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ColoringWorkspace } from "@/components/coloring/ColoringWorkspace";
+import { DemoColoring } from "@/components/demo/DemoColoring";
+import { isDemoMode } from "@/lib/config";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -11,6 +13,10 @@ export default async function ColorPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  if (isDemoMode() || id.startsWith("demo-")) {
+    return <DemoColoring id={id} />;
+  }
+
   const supabase = await createClient();
   const {
     data: { user },

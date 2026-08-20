@@ -42,7 +42,25 @@ UI di coloritura ha già il **flood fill su canvas** per le immagini raster.
 - Il webhook Stripe aggiorna il piano su `checkout.session.completed`,
   `customer.subscription.updated` e `customer.subscription.deleted`.
 
-## Setup
+## 🚀 Avvio rapido (PoC)
+
+Per provare subito l'esperienza completa prompt → disegno → coloritura,
+**serve solo una API key Anthropic** — niente Supabase, niente Stripe:
+
+```bash
+npm install
+echo 'ANTHROPIC_API_KEY=sk-ant-...' > .env.local
+npm run dev
+```
+
+Apri http://localhost:3000: l'app parte in **modalità demo** (nessun login,
+disegni salvati sul dispositivo, limite `DEMO_DAILY_LIMIT` per IP, default
+10/giorno). La stessa codebase è già quella di arrivo: quando configurerai le
+variabili Supabase, login/quota/persistenza si attivano da soli, e con le
+chiavi Stripe anche il Premium. Nessuna migrazione di codice tra PoC e
+prodotto.
+
+## Setup completo (login, quote, Premium)
 
 ### 1. Dipendenze
 

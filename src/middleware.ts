@@ -1,10 +1,22 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { isDemoMode } from "@/lib/config";
 
 // Rotte raggiungibili senza login.
 const PUBLIC_PATHS = ["/login", "/auth", "/api/billing/webhook", "/manifest.webmanifest"];
 
 export async function middleware(request: NextRequest) {
+  // Modalità PoC (Supabase non configurato): nessuna autenticazione.
+  if (isDemoMode()) {
+    if (request.nextUrl.pathname === "/login") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/";
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
+    return NextResponse.next({ request });
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(

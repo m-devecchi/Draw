@@ -2,12 +2,16 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { PromptForm } from "@/components/PromptForm";
 import { UpgradeButton } from "@/components/UpgradeButton";
+import { DemoHome } from "@/components/demo/DemoHome";
+import { isDemoMode } from "@/lib/config";
 import { getQuotaStatus } from "@/lib/quota";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
+  if (isDemoMode()) return <DemoHome />;
+
   const supabase = await createClient();
   const {
     data: { user },

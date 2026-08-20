@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { demoStore } from "@/lib/demo-store";
 
 const IDEAS = [
   "Un dinosauro felice",
@@ -31,6 +32,16 @@ export function PromptForm({ remaining }: { remaining: number }) {
       const data = await res.json();
       if (!res.ok) {
         throw new Error(data.error ?? "Generazione non riuscita, riprova.");
+      }
+      if (data.demo) {
+        // Modalità PoC: il disegno viene salvato sul dispositivo.
+        const drawing = demoStore.add({
+          prompt,
+          kind: data.kind,
+          content: data.content,
+        });
+        router.push(`/color/${drawing.id}`);
+        return;
       }
       router.push(`/color/${data.id}`);
     } catch (err) {
