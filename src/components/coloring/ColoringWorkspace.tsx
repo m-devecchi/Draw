@@ -3,7 +3,15 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { demoStore } from "@/lib/demo-store";
-import { playComplete, playErase, playFill, isMuted, setMuted } from "@/lib/sounds";
+import {
+  isMuted,
+  playComplete,
+  playErase,
+  playFill,
+  resumeAudio,
+  setMuted,
+  unlockAudio,
+} from "@/lib/sounds";
 import { ColorPalette } from "./ColorPalette";
 import { Confetti } from "./Confetti";
 import { PinchZoom } from "./PinchZoom";
@@ -46,6 +54,18 @@ export function ColoringWorkspace({
   const celebrated = useRef(false);
 
   useEffect(() => setMutedState(isMuted()), []);
+
+  // L'audio va sbloccato dentro un gesto dell'utente (regola di iOS):
+  // il primo tocco sulla pagina lo abilita, i successivi lo risvegliano
+  // se il sistema l'ha sospeso.
+  useEffect(() => {
+    const onGesture = () => {
+      unlockAudio();
+      resumeAudio();
+    };
+    document.addEventListener("pointerdown", onGesture);
+    return () => document.removeEventListener("pointerdown", onGesture);
+  }, []);
 
   const handleRegionCount = useCallback((count: number) => {
     setRegionCount(count);
@@ -232,6 +252,12 @@ export function ColoringWorkspace({
             const next = !muted;
             setMutedState(next);
             setMuted(next);
+            // Riattivando si sente subito una nota: riscontro immediato
+            // che l'audio del dispositivo funziona davvero.
+            if (!next) {
+              unlockAudio();
+              playFill(0);
+            }
           }}
           aria-label={muted ? "Riattiva i suoni" : "Silenzia i suoni"}
           aria-pressed={muted}

@@ -6,6 +6,7 @@ const SCALE = [523.25, 587.33, 659.25, 783.99, 880.0]; // Do Re Mi Sol La
 const MUTE_KEY = "colora-muted";
 
 let ctx: AudioContext | null = null;
+let unlocked = false;
 
 function audioContext(): AudioContext | null {
   if (typeof window === "undefined") return null;
@@ -17,9 +18,46 @@ function audioContext(): AudioContext | null {
     if (!AC) return null;
     ctx = new AC();
   }
-  // Su iOS il contesto parte sospeso: si riattiva al primo tocco.
   if (ctx.state === "suspended") void ctx.resume();
   return ctx;
+}
+
+/**
+ * Sblocco dell'audio, da chiamare al primo tocco dell'utente.
+ *
+ * Su iPhone servono due accorgimenti che nessun'altra piattaforma richiede:
+ * 1. `audioSession.type = "playback"` (Safari 16.4+), altrimenti la Web
+ *    Audio finisce nella categoria "ambient" e **il tasto silenzioso
+ *    laterale la zittisce**: l'app sembra muta pur funzionando.
+ * 2. un buffer silenzioso avviato dentro il gesto dell'utente, che è ciò
+ *    che iOS considera un vero "consenso" a suonare.
+ */
+export function unlockAudio() {
+  if (unlocked || typeof window === "undefined") return;
+  unlocked = true;
+
+  const session = (
+    navigator as Navigator & { audioSession?: { type: string } }
+  ).audioSession;
+  if (session) {
+    try {
+      session.type = "playback";
+    } catch {
+      // proprietà non scrivibile su questo browser: si prosegue
+    }
+  }
+
+  const ac = audioContext();
+  if (!ac) return;
+  const source = ac.createBufferSource();
+  source.buffer = ac.createBuffer(1, 1, 22050);
+  source.connect(ac.destination);
+  source.start(0);
+}
+
+/** Riattiva il contesto se il sistema l'ha sospeso (app in background). */
+export function resumeAudio() {
+  if (ctx && ctx.state === "suspended") void ctx.resume();
 }
 
 export function isMuted(): boolean {
@@ -44,6 +82,22 @@ function tone(
 ) {
   const ac = audioContext();
   if (!ac) return;
+  // Contesto ancora sospeso: si programma la nota solo dopo il risveglio,
+  // altrimenti currentTime e' fermo e la nota risulta gia' passata.
+  if (ac.state === "suspended") {
+    void ac.resume().then(() => schedule(ac, frequency, startAt, duration, volume));
+    return;
+  }
+  schedule(ac, frequency, startAt, duration, volume);
+}
+
+function schedule(
+  ac: AudioContext,
+  frequency: number,
+  startAt: number,
+  duration: number,
+  volume: number
+) {
   const osc = ac.createOscillator();
   const gain = ac.createGain();
   osc.type = "sine";

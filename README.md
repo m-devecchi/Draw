@@ -171,6 +171,9 @@ Ogni `git push` sul branch di default fa partire un nuovo deploy automatico.
   scaricare. Ogni area colorata suona una nota di una scala pentatonica
   (allegra in qualsiasi ordine), la gomma una nota più bassa, il disegno
   completo un arpeggio. Si silenziano col pulsante 🔊 (scelta ricordata).
+  Su iPhone l'audio viene messo in categoria `playback`
+  (`navigator.audioSession`), altrimenti **il tasto silenzioso laterale
+  zittirebbe l'app** pur funzionando tutto.
 - **Coriandoli** quando tutte le aree sono colorate, una volta sola per
   disegno completato.
 
