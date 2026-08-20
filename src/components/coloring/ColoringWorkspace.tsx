@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { demoStore } from "@/lib/demo-store";
 import { ColorPalette } from "./ColorPalette";
@@ -15,6 +16,7 @@ export function ColoringWorkspace({
   content,
   initialFills,
   mode = "cloud",
+  prompt,
 }: {
   drawingId: string;
   kind: "svg" | "raster";
@@ -22,6 +24,8 @@ export function ColoringWorkspace({
   initialFills: Fills;
   /** "cloud": salvataggio su API/DB. "demo" (PoC): salvataggio in localStorage. */
   mode?: "cloud" | "demo";
+  /** Titolo del disegno mostrato nella barra in alto. */
+  prompt?: string;
 }) {
   const [color, setColor] = useState<string>(PALETTE[0]);
   const [fills, setFills] = useState<Fills>(initialFills);
@@ -127,54 +131,74 @@ export function ColoringWorkspace({
     }
   }
 
+  const floatingBtn =
+    "pointer-events-auto flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-xl shadow-lg backdrop-blur transition active:scale-90";
+
   return (
-    <div className="space-y-4">
-      {kind === "svg" ? (
-        <SvgColoring
-          ref={svgRef}
-          content={content}
-          fills={fills}
-          onRegionTap={handleRegionTap}
-        />
-      ) : (
-        <FloodFillCanvas ref={rasterRef} content={content} color={color} />
-      )}
+    <div className="fixed inset-0 overflow-hidden bg-white">
+      {/* Disegno a tutto schermo (scorre sotto le barre in sovrapposizione) */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        {kind === "svg" ? (
+          <SvgColoring
+            ref={svgRef}
+            content={content}
+            fills={fills}
+            onRegionTap={handleRegionTap}
+          />
+        ) : (
+          <FloodFillCanvas ref={rasterRef} content={content} color={color} />
+        )}
+      </div>
 
-      <ColorPalette selected={color} onSelect={setColor} />
-
-      <div className="flex items-center justify-center gap-3">
+      {/* Barra in alto: indietro, titolo, azioni */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center gap-2 p-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
+        <Link href="/" aria-label="Torna ai disegni" className={floatingBtn}>
+          🏠
+        </Link>
+        {prompt && (
+          <span className="pointer-events-auto max-w-[40vw] truncate rounded-full bg-white/90 px-4 py-2 text-sm font-extrabold text-stone-600 shadow-lg backdrop-blur">
+            {prompt}
+          </span>
+        )}
+        {kind === "svg" && saveState !== "idle" && (
+          <span
+            className="rounded-full bg-white/90 px-3 py-2 text-xs font-bold text-stone-400 shadow-lg backdrop-blur"
+            aria-live="polite"
+          >
+            {saveState === "saving" ? "…" : "✓"}
+          </span>
+        )}
+        <span className="flex-1" />
         <button
           type="button"
           onClick={handleUndo}
-          className="rounded-full bg-white px-5 py-2 font-extrabold shadow transition active:scale-95"
+          aria-label="Annulla"
+          className={floatingBtn}
         >
-          ↩️ Annulla
+          ↩️
         </button>
         <button
           type="button"
           onClick={handleReset}
-          className="rounded-full bg-white px-5 py-2 font-extrabold shadow transition active:scale-95"
+          aria-label="Ricomincia"
+          className={floatingBtn}
         >
-          🧼 Ricomincia
+          🧼
         </button>
         <button
           type="button"
           onClick={handleDownload}
-          className="rounded-full bg-crayon-blue px-5 py-2 font-extrabold text-white shadow transition active:scale-95"
+          aria-label="Scarica il disegno"
+          className={`${floatingBtn} bg-crayon-blue/90 text-white`}
         >
-          ⬇️ Scarica
+          ⬇️
         </button>
       </div>
 
-      {kind === "svg" && (
-        <p className="text-center text-xs text-stone-400">
-          {saveState === "saving"
-            ? "Salvataggio..."
-            : saveState === "saved"
-              ? "Salvato ✓"
-              : "Tocca un'area per colorarla"}
-        </p>
-      )}
+      {/* Palette in sovrapposizione in basso */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        <ColorPalette selected={color} onSelect={setColor} />
+      </div>
     </div>
   );
 }

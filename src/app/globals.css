@@ -28,10 +28,53 @@ body {
   touch-action: manipulation;
 }
 
+/* Variante a tutto schermo: l'SVG riempie lo spazio disponibile
+   mantenendo le proporzioni (preserveAspectRatio di default). */
+.coloring-svg-fill svg {
+  height: 100%;
+}
+
 .coloring-svg [data-colorable="1"] {
   cursor: pointer;
+  transition: fill 150ms ease;
 }
 
 .coloring-svg [data-colorable="1"]:active {
   filter: brightness(0.92);
+}
+
+/* "Pop" della regione appena colorata */
+.coloring-svg .region-pop {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: region-pop 280ms ease-out;
+}
+
+@keyframes region-pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Rimbalzo del colore selezionato nella palette */
+.swatch-picked {
+  animation: swatch-bounce 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes swatch-bounce {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  60% {
+    transform: translateY(-12px) scale(1.35);
+  }
+  100% {
+    transform: translateY(-8px) scale(1.25);
+  }
 }
