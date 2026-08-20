@@ -44,8 +44,12 @@ UI di coloritura ha già il **flood fill su canvas** per le immagini raster.
 
 ## 🚀 Avvio rapido (PoC)
 
-Per provare subito l'esperienza completa prompt → disegno → coloritura,
-**serve solo una API key Anthropic** — niente Supabase, niente Stripe:
+Senza alcuna configurazione (`npm install && npm run dev`) l'app parte in
+modalità demo con **4 disegni di esempio precaricati**: la coloritura si
+prova subito, senza nessuna chiave.
+
+Per generare disegni nuovi da un prompt serve solo una API key Anthropic —
+niente Supabase, niente Stripe:
 
 ```bash
 npm install

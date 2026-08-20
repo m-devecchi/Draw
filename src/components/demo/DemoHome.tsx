@@ -2,11 +2,14 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { PromptForm } from "@/components/PromptForm";
 import { demoStore, type DemoDrawing } from "@/lib/demo-store";
+import { SAMPLE_DRAWINGS } from "@/lib/samples";
 
 // Home della modalità PoC: niente login, disegni salvati sul dispositivo.
 export function DemoHome() {
+  const router = useRouter();
   const [drawings, setDrawings] = useState<DemoDrawing[]>([]);
 
   useEffect(() => {
@@ -16,6 +19,18 @@ export function DemoHome() {
   function handleDelete(id: string) {
     demoStore.remove(id);
     setDrawings(demoStore.list());
+  }
+
+  // Copia l'esempio nella galleria locale e apre la coloritura:
+  // ogni tocco crea una copia nuova, così si può ricolorare da capo.
+  function handleSample(slug: string) {
+    const sample = SAMPLE_DRAWINGS.find((s) => s.slug === slug)!;
+    const drawing = demoStore.add({
+      prompt: sample.prompt,
+      kind: "svg",
+      content: sample.content,
+    });
+    router.push(`/color/${drawing.id}`);
   }
 
   return (
@@ -43,6 +58,32 @@ export function DemoHome() {
           Login, quota giornaliera e Premium si attivano configurando Supabase
           (vedi README).
         </p>
+      </section>
+
+      <section className="mt-8">
+        <h2 className="mb-1 text-xl font-extrabold">
+          Disegni di esempio — senza API key
+        </h2>
+        <p className="mb-3 text-sm text-stone-500">
+          Prova subito la coloritura: tocca un esempio e via!
+        </p>
+        <ul className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          {SAMPLE_DRAWINGS.map((s) => (
+            <li key={s.slug}>
+              <button
+                type="button"
+                onClick={() => handleSample(s.slug)}
+                className="block w-full rounded-3xl bg-white p-3 text-left shadow transition hover:shadow-lg active:scale-95"
+              >
+                <div
+                  className="coloring-svg pointer-events-none mb-2 overflow-hidden rounded-2xl border border-stone-100"
+                  dangerouslySetInnerHTML={{ __html: s.content }}
+                />
+                <p className="line-clamp-2 text-sm font-bold">{s.prompt}</p>
+              </button>
+            </li>
+          ))}
+        </ul>
       </section>
 
       <section className="mt-8">
