@@ -162,6 +162,18 @@ Senza questo passaggio i link di conferma email puntano a `localhost`.
 
 Ogni `git push` sul branch di default fa partire un nuovo deploy automatico.
 
+## 🎉 Esperienza di coloritura
+
+- **Zoom a due dita** e trascinamento per i dettagli piccoli, con doppio
+  tocco (o il pulsante 🔍) per tornare alla vista intera. Un tocco fermo
+  colora, una trascinata sposta soltanto: le due cose non si confondono.
+- **Suoni** generati al volo con la Web Audio API — nessun file audio da
+  scaricare. Ogni area colorata suona una nota di una scala pentatonica
+  (allegra in qualsiasi ordine), la gomma una nota più bassa, il disegno
+  completo un arpeggio. Si silenziano col pulsante 🔊 (scelta ricordata).
+- **Coriandoli** quando tutte le aree sono colorate, una volta sola per
+  disegno completato.
+
 ## 🔒 Area genitori (parental control)
 
 L'app è pensata perché finisca in mano al bambino: disegnare e colorare

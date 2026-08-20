@@ -3,7 +3,10 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { demoStore } from "@/lib/demo-store";
+import { playComplete, playErase, playFill, isMuted, setMuted } from "@/lib/sounds";
 import { ColorPalette } from "./ColorPalette";
+import { Confetti } from "./Confetti";
+import { PinchZoom } from "./PinchZoom";
 import { ERASER, PALETTE } from "./palette";
 import { FloodFillCanvas, type FloodFillHandle } from "./FloodFillCanvas";
 import { SvgColoring, type SvgColoringHandle } from "./SvgColoring";
@@ -36,12 +39,28 @@ export function ColoringWorkspace({
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved">(
     "idle"
   );
+  const [regionCount, setRegionCount] = useState(0);
+  const [confettiTrigger, setConfettiTrigger] = useState(0);
+  const [muted, setMutedState] = useState(false);
+  // Evita di rifestaggiare a ogni ritocco di un disegno gia' completato.
+  const celebrated = useRef(false);
+
+  useEffect(() => setMutedState(isMuted()), []);
+
+  const handleRegionCount = useCallback((count: number) => {
+    setRegionCount(count);
+    celebrated.current = false;
+  }, []);
 
   const svgRef = useRef<SvgColoringHandle>(null);
   const rasterRef = useRef<FloodFillHandle>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const colorRef = useRef(color);
   colorRef.current = color;
+  const regionCountRef = useRef(0);
+  regionCountRef.current = regionCount;
+  const fillsRef = useRef(fills);
+  fillsRef.current = fills;
 
   // Salvataggio automatico (solo SVG: i colori sono per-regione).
   const scheduleSave = useCallback(
@@ -76,20 +95,39 @@ export function ColoringWorkspace({
     };
   }, []);
 
+  // Gli effetti (suoni, coriandoli, cronologia) stanno FUORI dall'updater
+  // di setFills: React puo' rieseguire un updater, e una festa doppia o un
+  // suono doppio si sentirebbero.
   const handleRegionTap = useCallback(
     (region: number) => {
-      setFills((prev) => {
-        const chosen = colorRef.current;
-        const next: Fills = { ...prev };
-        if (chosen === ERASER) {
-          delete next[String(region)];
-        } else {
-          next[String(region)] = chosen;
-        }
-        setHistory((h) => [...h.slice(-19), prev]);
-        scheduleSave(next);
-        return next;
-      });
+      const prev = fillsRef.current;
+      const chosen = colorRef.current;
+      const next: Fills = { ...prev };
+
+      if (chosen === ERASER) {
+        if (next[String(region)] === undefined) return; // gia' bianca
+        delete next[String(region)];
+        playErase();
+        celebrated.current = false;
+      } else {
+        if (next[String(region)] === chosen) return; // stesso colore
+        next[String(region)] = chosen;
+        playFill(Object.keys(next).length);
+      }
+
+      // Tutte le aree colorate: coriandoli e arpeggio, una volta sola.
+      const complete =
+        regionCountRef.current > 0 &&
+        Object.keys(next).length >= regionCountRef.current;
+      if (complete && !celebrated.current) {
+        celebrated.current = true;
+        setConfettiTrigger((t) => t + 1);
+        playComplete();
+      }
+
+      setHistory((h) => [...h.slice(-19), prev]);
+      setFills(next);
+      scheduleSave(next);
     },
     [scheduleSave]
   );
@@ -139,19 +177,23 @@ export function ColoringWorkspace({
 
   return (
     <div className="fixed inset-0 overflow-hidden bg-white">
-      {/* Disegno a tutto schermo (scorre sotto le barre in sovrapposizione) */}
-      <div className="absolute inset-0 flex items-center justify-center">
+      {/* Disegno a tutto schermo: due dita per lo zoom, trascina per spostare */}
+      <PinchZoom>
         {kind === "svg" ? (
           <SvgColoring
             ref={svgRef}
             content={content}
             fills={fills}
             onRegionTap={handleRegionTap}
+            onRegionCount={handleRegionCount}
           />
         ) : (
           <FloodFillCanvas ref={rasterRef} content={content} color={color} />
         )}
-      </div>
+      </PinchZoom>
+
+      {/* Coriandoli quando il disegno e' completo */}
+      <Confetti trigger={confettiTrigger} />
 
       {/* Barra in alto: indietro, titolo, azioni */}
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center gap-2 p-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
@@ -176,6 +218,19 @@ export function ColoringWorkspace({
           </span>
         )}
         <span className="flex-1" />
+        <button
+          type="button"
+          onClick={() => {
+            const next = !muted;
+            setMutedState(next);
+            setMuted(next);
+          }}
+          aria-label={muted ? "Riattiva i suoni" : "Silenzia i suoni"}
+          aria-pressed={muted}
+          className={floatingBtn}
+        >
+          {muted ? "🔇" : "🔊"}
+        </button>
         <button
           type="button"
           onClick={handleUndo}

@@ -32,8 +32,10 @@ export const SvgColoring = forwardRef<
     content: string;
     fills: Record<string, string>;
     onRegionTap: (regionIndex: number) => void;
+    /** Quante aree colorabili ha il disegno (serve per capire quando è finito). */
+    onRegionCount?: (count: number) => void;
   }
->(function SvgColoring({ content, fills, onRegionTap }, ref) {
+>(function SvgColoring({ content, fills, onRegionTap, onRegionCount }, ref) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Monta l'SVG e indicizza le regioni colorabili (una sola volta).
@@ -82,8 +84,10 @@ export const SvgColoring = forwardRef<
     if (background) {
       background.setAttribute("data-colorable", "1");
       background.setAttribute("data-region", String(index));
+      index += 1;
     }
-  }, [content]);
+    onRegionCount?.(index);
+  }, [content, onRegionCount]);
 
   // Applica i colori correnti alle regioni.
   useEffect(() => {
