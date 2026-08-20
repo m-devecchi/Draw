@@ -10,6 +10,7 @@ function LoginForm() {
   const next = searchParams.get("next") ?? "/";
 
   const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [oauthLoading, setOauthLoading] = useState<string | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -58,6 +59,47 @@ function LoginForm() {
       );
     } finally {
       setLoading(false);
+    }
+  }
+
+  // Login con Google / Apple (i provider vanno abilitati su Supabase).
+  async function handleOAuth(provider: "google" | "apple") {
+    setError(null);
+    setOauthLoading(provider);
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+      },
+    });
+    if (error) {
+      setOauthLoading(null);
+      setError(
+        `Accesso con ${provider === "google" ? "Google" : "Apple"} non disponibile al momento.`
+      );
+    }
+    // In caso di successo il browser viene reindirizzato al provider.
+  }
+
+  // Invia l'email di recupero password.
+  async function handleForgotPassword() {
+    setError(null);
+    setInfo(null);
+    if (!email) {
+      setError("Scrivi prima la tua email qui sopra, poi ripremi il link.");
+      return;
+    }
+    const supabase = createClient();
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/callback?next=/account/reset-password`,
+    });
+    if (error) {
+      setError("Invio non riuscito, riprova tra qualche minuto.");
+    } else {
+      setInfo(
+        "Ti abbiamo mandato un'email: apri il link per scegliere una nuova password (controlla anche lo spam)."
+      );
     }
   }
 
@@ -135,6 +177,50 @@ function LoginForm() {
                 : "Crea account"}
           </button>
         </form>
+
+        {mode === "signin" && (
+          <button
+            type="button"
+            onClick={handleForgotPassword}
+            className="mt-3 w-full text-center text-sm font-semibold text-stone-400 underline-offset-2 hover:underline"
+          >
+            Password dimenticata?
+          </button>
+        )}
+
+        <div className="my-5 flex items-center gap-3 text-xs font-bold text-stone-300">
+          <span className="h-px flex-1 bg-stone-200" />
+          oppure
+          <span className="h-px flex-1 bg-stone-200" />
+        </div>
+
+        <div className="space-y-2">
+          <button
+            type="button"
+            onClick={() => handleOAuth("google")}
+            disabled={oauthLoading !== null}
+            className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-stone-200 py-3 font-bold text-stone-600 transition hover:bg-stone-50 active:scale-95 disabled:opacity-50"
+          >
+            <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+              <path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3l5.7-5.7C34.2 6.1 29.4 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.6-.4-3.9z"/>
+              <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3l5.7-5.7C34.2 6.1 29.4 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
+              <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/>
+              <path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C41 35.4 44 30.2 44 24c0-1.3-.1-2.6-.4-3.9z"/>
+            </svg>
+            {oauthLoading === "google" ? "Un attimo..." : "Continua con Google"}
+          </button>
+          <button
+            type="button"
+            onClick={() => handleOAuth("apple")}
+            disabled={oauthLoading !== null}
+            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-black py-3 font-bold text-white transition active:scale-95 disabled:opacity-50"
+          >
+            <svg width="16" height="18" viewBox="0 0 814 1000" fill="currentColor" aria-hidden="true">
+              <path d="M788 341c-6 4-107 61-107 190 0 149 131 202 135 203-1 3-21 72-69 142-43 62-88 124-156 124s-86-40-165-40c-77 0-104 41-167 41s-107-57-157-127C44 790 0 668 0 553c0-185 120-283 239-283 63 0 115 42 155 42 38 0 97-44 169-44 27 0 125 2 189 96zM554 127C586 89 608 36 608 0c0-5 0-10-1-14-52 2-113 34-150 77-29 33-56 86-56 122 0 6 1 11 1 13 3 1 8 1 13 1 46 0 104-31 139-72z"/>
+            </svg>
+            {oauthLoading === "apple" ? "Un attimo..." : "Continua con Apple"}
+          </button>
+        </div>
       </div>
     </main>
   );

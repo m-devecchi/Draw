@@ -1,5 +1,7 @@
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { KID_COOKIE } from "@/components/KidSwitcher";
 import { isDemoMode } from "@/lib/config";
 import { getGenerationProvider } from "@/lib/generation";
 import { getQuotaStatus, parseLimit } from "@/lib/quota";
@@ -117,6 +119,21 @@ export async function POST(request: Request) {
   try {
     const result = await provider.generate(prompt);
 
+    // Bambino attivo dal cookie, accettato solo se appartiene all'utente.
+    const cookieKid = (await cookies()).get(KID_COOKIE)?.value;
+    let kidId: string | null = null;
+    if (cookieKid) {
+      const { data: kid } = await admin
+        .from("kid_profiles")
+        .select("id")
+        .eq("id", cookieKid)
+        .eq("user_id", user.id)
+        .maybeSingle();
+      kidId = kid?.id ?? null;
+    }
+
+    // kid_id incluso solo se valorizzato: così l'insert funziona anche
+    // prima che la migrazione 0002 (profili bambino) sia applicata.
     const { data: drawing, error: drawError } = await admin
       .from("drawings")
       .insert({
@@ -125,6 +142,7 @@ export async function POST(request: Request) {
         provider: provider.name,
         kind: result.kind,
         content: result.content,
+        ...(kidId ? { kid_id: kidId } : {}),
       })
       .select("id")
       .single();

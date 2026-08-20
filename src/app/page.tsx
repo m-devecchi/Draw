@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { KidSwitcher, KID_COOKIE } from "@/components/KidSwitcher";
 import { PromptForm } from "@/components/PromptForm";
 import { UpgradeButton } from "@/components/UpgradeButton";
 import { DemoHome } from "@/components/demo/DemoHome";
@@ -18,14 +20,46 @@ export default async function HomePage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const [quota, { data: drawings }] = await Promise.all([
+  // Bambino attivo (cookie): filtra la galleria e tagga i nuovi disegni.
+  // Se la migrazione 0002 non è ancora applicata, kids è null e la
+  // funzionalità resta semplicemente spenta.
+  const { data: kids } = await supabase
+    .from("kid_profiles")
+    .select("id, name, avatar")
+    .order("created_at");
+  const kidsEnabled = Array.isArray(kids);
+  const cookieStore = await cookies();
+  const cookieKid = cookieStore.get(KID_COOKIE)?.value ?? null;
+  const activeKidId =
+    kids?.some((k) => k.id === cookieKid) === true ? cookieKid : null;
+
+  interface DrawingRow {
+    id: string;
+    prompt: string;
+    kind: string;
+    created_at: string;
+    kid_id?: string | null;
+  }
+
+  let drawingsQuery = supabase
+    .from("drawings")
+    .select(
+      kidsEnabled
+        ? "id, prompt, kind, created_at, kid_id"
+        : ("id, prompt, kind, created_at" as string)
+    )
+    .order("created_at", { ascending: false })
+    .limit(30);
+  if (activeKidId) {
+    drawingsQuery = drawingsQuery.eq("kid_id", activeKidId);
+  }
+
+  const [quota, drawingsRes] = await Promise.all([
     getQuotaStatus(user.id),
-    supabase
-      .from("drawings")
-      .select("id, prompt, kind, created_at")
-      .order("created_at", { ascending: false })
-      .limit(30),
+    drawingsQuery,
   ]);
+  const drawings = (drawingsRes.data ?? []) as unknown as DrawingRow[];
+  const kidById = new Map((kids ?? []).map((k) => [k.id, k]));
 
   return (
     <main className="mx-auto max-w-3xl p-4 pb-16 sm:p-6">
@@ -70,8 +104,18 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {(kids?.length ?? 0) > 0 && (
+        <div className="mt-6">
+          <KidSwitcher kids={kids ?? []} activeKidId={activeKidId} />
+        </div>
+      )}
+
       <section className="mt-8">
-        <h2 className="mb-3 text-xl font-extrabold">I tuoi disegni</h2>
+        <h2 className="mb-3 text-xl font-extrabold">
+          {activeKidId
+            ? `I disegni di ${kidById.get(activeKidId)?.name ?? ""}`
+            : "I tuoi disegni"}
+        </h2>
         {!drawings?.length ? (
           <p className="rounded-3xl bg-white/60 p-8 text-center text-stone-400">
             Ancora nessun disegno: creane uno qui sopra! 🎨
@@ -84,7 +128,9 @@ export default async function HomePage() {
                   href={`/color/${d.id}`}
                   className="block rounded-3xl bg-white p-4 shadow transition hover:shadow-lg active:scale-95"
                 >
-                  <div className="mb-2 text-4xl">🎨</div>
+                  <div className="mb-2 text-4xl">
+                    {(d.kid_id && kidById.get(d.kid_id)?.avatar) || "🎨"}
+                  </div>
                   <p className="line-clamp-2 font-bold">{d.prompt}</p>
                   <p className="mt-1 text-xs text-stone-400">
                     {new Date(d.created_at).toLocaleDateString("it-IT")}

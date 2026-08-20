@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { DeleteAccountButton } from "@/components/account/DeleteAccountButton";
+import { EmailForm } from "@/components/account/EmailForm";
+import { KidProfiles } from "@/components/account/KidProfiles";
 import { PasswordForm } from "@/components/account/PasswordForm";
 import { ProfileNameForm } from "@/components/account/ProfileNameForm";
 import { UpgradeButton } from "@/components/UpgradeButton";
@@ -19,7 +21,7 @@ export default async function AccountPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const [quota, { data: profile }, { count: drawingsCount }] =
+  const [quota, { data: profile }, { count: drawingsCount }, { data: kids }] =
     await Promise.all([
       getQuotaStatus(user.id),
       supabase
@@ -30,6 +32,10 @@ export default async function AccountPage() {
       supabase
         .from("drawings")
         .select("id", { count: "exact", head: true }),
+      supabase
+        .from("kid_profiles")
+        .select("id, name, avatar")
+        .order("created_at"),
     ]);
 
   const memberSince = profile?.created_at
@@ -105,7 +111,22 @@ export default async function AccountPage() {
         )}
       </section>
 
+      {/* Bambini */}
+      <section className="mt-6 rounded-3xl bg-white p-6 shadow-xl">
+        <h2 className="mb-1 text-xl font-extrabold">I tuoi bambini</h2>
+        <p className="mb-4 text-sm text-stone-500">
+          Crea un profilo per ogni bimbo: nella home scegli chi sta disegnando
+          e ognuno ritrova i propri disegni.
+        </p>
+        <KidProfiles initialKids={kids ?? []} />
+      </section>
+
       {/* Sicurezza */}
+      <section className="mt-6 rounded-3xl bg-white p-6 shadow-xl">
+        <h2 className="mb-4 text-xl font-extrabold">Cambia email</h2>
+        <EmailForm currentEmail={user.email ?? ""} />
+      </section>
+
       <section className="mt-6 rounded-3xl bg-white p-6 shadow-xl">
         <h2 className="mb-4 text-xl font-extrabold">Cambia password</h2>
         <PasswordForm />

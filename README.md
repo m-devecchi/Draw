@@ -75,10 +75,29 @@ npm install
 ### 2. Supabase
 
 1. Crea un progetto su [supabase.com](https://supabase.com).
-2. Esegui la migrazione `supabase/migrations/0001_init.sql` (SQL Editor del
-   dashboard, oppure `supabase db push` con la CLI).
+2. Esegui **in ordine** le migrazioni in `supabase/migrations/`
+   (`0001_init.sql`, poi `0002_kids.sql` per i profili bambino) nel SQL
+   Editor del dashboard, oppure `supabase db push` con la CLI.
 3. In **Authentication → Providers** abilita Email (ed eventualmente
    Google/Apple: il callback è già pronto su `/auth/callback`).
+
+#### Login con Google / Apple
+
+I pulsanti nella pagina di login funzionano appena abiliti i provider su
+Supabase (**Authentication → Providers**):
+
+- **Google**: crea le credenziali OAuth su
+  [console.cloud.google.com](https://console.cloud.google.com/apis/credentials)
+  (tipo "Web application"), aggiungi come redirect URI quello mostrato da
+  Supabase (`https://<ref>.supabase.co/auth/v1/callback`) e incolla Client ID
+  e Secret su Supabase.
+- **Apple**: richiede l'account Apple Developer (99 $/anno); su Supabase
+  trovi la guida per Service ID, chiave e team. Nota per gli store: se
+  pubblichi l'app su App Store con altri login social, "Sign in with Apple"
+  è obbligatorio (linee guida Apple 4.8).
+
+Finché un provider non è configurato, il pulsante mostra un messaggio di
+non disponibilità: nessun errore, nessuna configurazione richiesta.
 
 ### 3. Variabili d'ambiente
 
