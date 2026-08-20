@@ -1,5 +1,6 @@
 "use client";
 
+import { EFFECTS, EFFECT_LABELS, type Effect } from "@/lib/paint";
 import { ERASER, PALETTE } from "./palette";
 
 // Palette flottante da app per bambini: matitoni tondi grandi, scorrimento
@@ -7,13 +8,30 @@ import { ERASER, PALETTE } from "./palette";
 export function ColorPalette({
   selected,
   onSelect,
+  effect,
+  onEffectChange,
 }: {
   selected: string;
   onSelect: (color: string) => void;
+  /** Effetto del "secchiello": tinta piatta, sfumatura o pois. */
+  effect: Effect;
+  onEffectChange: (effect: Effect) => void;
 }) {
+  // Un solo pulsante che gira tra gli effetti: meno roba a schermo.
+  const nextEffect = EFFECTS[(EFFECTS.indexOf(effect) + 1) % EFFECTS.length];
   return (
     <div className="pointer-events-auto mx-auto w-fit max-w-full">
       <div className="flex items-center gap-2.5 overflow-x-auto rounded-full bg-white/85 px-4 py-3 shadow-2xl ring-1 ring-black/5 backdrop-blur-md [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <button
+          type="button"
+          onClick={() => onEffectChange(nextEffect)}
+          aria-label={`Effetto: ${EFFECT_LABELS[effect].name}. Tocca per ${EFFECT_LABELS[nextEffect].name}`}
+          title={EFFECT_LABELS[effect].name}
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-4 border-stone-200 bg-white text-2xl shadow-md transition-transform active:scale-90"
+        >
+          {EFFECT_LABELS[effect].icon}
+        </button>
+        <span className="h-8 w-px shrink-0 bg-stone-200" />
         {PALETTE.map((color) => (
           <button
             key={color}

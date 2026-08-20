@@ -2,6 +2,8 @@
 // intero e le anteprime della galleria: gli indici DEVONO coincidere,
 // altrimenti un disegno si mostrerebbe con i colori nei posti sbagliati.
 
+import { decodeFill, paintValue } from "./paint";
+
 export const SHAPE_SELECTOR = "path, circle, ellipse, rect, polygon";
 
 export function isColorable(el: SVGElement): boolean {
@@ -64,15 +66,30 @@ export function indexRegions(container: HTMLElement): number {
   return index;
 }
 
-/** Applica la mappa indice → colore alle aree indicizzate. */
+/**
+ * Applica la mappa indice → riempimento alle aree indicizzate.
+ * Il valore può essere un semplice colore ("#ff5c5c") oppure portare un
+ * effetto ("#ff5c5c:gradient"): in quel caso la definizione viene creata
+ * al volo dentro l'SVG.
+ */
 export function applyFills(
   container: HTMLElement,
   fills: Record<string, string>
 ) {
+  const svg = container.querySelector("svg");
   container
     .querySelectorAll<SVGElement>("[data-colorable='1']")
     .forEach((el) => {
       const region = el.getAttribute("data-region")!;
-      el.setAttribute("fill", fills[region] ?? "#ffffff");
+      const value = fills[region];
+      if (!value) {
+        el.setAttribute("fill", "#ffffff");
+        return;
+      }
+      const { color, effect } = decodeFill(value);
+      el.setAttribute(
+        "fill",
+        svg ? paintValue(svg, color, effect) : color
+      );
     });
 }

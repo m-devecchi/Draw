@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { DrawingCard } from "@/components/DrawingCard";
+import { QuotaCrayons } from "@/components/QuotaCrayons";
 import { KidSwitcher } from "@/components/KidSwitcher";
 import { PromptForm } from "@/components/PromptForm";
 import { UpgradeButton } from "@/components/UpgradeButton";
@@ -94,20 +95,14 @@ export default async function HomePage({
       </header>
 
       <section className="rounded-3xl bg-white p-6 shadow-xl">
-        <h2 className="mb-1 text-xl font-extrabold">
+        <h2 className="mb-4 text-2xl font-extrabold">
           {activeKidId
-            ? `Cosa vuoi colorare, ${kidById.get(activeKidId)?.name}?`
+            ? `${kidById.get(activeKidId)?.avatar} Cosa vuoi colorare, ${kidById.get(activeKidId)?.name}?`
             : "Cosa vuoi colorare oggi?"}
         </h2>
-        <p className="mb-4 text-sm text-stone-500">
-          Scrivi un&apos;idea e creiamo il disegno: poi tocca le aree per
-          riempirle di colore!
-        </p>
         <PromptForm remaining={quota.remaining} kidId={activeKidId} />
-        <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
-          <span className="font-semibold text-stone-500">
-            Oggi: {quota.usedToday}/{quota.limit} disegni
-          </span>
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <QuotaCrayons used={quota.usedToday} limit={quota.limit} />
           {quota.plan === "free" && quota.remaining === 0 && <UpgradeButton />}
         </div>
       </section>

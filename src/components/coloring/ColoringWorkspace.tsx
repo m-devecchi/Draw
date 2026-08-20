@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { demoStore } from "@/lib/demo-store";
+import { encodeFill, type Effect } from "@/lib/paint";
 import {
   isMuted,
   playComplete,
@@ -42,6 +43,7 @@ export function ColoringWorkspace({
   backHref?: string;
 }) {
   const [color, setColor] = useState<string>(PALETTE[0]);
+  const [effect, setEffect] = useState<Effect>("flat");
   const [fills, setFills] = useState<Fills>(initialFills);
   const [history, setHistory] = useState<Fills[]>([]);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved">(
@@ -97,6 +99,8 @@ export function ColoringWorkspace({
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const colorRef = useRef(color);
   colorRef.current = color;
+  const effectRef = useRef(effect);
+  effectRef.current = effect;
   const fillsRef = useRef(fills);
   fillsRef.current = fills;
 
@@ -148,8 +152,9 @@ export function ColoringWorkspace({
         delete next[String(region)];
         playErase();
       } else {
-        if (next[String(region)] === chosen) return; // stesso colore
-        next[String(region)] = chosen;
+        const painted = encodeFill(chosen, effectRef.current);
+        if (next[String(region)] === painted) return; // gia' cosi'
+        next[String(region)] = painted;
         playFill(Object.keys(next).length);
       }
 
@@ -293,7 +298,12 @@ export function ColoringWorkspace({
 
       {/* Palette in sovrapposizione in basso */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-        <ColorPalette selected={color} onSelect={setColor} />
+        <ColorPalette
+          selected={color}
+          onSelect={setColor}
+          effect={effect}
+          onEffectChange={setEffect}
+        />
       </div>
     </div>
   );

@@ -164,6 +164,13 @@ Ogni `git push` sul branch di default fa partire un nuovo deploy automatico.
 
 ## 🎉 Esperienza di coloritura
 
+- **Effetti di riempimento**: tinta piatta 🎨, sfumatura 🌈 e pois ✨, scelti
+  con un unico pulsante che gira tra i tre. Il colore resta salvato come
+  esadecimale e l'effetto è un suffisso (`#ff5c5c:gradient`), così i
+  disegni colorati prima continuano a funzionare.
+- **Idee illustrate** in home: dodici pulsanti con disegno e parola, per
+  chi non sa ancora leggere; la quota del giorno è mostrata a matite.
+
 - **Zoom a due dita** e trascinamento per i dettagli piccoli, con doppio
   tocco (o il pulsante 🔍) per tornare alla vista intera. Un tocco fermo
   colora, una trascinata sposta soltanto: le due cose non si confondono.

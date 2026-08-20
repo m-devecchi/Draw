@@ -3,14 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { demoStore } from "@/lib/demo-store";
+import { IdeaButtons } from "./IdeaButtons";
 
-const IDEAS = [
-  "Un dinosauro felice",
-  "Un gattino con un palloncino",
-  "Un razzo tra le stelle",
-  "Una principessa e un drago gentile",
-  "Un trattore in fattoria",
-];
 
 export function PromptForm({
   remaining,
@@ -102,19 +96,14 @@ export function PromptForm({
         </p>
       )}
 
-      <div className="mt-3 flex flex-wrap gap-2">
-        {IDEAS.map((idea) => (
-          <button
-            key={idea}
-            type="button"
-            disabled={loading}
-            onClick={() => setPrompt(idea)}
-            className="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-500 transition hover:bg-crayon-yellow/40"
-          >
-            {idea}
-          </button>
-        ))}
-      </div>
+      {!loading && (
+        <div className="mt-4">
+          <p className="mb-2 text-sm font-bold text-stone-400">
+            Oppure tocca un&apos;idea 👇
+          </p>
+          <IdeaButtons selected={prompt} onPick={setPrompt} disabled={loading} />
+        </div>
+      )}
     </form>
   );
 }

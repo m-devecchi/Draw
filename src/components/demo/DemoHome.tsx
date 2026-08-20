@@ -46,13 +46,9 @@ export function DemoHome() {
       </header>
 
       <section className="rounded-3xl bg-white p-6 shadow-xl">
-        <h2 className="mb-1 text-xl font-extrabold">
+        <h2 className="mb-4 text-2xl font-extrabold">
           Cosa vuoi colorare oggi?
         </h2>
-        <p className="mb-4 text-sm text-stone-500">
-          Scrivi un&apos;idea e creiamo il disegno: poi tocca le aree per
-          riempirle di colore!
-        </p>
         <PromptForm remaining={999} />
         <p className="mt-4 text-xs text-stone-400">
           Versione dimostrativa: i disegni restano su questo dispositivo.
