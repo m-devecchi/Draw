@@ -43,14 +43,13 @@ export default async function HomePage() {
           >
             {quota.plan === "premium" ? "⭐ Premium" : "Free"}
           </span>
-          <form action="/auth/signout" method="post">
-            <button
-              type="submit"
-              className="text-sm font-semibold text-stone-400 hover:text-stone-600"
-            >
-              Esci
-            </button>
-          </form>
+          <Link
+            href="/account"
+            aria-label="Il tuo account"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-lg shadow transition active:scale-90"
+          >
+            👤
+          </Link>
         </div>
       </header>
 

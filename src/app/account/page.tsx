@@ -1,0 +1,128 @@
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { DeleteAccountButton } from "@/components/account/DeleteAccountButton";
+import { PasswordForm } from "@/components/account/PasswordForm";
+import { ProfileNameForm } from "@/components/account/ProfileNameForm";
+import { UpgradeButton } from "@/components/UpgradeButton";
+import { isDemoMode } from "@/lib/config";
+import { getQuotaStatus } from "@/lib/quota";
+import { createClient } from "@/lib/supabase/server";
+
+export const dynamic = "force-dynamic";
+
+export default async function AccountPage() {
+  if (isDemoMode()) redirect("/");
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const [quota, { data: profile }, { count: drawingsCount }] =
+    await Promise.all([
+      getQuotaStatus(user.id),
+      supabase
+        .from("profiles")
+        .select("display_name, created_at")
+        .eq("id", user.id)
+        .single(),
+      supabase
+        .from("drawings")
+        .select("id", { count: "exact", head: true }),
+    ]);
+
+  const memberSince = profile?.created_at
+    ? new Date(profile.created_at).toLocaleDateString("it-IT", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })
+    : null;
+
+  return (
+    <main className="mx-auto max-w-2xl p-4 pb-16 sm:p-6">
+      <header className="mb-6 flex items-center gap-3">
+        <Link
+          href="/"
+          aria-label="Torna ai disegni"
+          className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-xl shadow transition active:scale-90"
+        >
+          🏠
+        </Link>
+        <h1 className="text-3xl font-extrabold text-crayon-purple">
+          Il tuo account
+        </h1>
+      </header>
+
+      {/* Profilo */}
+      <section className="rounded-3xl bg-white p-6 shadow-xl">
+        <h2 className="mb-1 text-xl font-extrabold">Profilo</h2>
+        <p className="mb-4 text-sm text-stone-500">
+          {user.email}
+          {memberSince && ` · con noi dal ${memberSince}`}
+        </p>
+        <ProfileNameForm initialName={profile?.display_name ?? ""} />
+      </section>
+
+      {/* Piano e utilizzo */}
+      <section className="mt-6 rounded-3xl bg-white p-6 shadow-xl">
+        <h2 className="mb-4 text-xl font-extrabold">Piano e utilizzo</h2>
+        <div className="mb-4 grid grid-cols-3 gap-3 text-center">
+          <div className="rounded-2xl bg-stone-50 p-3">
+            <p className="text-2xl font-extrabold text-crayon-purple">
+              {quota.plan === "premium" ? "⭐" : "🖍️"}
+            </p>
+            <p className="text-xs font-bold text-stone-500">
+              {quota.plan === "premium" ? "Premium" : "Free"}
+            </p>
+          </div>
+          <div className="rounded-2xl bg-stone-50 p-3">
+            <p className="text-2xl font-extrabold text-crayon-blue">
+              {quota.usedToday}/{quota.limit}
+            </p>
+            <p className="text-xs font-bold text-stone-500">oggi</p>
+          </div>
+          <div className="rounded-2xl bg-stone-50 p-3">
+            <p className="text-2xl font-extrabold text-crayon-green">
+              {drawingsCount ?? 0}
+            </p>
+            <p className="text-xs font-bold text-stone-500">disegni totali</p>
+          </div>
+        </div>
+        {quota.plan === "free" ? (
+          <div className="flex flex-wrap items-center gap-3">
+            <p className="text-sm text-stone-500">
+              Col piano Premium crei fino a {`50`} disegni al giorno.
+            </p>
+            <UpgradeButton />
+          </div>
+        ) : (
+          <p className="text-sm text-stone-500">
+            Sei Premium ⭐ — grazie! La gestione dell&apos;abbonamento arriverà
+            qui.
+          </p>
+        )}
+      </section>
+
+      {/* Sicurezza */}
+      <section className="mt-6 rounded-3xl bg-white p-6 shadow-xl">
+        <h2 className="mb-4 text-xl font-extrabold">Cambia password</h2>
+        <PasswordForm />
+      </section>
+
+      {/* Esci + zona pericolosa */}
+      <section className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-3xl bg-white p-6 shadow-xl">
+        <form action="/auth/signout" method="post">
+          <button
+            type="submit"
+            className="rounded-full bg-stone-100 px-5 py-2 font-bold text-stone-600 shadow transition active:scale-95"
+          >
+            👋 Esci
+          </button>
+        </form>
+        <DeleteAccountButton />
+      </section>
+    </main>
+  );
+}
