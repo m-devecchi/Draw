@@ -1,3 +1,5 @@
+import type { Stroke } from "./strokes";
+
 // Persistenza locale per la modalità PoC (solo client): i disegni vivono
 // nel localStorage del dispositivo. Nella modalità completa la stessa
 // struttura è salvata su Postgres (tabella drawings).
@@ -7,6 +9,7 @@ export interface DemoDrawing {
   kind: "svg" | "raster";
   content: string;
   fills: Record<string, string>;
+  strokes: Stroke[];
   createdAt: string;
 }
 
@@ -16,7 +19,11 @@ const MAX_DRAWINGS = 20; // localStorage è piccolo: teniamo gli ultimi 20
 function readAll(): DemoDrawing[] {
   if (typeof window === "undefined") return [];
   try {
-    return JSON.parse(window.localStorage.getItem(KEY) ?? "[]");
+    const raw: DemoDrawing[] = JSON.parse(
+      window.localStorage.getItem(KEY) ?? "[]"
+    );
+    // I disegni salvati prima della mano libera non hanno i tratti.
+    return raw.map((d) => ({ ...d, strokes: d.strokes ?? [] }));
   } catch {
     return [];
   }
@@ -44,19 +51,24 @@ export const demoStore = {
     return readAll().find((d) => d.id === id);
   },
 
-  add(drawing: Omit<DemoDrawing, "id" | "createdAt" | "fills">): DemoDrawing {
+  add(
+    drawing: Omit<DemoDrawing, "id" | "createdAt" | "fills" | "strokes">
+  ): DemoDrawing {
     const full: DemoDrawing = {
       ...drawing,
       id: `demo-${crypto.randomUUID()}`,
       fills: {},
+      strokes: [],
       createdAt: new Date().toISOString(),
     };
     writeAll([full, ...readAll()].slice(0, MAX_DRAWINGS));
     return full;
   },
 
-  saveFills(id: string, fills: Record<string, string>) {
-    writeAll(readAll().map((d) => (d.id === id ? { ...d, fills } : d)));
+  save(id: string, fills: Record<string, string>, strokes: Stroke[]) {
+    writeAll(
+      readAll().map((d) => (d.id === id ? { ...d, fills, strokes } : d))
+    );
   },
 
   remove(id: string) {

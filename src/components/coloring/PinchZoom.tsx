@@ -18,9 +18,12 @@ interface Point {
 export function PinchZoom({
   children,
   onZoomChange,
+  panEnabled = true,
 }: {
   children: React.ReactNode;
   onZoomChange?: (zoomed: boolean) => void;
+  /** A mano libera il trascinamento va spento: il dito disegna. */
+  panEnabled?: boolean;
 }) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
@@ -77,7 +80,7 @@ export function PinchZoom({
         offset,
       };
       panStart.current = null;
-    } else if (pointers.current.size === 1 && scale > 1.01) {
+    } else if (pointers.current.size === 1 && scale > 1.01 && panEnabled) {
       panStart.current = { point: { x: e.clientX, y: e.clientY }, offset };
     }
   }

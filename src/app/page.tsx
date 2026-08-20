@@ -30,7 +30,7 @@ export default async function HomePage({
   // funzionalità resta semplicemente spenta.
   const { data: kids } = await supabase
     .from("kid_profiles")
-    .select("id, name, avatar")
+    .select("id, name, avatar, age_band")
     .order("created_at");
   const kidsEnabled = Array.isArray(kids);
   const requestedKid = (await searchParams).kid ?? null;

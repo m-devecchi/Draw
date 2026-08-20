@@ -164,10 +164,19 @@ Ogni `git push` sul branch di default fa partire un nuovo deploy automatico.
 
 ## 🎉 Esperienza di coloritura
 
-- **Effetti di riempimento**: tinta piatta 🎨, sfumatura 🌈 e pois ✨, scelti
-  con un unico pulsante che gira tra i tre. Il colore resta salvato come
+- **Nove effetti di riempimento**: tinta piatta 🎨, sfumatura 🌈, pois ✨,
+  righe 🦓, cuori 💗, stelline ⭐, quadretti 🏁, bollicine 🫧 e coriandoli 🎊,
+  scelti da un cassetto sopra la palette. Il colore resta salvato come
   esadecimale e l'effetto è un suffisso (`#ff5c5c:gradient`), così i
   disegni colorati prima continuano a funzionare.
+- **Mano libera** ✏️: si disegna col dito sopra il disegno; i tratti sono
+  salvati come percorsi SVG nelle coordinate del disegno, quindi restano
+  al loro posto a ogni zoom e su ogni schermo. Annulla torna indietro di
+  un gesto qualunque esso sia, colore o tratto.
+- **Versioni per età** (impostate sul profilo di ogni bambino):
+  **2-3 anni** otto colori grandi e nessun effetto; **4-6 anni** palette
+  completa, sei effetti e mano libera; **7+** tutto. Senza profilo
+  bambino si offre l'esperienza completa.
 - **Idee illustrate** in home: dodici pulsanti con disegno e parola, per
   chi non sa ancora leggere; la quota del giorno è mostrata a matite.
 

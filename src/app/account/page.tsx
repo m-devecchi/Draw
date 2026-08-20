@@ -49,7 +49,7 @@ export default async function AccountPage() {
         .select("id", { count: "exact", head: true }),
       supabase
         .from("kid_profiles")
-        .select("id, name, avatar")
+        .select("id, name, avatar, age_band")
         .order("created_at"),
     ]);
 

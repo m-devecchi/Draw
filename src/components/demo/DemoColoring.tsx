@@ -47,6 +47,7 @@ export function DemoColoring({ id }: { id: string }) {
         kind={drawing.kind}
         content={drawing.content}
         initialFills={drawing.fills}
+        initialStrokes={drawing.strokes}
         mode="demo"
         prompt={drawing.prompt}
       />

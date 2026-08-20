@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { demoStore } from "@/lib/demo-store";
+import { parseStrokes, type Stroke } from "@/lib/strokes";
 import { encodeFill, type Effect } from "@/lib/paint";
+import { ageSetup } from "@/lib/age-bands";
 import {
   isMuted,
   playComplete,
@@ -14,9 +16,10 @@ import {
   unlockAudio,
 } from "@/lib/sounds";
 import { ColorPalette } from "./ColorPalette";
+import { FreehandLayer } from "./FreehandLayer";
 import { Confetti } from "./Confetti";
 import { PinchZoom } from "./PinchZoom";
-import { ERASER, PALETTE } from "./palette";
+import { ERASER } from "./palette";
 import { FloodFillCanvas, type FloodFillHandle } from "./FloodFillCanvas";
 import { SvgColoring, type SvgColoringHandle } from "./SvgColoring";
 
@@ -27,6 +30,8 @@ export function ColoringWorkspace({
   kind,
   content,
   initialFills,
+  initialStrokes = [],
+  ageBand,
   mode = "cloud",
   prompt,
   backHref = "/",
@@ -35,6 +40,10 @@ export function ColoringWorkspace({
   kind: "svg" | "raster";
   content: string;
   initialFills: Fills;
+  /** Tratti a mano libera già salvati. */
+  initialStrokes?: Stroke[];
+  /** Fascia d'età del bambino: decide colori, effetti e strumenti. */
+  ageBand?: string | null;
   /** "cloud": salvataggio su API/DB. "demo" (PoC): salvataggio in localStorage. */
   mode?: "cloud" | "demo";
   /** Titolo del disegno mostrato nella barra in alto. */
@@ -42,10 +51,21 @@ export function ColoringWorkspace({
   /** Destinazione del pulsante casetta (mantiene il bambino selezionato). */
   backHref?: string;
 }) {
-  const [color, setColor] = useState<string>(PALETTE[0]);
+  const setup = ageSetup(ageBand);
+  const freehand = setup.freehand;
+  const [color, setColor] = useState<string>(setup.colors[0]);
   const [effect, setEffect] = useState<Effect>("flat");
+
   const [fills, setFills] = useState<Fills>(initialFills);
-  const [history, setHistory] = useState<Fills[]>([]);
+  const [strokes, setStrokes] = useState<Stroke[]>(initialStrokes);
+  const [tool, setTool] = useState<"fill" | "draw">("fill");
+  interface Snapshot {
+    fills: Fills;
+    strokes: Stroke[];
+  }
+  // Cronologia unica per colori e tratti: Annulla deve tornare indietro
+  // di un gesto qualunque sia stato.
+  const [history, setHistory] = useState<Snapshot[]>([]);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved">(
     "idle"
   );
@@ -68,6 +88,11 @@ export function ColoringWorkspace({
     document.addEventListener("pointerdown", onGesture);
     return () => document.removeEventListener("pointerdown", onGesture);
   }, []);
+
+  // Il viewBox serve allo strato a mano libera: stesse coordinate del
+  // disegno, così i tratti restano al loro posto a ogni zoom.
+  const viewBox =
+    content.match(/viewBox=["']([^"']+)["']/)?.[1] ?? "0 0 1000 1000";
 
   const handleRegionCount = useCallback((count: number) => {
     setRegionCount(count);
@@ -103,13 +128,15 @@ export function ColoringWorkspace({
   effectRef.current = effect;
   const fillsRef = useRef(fills);
   fillsRef.current = fills;
+  const strokesRef = useRef(strokes);
+  strokesRef.current = strokes;
 
   // Salvataggio automatico (solo SVG: i colori sono per-regione).
   const scheduleSave = useCallback(
-    (next: Fills) => {
+    (next: Fills, nextStrokes: Stroke[]) => {
       if (kind !== "svg") return;
       if (mode === "demo") {
-        demoStore.saveFills(drawingId, next);
+        demoStore.save(drawingId, next, nextStrokes);
         setSaveState("saved");
         return;
       }
@@ -120,7 +147,7 @@ export function ColoringWorkspace({
           await fetch(`/api/drawings/${drawingId}`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ fills: next }),
+            body: JSON.stringify({ fills: next, strokes: nextStrokes }),
           });
           setSaveState("saved");
         } catch {
@@ -136,6 +163,22 @@ export function ColoringWorkspace({
       if (saveTimer.current) clearTimeout(saveTimer.current);
     };
   }, []);
+
+  const handleStrokeEnd = useCallback(
+    (stroke: Stroke) => {
+      interacted.current = true;
+      const prev = strokesRef.current;
+      const next = [...prev, stroke];
+      setHistory((h) => [
+        ...h.slice(-19),
+        { fills: fillsRef.current, strokes: prev },
+      ]);
+      setStrokes(next);
+      playFill(next.length);
+      scheduleSave(fillsRef.current, next);
+    },
+    [scheduleSave]
+  );
 
   // Gli effetti (suoni, coriandoli, cronologia) stanno FUORI dall'updater
   // di setFills: React puo' rieseguire un updater, e una festa doppia o un
@@ -158,9 +201,12 @@ export function ColoringWorkspace({
         playFill(Object.keys(next).length);
       }
 
-      setHistory((h) => [...h.slice(-19), prev]);
+      setHistory((h) => [
+        ...h.slice(-19),
+        { fills: prev, strokes: strokesRef.current },
+      ]);
       setFills(next);
-      scheduleSave(next);
+      scheduleSave(next, strokesRef.current);
     },
     [scheduleSave]
   );
@@ -173,8 +219,9 @@ export function ColoringWorkspace({
     setHistory((h) => {
       if (!h.length) return h;
       const prev = h[h.length - 1];
-      setFills(prev);
-      scheduleSave(prev);
+      setFills(prev.fills);
+      setStrokes(prev.strokes);
+      scheduleSave(prev.fills, prev.strokes);
       return h.slice(0, -1);
     });
   }
@@ -184,9 +231,10 @@ export function ColoringWorkspace({
       rasterRef.current?.reset();
       return;
     }
-    setHistory((h) => [...h.slice(-19), fills]);
+    setHistory((h) => [...h.slice(-19), { fills, strokes }]);
     setFills({});
-    scheduleSave({});
+    setStrokes([]);
+    scheduleSave({}, []);
   }
 
   async function handleDownload() {
@@ -211,7 +259,7 @@ export function ColoringWorkspace({
   return (
     <div className="fixed inset-0 overflow-hidden bg-white">
       {/* Disegno a tutto schermo: due dita per lo zoom, trascina per spostare */}
-      <PinchZoom>
+      <PinchZoom panEnabled={tool !== "draw"}>
         {kind === "svg" ? (
           <SvgColoring
             ref={svgRef}
@@ -222,6 +270,16 @@ export function ColoringWorkspace({
           />
         ) : (
           <FloodFillCanvas ref={rasterRef} content={content} color={color} />
+        )}
+        {kind === "svg" && freehand && (
+          <FreehandLayer
+            viewBox={viewBox}
+            strokes={strokes}
+            color={color === ERASER ? "#ffffff" : color}
+            width={12}
+            active={tool === "draw"}
+            onStrokeEnd={handleStrokeEnd}
+          />
         )}
       </PinchZoom>
 
@@ -251,6 +309,23 @@ export function ColoringWorkspace({
           </span>
         )}
         <span className="flex-1" />
+        {kind === "svg" && freehand && (
+          <button
+            type="button"
+            onClick={() => setTool((t) => (t === "fill" ? "draw" : "fill"))}
+            aria-label={
+              tool === "fill"
+                ? "Passa alla mano libera"
+                : "Torna a riempire le aree"
+            }
+            aria-pressed={tool === "draw"}
+            className={`${floatingBtn} ${
+              tool === "draw" ? "bg-crayon-yellow" : ""
+            }`}
+          >
+            {tool === "fill" ? "🪣" : "✏️"}
+          </button>
+        )}
         <button
           type="button"
           onClick={() => {
@@ -303,6 +378,9 @@ export function ColoringWorkspace({
           onSelect={setColor}
           effect={effect}
           onEffectChange={setEffect}
+          effects={setup.effects}
+          colors={setup.colors}
+          swatchSize={setup.swatchSize}
         />
       </div>
     </div>
