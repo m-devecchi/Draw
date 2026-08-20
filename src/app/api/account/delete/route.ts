@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { isDemoMode } from "@/lib/config";
+import { isParentUnlocked } from "@/lib/parent-gate";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -16,6 +17,13 @@ export async function POST() {
   } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
+  }
+
+  if (!(await isParentUnlocked(user.id))) {
+    return NextResponse.json(
+      { error: "Serve l'area genitori.", needsParent: true },
+      { status: 403 }
+    );
   }
 
   const admin = createAdminClient();

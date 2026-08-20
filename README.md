@@ -162,6 +162,29 @@ Senza questo passaggio i link di conferma email puntano a `localhost`.
 
 Ogni `git push` sul branch di default fa partire un nuovo deploy automatico.
 
+## 🔒 Area genitori (parental control)
+
+L'app è pensata perché finisca in mano al bambino: disegnare e colorare
+sono libere, tutto il resto è protetto.
+
+Dietro il **cancello parentale** stanno impostazioni account, cambio email e
+password, pagamenti ed eliminazione dell'account. Per entrare:
+
+- se il genitore ha impostato un **PIN** (4-8 cifre), serve quello;
+- altrimenti si risponde a una **moltiplicazione** — il ripiego standard
+  richiesto dagli store, che un bambino piccolo non supera.
+
+Lo sblocco dura 15 minuti e vive in un cookie `httpOnly` **firmato dal
+server**: un cookie inventato dal browser non supera la verifica della
+firma. Il PIN è salvato solo come hash scrypt, modificabile unicamente dal
+server (un trigger sul database blocca la scrittura dal client), e dopo 5
+tentativi sbagliati si aspetta 5 minuti.
+
+Il PIN si imposta in **Area genitori → PIN genitore**. Il segreto di firma
+si configura con `PARENT_GATE_SECRET` (senza, si usa la service role key).
+
+Verifica: `npm test`
+
 ## Stripe (quando vorrai attivare i pagamenti)
 
 1. Crea un prodotto con prezzo ricorrente e copia il `price_...` in

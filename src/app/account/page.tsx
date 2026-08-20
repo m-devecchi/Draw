@@ -6,7 +6,11 @@ import { KidProfiles } from "@/components/account/KidProfiles";
 import { PasswordForm } from "@/components/account/PasswordForm";
 import { ProfileNameForm } from "@/components/account/ProfileNameForm";
 import { UpgradeButton } from "@/components/UpgradeButton";
+import { ParentLockButton } from "@/components/parent/ParentLockButton";
+import { ParentPinForm } from "@/components/parent/ParentPinForm";
 import { isDemoMode } from "@/lib/config";
+import { isParentUnlocked } from "@/lib/parent-gate";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getQuotaStatus } from "@/lib/quota";
 import { createClient } from "@/lib/supabase/server";
 
@@ -20,6 +24,17 @@ export default async function AccountPage() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  // Cancello parentale: l'area impostazioni non è per i bambini.
+  if (!(await isParentUnlocked(user.id))) {
+    redirect("/parent-gate?next=/account");
+  }
+
+  const { data: parentProfile } = await createAdminClient()
+    .from("profiles")
+    .select("parent_pin_hash")
+    .eq("id", user.id)
+    .single();
 
   const [quota, { data: profile }, { count: drawingsCount }, { data: kids }] =
     await Promise.all([
@@ -121,6 +136,17 @@ export default async function AccountPage() {
         <KidProfiles initialKids={kids ?? []} />
       </section>
 
+      {/* Cancello parentale */}
+      <section className="mt-6 rounded-3xl bg-white p-6 shadow-xl">
+        <h2 className="mb-1 text-xl font-extrabold">🔒 PIN genitore</h2>
+        <p className="mb-4 text-sm text-stone-500">
+          {parentProfile?.parent_pin_hash
+            ? "Questa area è protetta dal tuo PIN. Puoi cambiarlo qui."
+            : "Senza PIN l'area genitori è protetta solo da una domanda di matematica. Imposta un PIN: è più sicuro."}
+        </p>
+        <ParentPinForm hasPin={Boolean(parentProfile?.parent_pin_hash)} />
+      </section>
+
       {/* Sicurezza */}
       <section className="mt-6 rounded-3xl bg-white p-6 shadow-xl">
         <h2 className="mb-4 text-xl font-extrabold">Cambia email</h2>
@@ -134,6 +160,7 @@ export default async function AccountPage() {
 
       {/* Esci + zona pericolosa */}
       <section className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-3xl bg-white p-6 shadow-xl">
+        <ParentLockButton />
         <form action="/auth/signout" method="post">
           <button
             type="submit"

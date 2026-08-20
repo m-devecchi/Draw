@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "cap:sync": "cap sync",
     "cap:ios": "cap open ios",
-    "cap:android": "cap open android"
+    "cap:android": "cap open android",
+    "test": "node --experimental-strip-types tests/parent-gate.test.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.120.0",

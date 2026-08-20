@@ -79,12 +79,13 @@ export default async function HomePage({
           >
             {quota.plan === "premium" ? "⭐ Premium" : "Free"}
           </span>
+          {/* Area genitori: protetta dal cancello parentale */}
           <Link
-            href="/account"
-            aria-label="Il tuo account"
+            href="/parent-gate?next=/account"
+            aria-label="Area genitori"
             className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-lg shadow transition active:scale-90"
           >
-            👤
+            🔒
           </Link>
         </div>
       </header>

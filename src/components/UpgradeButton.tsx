@@ -1,8 +1,10 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export function UpgradeButton() {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -14,6 +16,11 @@ export function UpgradeButton() {
       const data = await res.json();
       if (res.ok && data.url) {
         window.location.href = data.url;
+        return;
+      }
+      // Il pagamento passa dall'area genitori.
+      if (data?.needsParent) {
+        router.push("/parent-gate?next=/account");
         return;
       }
       setMessage(data.error ?? "I pagamenti non sono ancora attivi.");
