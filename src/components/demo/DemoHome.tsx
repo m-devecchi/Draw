@@ -9,12 +9,7 @@ import { demoStore, type DemoDrawing } from "@/lib/demo-store";
 import { SAMPLE_DRAWINGS } from "@/lib/samples";
 
 // Home della modalità PoC: niente login, disegni salvati sul dispositivo.
-export function DemoHome({
-  ageChooser,
-}: {
-  /** Domanda sull'età, resa dal server (qui siamo in un componente client). */
-  ageChooser?: React.ReactNode;
-}) {
+export function DemoHome() {
   const router = useRouter();
   const [drawings, setDrawings] = useState<DemoDrawing[]>([]);
 
@@ -31,10 +26,12 @@ export function DemoHome({
   // ogni tocco crea una copia nuova, così si può ricolorare da capo.
   function handleSample(slug: string) {
     const sample = SAMPLE_DRAWINGS.find((s) => s.slug === slug)!;
+    const saved = window.localStorage.getItem("colora-last-age");
     const drawing = demoStore.add({
       prompt: sample.prompt,
       kind: "svg",
       content: sample.content,
+      ageBand: saved ?? "big",
     });
     router.push(`/color/${drawing.id}`);
   }
@@ -49,8 +46,6 @@ export function DemoHome({
           PoC · senza account
         </span>
       </header>
-
-      {ageChooser && <div className="mb-6">{ageChooser}</div>}
 
       <section className="rounded-3xl bg-white p-6 shadow-xl">
         <h2 className="mb-4 text-2xl font-extrabold">

@@ -1,8 +1,5 @@
 import Link from "next/link";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { AgeChooser } from "@/components/AgeChooser";
-import { AGE_COOKIE, parseAgeBand } from "@/lib/age-bands";
 import { DeleteAccountButton } from "@/components/account/DeleteAccountButton";
 import { EmailForm } from "@/components/account/EmailForm";
 import { KidProfiles } from "@/components/account/KidProfiles";
@@ -127,13 +124,6 @@ export default async function AccountPage() {
             qui.
           </p>
         )}
-      </section>
-
-      {/* Età di chi disegna */}
-      <section className="mt-6 rounded-3xl bg-white p-6 shadow-xl">
-        <AgeChooser
-          current={parseAgeBand((await cookies()).get(AGE_COOKIE)?.value)}
-        />
       </section>
 
       {/* Bambini */}

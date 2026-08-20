@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { demoStore } from "@/lib/demo-store";
+import { AgeSelect } from "./AgeSelect";
 import { IdeaButtons } from "./IdeaButtons";
+import { type AgeBand } from "@/lib/age-bands";
 
 
 export function PromptForm({
@@ -16,6 +18,26 @@ export function PromptForm({
 }) {
   const router = useRouter();
   const [prompt, setPrompt] = useState("");
+  // L'età si sceglie a ogni disegno. L'ultima scelta resta preselezionata
+  // (su un telefono di famiglia spesso è lo stesso bimbo), ma è sempre
+  // in vista e basta un tocco per cambiarla.
+  const [ageBand, setAgeBand] = useState<AgeBand>("medium");
+
+  useEffect(() => {
+    const saved = window.localStorage.getItem("colora-last-age");
+    if (saved === "small" || saved === "medium" || saved === "big") {
+      setAgeBand(saved);
+    }
+  }, []);
+
+  function pickAge(band: AgeBand) {
+    setAgeBand(band);
+    try {
+      window.localStorage.setItem("colora-last-age", band);
+    } catch {
+      // localStorage non disponibile: vale per questa sessione
+    }
+  }
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -28,7 +50,7 @@ export function PromptForm({
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt, kidId }),
+        body: JSON.stringify({ prompt, kidId, ageBand }),
       });
       // La risposta può non essere JSON (es. timeout/crash della funzione
       // su Vercel): niente .json() cieco, altrimenti Safari mostra il
@@ -49,6 +71,7 @@ export function PromptForm({
           prompt,
           kind: data.kind,
           content: data.content,
+          ageBand,
         });
         router.push(`/color/${drawing.id}`);
         return;
@@ -68,6 +91,12 @@ export function PromptForm({
 
   return (
     <form onSubmit={handleSubmit}>
+      {!loading && (
+        <div className="mb-4">
+          <AgeSelect value={ageBand} onChange={pickAge} disabled={loading} />
+        </div>
+      )}
+
       <div className="flex flex-col gap-3 sm:flex-row">
         <input
           type="text"

@@ -13,6 +13,8 @@ const bodySchema = z.object({
   // Bambino a cui associare il disegno (validato lato server: deve
   // appartenere all'utente autenticato).
   kidId: z.string().uuid().nullish(),
+  // Età di chi colorerà: scelta a ogni creazione e salvata col disegno.
+  ageBand: z.enum(["small", "medium", "big"]).default("big"),
 });
 
 // ── Limite giornaliero della modalità PoC ───────────────────────────────
@@ -135,18 +137,30 @@ export async function POST(request: Request) {
 
     // kid_id incluso solo se valorizzato: così l'insert funziona anche
     // prima che la migrazione 0002 (profili bambino) sia applicata.
-    const { data: drawing, error: drawError } = await admin
+    const base = {
+      user_id: user.id,
+      prompt,
+      provider: provider.name,
+      kind: result.kind,
+      content: result.content,
+      ...(kidId ? { kid_id: kidId } : {}),
+    };
+
+    // Primo tentativo con l'età; se la migrazione 0005 non è ancora
+    // applicata la colonna non esiste e si riprova senza, invece di far
+    // fallire la creazione del disegno.
+    let { data: drawing, error: drawError } = await admin
       .from("drawings")
-      .insert({
-        user_id: user.id,
-        prompt,
-        provider: provider.name,
-        kind: result.kind,
-        content: result.content,
-        ...(kidId ? { kid_id: kidId } : {}),
-      })
+      .insert({ ...base, age_band: demoParsed.data.ageBand })
       .select("id")
       .single();
+    if (drawError?.message?.includes("age_band")) {
+      ({ data: drawing, error: drawError } = await admin
+        .from("drawings")
+        .insert(base)
+        .select("id")
+        .single());
+    }
     if (drawError || !drawing) {
       throw new Error(drawError?.message ?? "insert fallita");
     }

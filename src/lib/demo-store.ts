@@ -10,6 +10,8 @@ export interface DemoDrawing {
   content: string;
   fills: Record<string, string>;
   strokes: Stroke[];
+  /** Età scelta alla creazione: decide gli strumenti alla riapertura. */
+  ageBand: string;
   createdAt: string;
 }
 
@@ -23,7 +25,11 @@ function readAll(): DemoDrawing[] {
       window.localStorage.getItem(KEY) ?? "[]"
     );
     // I disegni salvati prima della mano libera non hanno i tratti.
-    return raw.map((d) => ({ ...d, strokes: d.strokes ?? [] }));
+    return raw.map((d) => ({
+      ...d,
+      strokes: d.strokes ?? [],
+      ageBand: d.ageBand ?? "big",
+    }));
   } catch {
     return [];
   }

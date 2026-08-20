@@ -173,11 +173,12 @@ Ogni `git push` sul branch di default fa partire un nuovo deploy automatico.
   salvati come percorsi SVG nelle coordinate del disegno, quindi restano
   al loro posto a ogni zoom e su ogni schermo. Annulla torna indietro di
   un gesto qualunque esso sia, colore o tratto.
-- **Versioni per età**, chieste al genitore al primo avvio e modificabili
-  dall'area genitori: **2-3 anni** otto colori grandi e nessun effetto;
-  **4-6 anni** palette completa, sei effetti e mano libera; **7+** tutto.
-  La scelta vale per il dispositivo (cookie scritto dal server, non legata
-  ai profili bambino: la maggior parte delle famiglie non li crea).
+- **Versioni per età**, scelte **a ogni creazione** insieme al prompt
+  («Chi colora questo disegno?»): **2-3 anni** otto colori grandi e nessun
+  effetto; **4-6 anni** palette completa, sei effetti e mano libera;
+  **7+** tutto. L'età viene salvata **col disegno**, così riaprendolo si
+  ritrovano gli strumenti giusti anche se sullo stesso telefono disegnano
+  più fratelli. L'ultima scelta resta preselezionata per comodità.
 - **Idee illustrate** in home: dodici pulsanti con disegno e parola, per
   chi non sa ancora leggere; la quota del giorno è mostrata a matite.
 

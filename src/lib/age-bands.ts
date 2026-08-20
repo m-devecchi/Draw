@@ -6,8 +6,6 @@ import { PALETTE } from "@/components/coloring/palette";
 export const AGE_BANDS = ["small", "medium", "big"] as const;
 export type AgeBand = (typeof AGE_BANDS)[number];
 
-/** Età di chi disegna: scelta del genitore, valida per il dispositivo. */
-export const AGE_COOKIE = "colora_age";
 
 export interface AgeSetup {
   label: string;

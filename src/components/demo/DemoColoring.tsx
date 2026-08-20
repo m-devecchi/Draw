@@ -6,13 +6,7 @@ import { ColoringWorkspace } from "@/components/coloring/ColoringWorkspace";
 import { demoStore, type DemoDrawing } from "@/lib/demo-store";
 
 // Pagina di coloritura della modalità PoC: carica il disegno dal dispositivo.
-export function DemoColoring({
-  id,
-  ageBand,
-}: {
-  id: string;
-  ageBand?: string | null;
-}) {
+export function DemoColoring({ id }: { id: string }) {
   const [drawing, setDrawing] = useState<DemoDrawing | null | undefined>(
     undefined
   );
@@ -54,7 +48,7 @@ export function DemoColoring({
         content={drawing.content}
         initialFills={drawing.fills}
         initialStrokes={drawing.strokes}
-        ageBand={ageBand}
+        ageBand={drawing.ageBand}
         mode="demo"
         prompt={drawing.prompt}
       />
