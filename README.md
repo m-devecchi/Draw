@@ -99,6 +99,50 @@ npm run build      # build di produzione
 npm run typecheck  # controllo TypeScript
 ```
 
+## ☁️ Deploy su Vercel + Supabase (produzione)
+
+### 1. Supabase (≈5 minuti)
+
+1. Vai su [supabase.com](https://supabase.com) → **New project** (regione:
+   `eu-central-1` Francoforte, la più vicina all'Italia).
+2. Quando il progetto è pronto: **SQL Editor** → incolla tutto il contenuto di
+   [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql) →
+   **Run**.
+3. **Project Settings → API**: copia `Project URL`, `anon public` e
+   `service_role` (serviranno su Vercel).
+
+### 2. Vercel (≈5 minuti)
+
+1. Vai su [vercel.com/new](https://vercel.com/new) → **Import Git
+   Repository** → seleziona `m-devecchi/Draw` (autorizza GitHub se
+   richiesto). Framework: Next.js, rilevato automaticamente — non toccare
+   nulla.
+2. In **Environment Variables** aggiungi:
+
+   | Nome | Valore |
+   | --- | --- |
+   | `ANTHROPIC_API_KEY` | la tua key da [console.anthropic.com](https://console.anthropic.com) |
+   | `NEXT_PUBLIC_SUPABASE_URL` | `Project URL` di Supabase |
+   | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | chiave `anon public` |
+   | `SUPABASE_SERVICE_ROLE_KEY` | chiave `service_role` |
+   | `NEXT_PUBLIC_APP_URL` | l'URL di produzione, es. `https://colora.vercel.app` (puoi aggiungerlo dopo il primo deploy) |
+
+3. **Deploy**. Con le variabili Supabase presenti l'app parte direttamente in
+   modalità completa (login + quota 2/giorno); senza, parte in modalità demo.
+
+### 3. Collega l'auth di Supabase all'URL di produzione
+
+In Supabase → **Authentication → URL Configuration**:
+
+- **Site URL**: `https://<il-tuo-progetto>.vercel.app`
+- **Redirect URLs**: aggiungi `https://<il-tuo-progetto>.vercel.app/auth/callback`
+
+Senza questo passaggio i link di conferma email puntano a `localhost`.
+
+### Aggiornamenti
+
+Ogni `git push` sul branch di default fa partire un nuovo deploy automatico.
+
 ## Stripe (quando vorrai attivare i pagamenti)
 
 1. Crea un prodotto con prezzo ricorrente e copia il `price_...` in
