@@ -52,13 +52,31 @@ export function ColoringWorkspace({
     celebrated.current = false;
   }, []);
 
+  // Un disegno gia' completo riaperto dalla galleria non rifesteggia:
+  // la festa parte solo dopo che il bambino ha colorato qualcosa.
+  const interacted = useRef(false);
+
+  useEffect(() => {
+    const complete =
+      regionCount > 0 && Object.keys(fills).length >= regionCount;
+    if (!complete) {
+      celebrated.current = false; // riarmata: 🧼, Annulla o gomma
+      return;
+    }
+    if (celebrated.current || !interacted.current) {
+      celebrated.current = true;
+      return;
+    }
+    celebrated.current = true;
+    setConfettiTrigger((t) => t + 1);
+    playComplete();
+  }, [fills, regionCount]);
+
   const svgRef = useRef<SvgColoringHandle>(null);
   const rasterRef = useRef<FloodFillHandle>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const colorRef = useRef(color);
   colorRef.current = color;
-  const regionCountRef = useRef(0);
-  regionCountRef.current = regionCount;
   const fillsRef = useRef(fills);
   fillsRef.current = fills;
 
@@ -104,25 +122,15 @@ export function ColoringWorkspace({
       const chosen = colorRef.current;
       const next: Fills = { ...prev };
 
+      interacted.current = true;
       if (chosen === ERASER) {
         if (next[String(region)] === undefined) return; // gia' bianca
         delete next[String(region)];
         playErase();
-        celebrated.current = false;
       } else {
         if (next[String(region)] === chosen) return; // stesso colore
         next[String(region)] = chosen;
         playFill(Object.keys(next).length);
-      }
-
-      // Tutte le aree colorate: coriandoli e arpeggio, una volta sola.
-      const complete =
-        regionCountRef.current > 0 &&
-        Object.keys(next).length >= regionCountRef.current;
-      if (complete && !celebrated.current) {
-        celebrated.current = true;
-        setConfettiTrigger((t) => t + 1);
-        playComplete();
       }
 
       setHistory((h) => [...h.slice(-19), prev]);
