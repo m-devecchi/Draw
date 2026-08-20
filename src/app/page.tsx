@@ -1,5 +1,8 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { AgeChooser } from "@/components/AgeChooser";
+import { AGE_COOKIE, parseAgeBand } from "@/lib/age-bands";
 import { DrawingCard } from "@/components/DrawingCard";
 import { QuotaCrayons } from "@/components/QuotaCrayons";
 import { KidSwitcher } from "@/components/KidSwitcher";
@@ -17,7 +20,16 @@ export default async function HomePage({
 }: {
   searchParams: Promise<{ kid?: string }>;
 }) {
-  if (isDemoMode()) return <DemoHome />;
+  if (isDemoMode()) {
+    const chosen = parseAgeBand((await cookies()).get(AGE_COOKIE)?.value);
+    return (
+      <DemoHome
+        ageChooser={
+          chosen ? null : <AgeChooser current={null} variant="onboarding" />
+        }
+      />
+    );
+  }
 
   const supabase = await createClient();
   const {
@@ -30,9 +42,10 @@ export default async function HomePage({
   // funzionalità resta semplicemente spenta.
   const { data: kids } = await supabase
     .from("kid_profiles")
-    .select("id, name, avatar, age_band")
+    .select("id, name, avatar")
     .order("created_at");
   const kidsEnabled = Array.isArray(kids);
+  const ageBand = parseAgeBand((await cookies()).get(AGE_COOKIE)?.value);
   const requestedKid = (await searchParams).kid ?? null;
   const activeKidId =
     kids?.some((k) => k.id === requestedKid) === true ? requestedKid : null;
@@ -93,6 +106,12 @@ export default async function HomePage({
           </Link>
         </div>
       </header>
+
+      {!ageBand && (
+        <div className="mb-6">
+          <AgeChooser current={null} variant="onboarding" />
+        </div>
+      )}
 
       <section className="rounded-3xl bg-white p-6 shadow-xl">
         <h2 className="mb-4 text-2xl font-extrabold">

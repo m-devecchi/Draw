@@ -6,6 +6,9 @@ import { PALETTE } from "@/components/coloring/palette";
 export const AGE_BANDS = ["small", "medium", "big"] as const;
 export type AgeBand = (typeof AGE_BANDS)[number];
 
+/** Età di chi disegna: scelta del genitore, valida per il dispositivo. */
+export const AGE_COOKIE = "colora_age";
+
 export interface AgeSetup {
   label: string;
   hint: string;
@@ -71,4 +74,9 @@ export const AGE_SETUP: Record<AgeBand, AgeSetup> = {
  */
 export function ageSetup(band: string | null | undefined): AgeSetup {
   return AGE_SETUP[(band as AgeBand) in AGE_SETUP ? (band as AgeBand) : "big"];
+}
+
+/** Legge la fascia scelta dal genitore (cookie), o null se non ha ancora scelto. */
+export function parseAgeBand(value: string | undefined | null): AgeBand | null {
+  return AGE_BANDS.includes(value as AgeBand) ? (value as AgeBand) : null;
 }

@@ -1,4 +1,6 @@
+import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
+import { AGE_COOKIE, parseAgeBand } from "@/lib/age-bands";
 import { ColoringWorkspace } from "@/components/coloring/ColoringWorkspace";
 import { DemoColoring } from "@/components/demo/DemoColoring";
 import { isDemoMode } from "@/lib/config";
@@ -15,8 +17,11 @@ export default async function ColorPage({
   searchParams: Promise<{ kid?: string }>;
 }) {
   const { id } = await params;
+  // Età scelta dal genitore (cookie): decide colori, effetti e strumenti.
+  const ageBand = parseAgeBand((await cookies()).get(AGE_COOKIE)?.value);
+
   if (isDemoMode() || id.startsWith("demo-")) {
-    return <DemoColoring id={id} />;
+    return <DemoColoring id={id} ageBand={ageBand} />;
   }
 
   const supabase = await createClient();
@@ -28,23 +33,10 @@ export default async function ColorPage({
   // La RLS restituisce solo i disegni dell'utente.
   const { data: drawing } = await supabase
     .from("drawings")
-    .select("id, prompt, kind, content, fills, strokes, kid_id")
+    .select("id, prompt, kind, content, fills, strokes")
     .eq("id", id)
     .single();
   if (!drawing) notFound();
-
-  // Fascia d'età del bambino a cui appartiene il disegno: decide colori,
-  // effetti e strumenti. Se la migrazione non è applicata resta il default.
-  let ageBand: string | null = null;
-  const kidId = (drawing as { kid_id?: string | null }).kid_id;
-  if (kidId) {
-    const { data: kid } = await supabase
-      .from("kid_profiles")
-      .select("age_band")
-      .eq("id", kidId)
-      .maybeSingle();
-    ageBand = kid?.age_band ?? null;
-  }
 
   // Torna alla home mantenendo il bambino selezionato (solo un id valido).
   const kid = (await searchParams).kid;

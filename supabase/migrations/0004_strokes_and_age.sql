@@ -5,10 +5,12 @@
 alter table public.drawings
   add column strokes jsonb not null default '[]'::jsonb;
 
--- Fascia d'età del bambino: adatta strumenti, colori ed effetti.
---   small  = 2-3 anni  · pochi colori grandi, nessun effetto, niente zoom
---   medium = 4-6 anni  · palette completa, effetti base
---   big    = 7+ anni   · tutti gli effetti e la mano libera
+-- Fascia d'età (colonna riservata).
+-- L'età di chi disegna è una scelta del genitore valida per il
+-- dispositivo (cookie `colora_age`), non legata al profilo bambino:
+-- la maggior parte delle famiglie non crea profili e l'esperienza
+-- giusta deve arrivare comunque. La colonna resta per un eventuale
+-- affinamento per singolo bambino.
 alter table public.kid_profiles
   add column age_band text not null default 'medium'
     check (age_band in ('small', 'medium', 'big'));

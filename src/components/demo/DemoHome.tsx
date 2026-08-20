@@ -9,7 +9,12 @@ import { demoStore, type DemoDrawing } from "@/lib/demo-store";
 import { SAMPLE_DRAWINGS } from "@/lib/samples";
 
 // Home della modalità PoC: niente login, disegni salvati sul dispositivo.
-export function DemoHome() {
+export function DemoHome({
+  ageChooser,
+}: {
+  /** Domanda sull'età, resa dal server (qui siamo in un componente client). */
+  ageChooser?: React.ReactNode;
+}) {
   const router = useRouter();
   const [drawings, setDrawings] = useState<DemoDrawing[]>([]);
 
@@ -44,6 +49,8 @@ export function DemoHome() {
           PoC · senza account
         </span>
       </header>
+
+      {ageChooser && <div className="mb-6">{ageChooser}</div>}
 
       <section className="rounded-3xl bg-white p-6 shadow-xl">
         <h2 className="mb-4 text-2xl font-extrabold">

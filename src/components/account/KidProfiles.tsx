@@ -2,14 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AGE_BANDS, AGE_SETUP, type AgeBand } from "@/lib/age-bands";
 import { createClient } from "@/lib/supabase/client";
 
 export interface KidProfile {
   id: string;
   name: string;
   avatar: string;
-  age_band?: string | null;
 }
 
 const AVATARS = ["🦁", "🐰", "🦊", "🐼", "🐸", "🦄", "🐙", "🐝"] as const;
@@ -21,7 +19,6 @@ export function KidProfiles({ initialKids }: { initialKids: KidProfile[] }) {
   const [kids, setKids] = useState<KidProfile[]>(initialKids);
   const [name, setName] = useState("");
   const [avatar, setAvatar] = useState<string>(AVATARS[0]);
-  const [ageBand, setAgeBand] = useState<AgeBand>("medium");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,8 +36,8 @@ export function KidProfiles({ initialKids }: { initialKids: KidProfile[] }) {
     if (!user) return setLoading(false);
     const { data, error } = await supabase
       .from("kid_profiles")
-      .insert({ user_id: user.id, name: name.trim(), avatar, age_band: ageBand })
-      .select("id, name, avatar, age_band")
+      .insert({ user_id: user.id, name: name.trim(), avatar })
+      .select("id, name, avatar")
       .single();
     setLoading(false);
     if (error || !data) {
@@ -73,12 +70,7 @@ export function KidProfiles({ initialKids }: { initialKids: KidProfile[] }) {
               className="flex items-center gap-2 rounded-full bg-stone-50 py-1.5 pl-3 pr-1.5 font-bold"
             >
               <span className="text-xl">{kid.avatar}</span>
-              <span>
-                {kid.name}
-                <span className="ml-1 text-xs font-normal text-stone-400">
-                  {AGE_SETUP[(kid.age_band as AgeBand) ?? "medium"]?.label}
-                </span>
-              </span>
+              {kid.name}
               <button
                 type="button"
                 aria-label={`Rimuovi ${kid.name}`}
@@ -111,25 +103,6 @@ export function KidProfiles({ initialKids }: { initialKids: KidProfile[] }) {
             </button>
           ))}
         </div>
-        <div className="flex flex-wrap gap-1.5">
-          {AGE_BANDS.map((band) => (
-            <button
-              key={band}
-              type="button"
-              onClick={() => setAgeBand(band)}
-              aria-pressed={ageBand === band}
-              className={`flex items-center gap-1.5 rounded-2xl px-3 py-2 text-sm font-bold transition active:scale-95 ${
-                ageBand === band
-                  ? "bg-crayon-yellow shadow ring-2 ring-stone-600/40"
-                  : "bg-stone-50 text-stone-500"
-              }`}
-            >
-              <span className="text-lg">{AGE_SETUP[band].icon}</span>
-              {AGE_SETUP[band].label}
-            </button>
-          ))}
-        </div>
-        <p className="text-xs text-stone-400">{AGE_SETUP[ageBand].hint}</p>
         <div className="flex flex-wrap gap-2">
           <input
             type="text"
