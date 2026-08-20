@@ -29,9 +29,18 @@ export function PromptForm({ remaining }: { remaining: number }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt }),
       });
-      const data = await res.json();
+      // La risposta può non essere JSON (es. timeout/crash della funzione
+      // su Vercel): niente .json() cieco, altrimenti Safari mostra il
+      // criptico "The string did not match the expected pattern".
+      const data = await res.json().catch(() => null);
       if (!res.ok) {
-        throw new Error(data.error ?? "Generazione non riuscita, riprova.");
+        throw new Error(
+          data?.error ??
+            `Il server non ha risposto correttamente (errore ${res.status}), riprova.`
+        );
+      }
+      if (!data) {
+        throw new Error("Risposta non valida dal server, riprova.");
       }
       if (data.demo) {
         // Modalità PoC: il disegno viene salvato sul dispositivo.

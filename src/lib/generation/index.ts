@@ -6,11 +6,11 @@ import type { GenerationProvider } from "./types";
 export type { GenerationProvider, GenerationResult } from "./types";
 
 // Selezione del provider via env: nuovi provider si registrano qui.
-// Senza ANTHROPIC_API_KEY si ripiega sul provider mock (disegni
-// preimpostati a caso), così l'app resta provabile end-to-end.
+// Default: "mock" (qualsiasi prompt restituisce un disegno preimpostato a
+// caso) — è la fase attuale del PoC. Per attivare la generazione vera con
+// Claude impostare GENERATION_PROVIDER=claude-svg (serve ANTHROPIC_API_KEY).
 export function getGenerationProvider(): GenerationProvider {
-  const fallback = process.env.ANTHROPIC_API_KEY ? "claude-svg" : "mock";
-  const name = process.env.GENERATION_PROVIDER ?? fallback;
+  const name = process.env.GENERATION_PROVIDER || "mock";
   switch (name) {
     case "claude-svg":
       return process.env.ANTHROPIC_API_KEY
