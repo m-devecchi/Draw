@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Nunito", "Segoe UI", system-ui, sans-serif;
+  --color-crayon-red: #ff5c5c;
+  --color-crayon-yellow: #ffce3e;
+  --color-crayon-blue: #4ea7ff;
+  --color-crayon-green: #58cc6d;
+  --color-crayon-purple: #a06bff;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: #fff8ef;
+  color: #3a2e2a;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Le aree del disegno reagiscono al tocco */
+.coloring-svg svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  touch-action: manipulation;
+}
+
+.coloring-svg [data-colorable="1"] {
+  cursor: pointer;
+}
+
+.coloring-svg [data-colorable="1"]:active {
+  filter: brightness(0.92);
+}
