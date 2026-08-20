@@ -12,7 +12,14 @@ const IDEAS = [
   "Un trattore in fattoria",
 ];
 
-export function PromptForm({ remaining }: { remaining: number }) {
+export function PromptForm({
+  remaining,
+  kidId = null,
+}: {
+  remaining: number;
+  /** Bambino attivo: il disegno creato viene associato a lui. */
+  kidId?: string | null;
+}) {
   const router = useRouter();
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
@@ -27,7 +34,7 @@ export function PromptForm({ remaining }: { remaining: number }) {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ prompt, kidId }),
       });
       // La risposta può non essere JSON (es. timeout/crash della funzione
       // su Vercel): niente .json() cieco, altrimenti Safari mostra il
@@ -52,7 +59,13 @@ export function PromptForm({ remaining }: { remaining: number }) {
         router.push(`/color/${drawing.id}`);
         return;
       }
-      router.push(`/color/${data.id}`);
+      // Il bambino viaggia nell'URL: tornando alla home la sua selezione
+      // è ancora attiva.
+      router.push(
+        kidId
+          ? `/color/${data.id}?kid=${encodeURIComponent(kidId)}`
+          : `/color/${data.id}`
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Errore, riprova.");
       setLoading(false);

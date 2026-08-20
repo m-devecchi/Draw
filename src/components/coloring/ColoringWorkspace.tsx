@@ -17,6 +17,7 @@ export function ColoringWorkspace({
   initialFills,
   mode = "cloud",
   prompt,
+  backHref = "/",
 }: {
   drawingId: string;
   kind: "svg" | "raster";
@@ -26,6 +27,8 @@ export function ColoringWorkspace({
   mode?: "cloud" | "demo";
   /** Titolo del disegno mostrato nella barra in alto. */
   prompt?: string;
+  /** Destinazione del pulsante casetta (mantiene il bambino selezionato). */
+  backHref?: string;
 }) {
   const [color, setColor] = useState<string>(PALETTE[0]);
   const [fills, setFills] = useState<Fills>(initialFills);
@@ -152,7 +155,11 @@ export function ColoringWorkspace({
 
       {/* Barra in alto: indietro, titolo, azioni */}
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center gap-2 p-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
-        <Link href="/" aria-label="Torna ai disegni" className={floatingBtn}>
+        <Link
+          href={backHref}
+          aria-label="Torna ai disegni"
+          className={floatingBtn}
+        >
           🏠
         </Link>
         {prompt && (

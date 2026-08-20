@@ -1,7 +1,5 @@
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { KID_COOKIE } from "@/components/KidSwitcher";
 import { isDemoMode } from "@/lib/config";
 import { getGenerationProvider } from "@/lib/generation";
 import { getQuotaStatus, parseLimit } from "@/lib/quota";
@@ -12,6 +10,9 @@ export const maxDuration = 300; // la generazione può richiedere qualche minuto
 
 const bodySchema = z.object({
   prompt: z.string().trim().min(2).max(300),
+  // Bambino a cui associare il disegno (validato lato server: deve
+  // appartenere all'utente autenticato).
+  kidId: z.string().uuid().nullish(),
 });
 
 // ── Limite giornaliero della modalità PoC ───────────────────────────────
@@ -119,14 +120,14 @@ export async function POST(request: Request) {
   try {
     const result = await provider.generate(prompt);
 
-    // Bambino attivo dal cookie, accettato solo se appartiene all'utente.
-    const cookieKid = (await cookies()).get(KID_COOKIE)?.value;
+    // Bambino richiesto dal client, accettato solo se appartiene all'utente.
+    const requestedKid = demoParsed.data.kidId;
     let kidId: string | null = null;
-    if (cookieKid) {
+    if (requestedKid) {
       const { data: kid } = await admin
         .from("kid_profiles")
         .select("id")
-        .eq("id", cookieKid)
+        .eq("id", requestedKid)
         .eq("user_id", user.id)
         .maybeSingle();
       kidId = kid?.id ?? null;

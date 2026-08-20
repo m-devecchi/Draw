@@ -1,12 +1,13 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useTransition } from "react";
 import type { KidProfile } from "@/components/account/KidProfiles";
 
-export const KID_COOKIE = "colora_kid";
-
-// Selettore "chi sta disegnando?": scrive il bambino attivo in un cookie,
-// letto dal server per filtrare la galleria e associare i nuovi disegni.
+// Selettore "chi sta disegnando?".
+// Il bambino attivo vive nell'URL (?kid=<id>): è la sorgente di verità
+// letta dal server, funziona col tasto Indietro ed è condivisibile —
+// niente cookie da propagare tra middleware, CDN e refresh.
 export function KidSwitcher({
   kids,
   activeKidId,
@@ -15,14 +16,15 @@ export function KidSwitcher({
   activeKidId: string | null;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
+  const [pending, startTransition] = useTransition();
 
   function select(id: string | null) {
-    if (id) {
-      document.cookie = `${KID_COOKIE}=${id}; path=/; max-age=31536000; samesite=lax`;
-    } else {
-      document.cookie = `${KID_COOKIE}=; path=/; max-age=0`;
-    }
-    router.refresh();
+    startTransition(() => {
+      router.push(id ? `${pathname}?kid=${encodeURIComponent(id)}` : pathname, {
+        scroll: false,
+      });
+    });
   }
 
   const chip = (active: boolean) =>
@@ -31,13 +33,14 @@ export function KidSwitcher({
     }`;
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <span className="text-sm font-semibold text-stone-500">
-        Chi disegna?
-      </span>
+    <div
+      className={`flex flex-wrap items-center gap-2 ${pending ? "opacity-60" : ""}`}
+    >
+      <span className="text-sm font-semibold text-stone-500">Chi disegna?</span>
       <button
         type="button"
         onClick={() => select(null)}
+        aria-pressed={activeKidId === null}
         className={chip(activeKidId === null)}
       >
         👨‍👩‍👧 Tutti
@@ -47,6 +50,7 @@ export function KidSwitcher({
           key={kid.id}
           type="button"
           onClick={() => select(kid.id)}
+          aria-pressed={activeKidId === kid.id}
           className={chip(activeKidId === kid.id)}
         >
           <span className="text-lg">{kid.avatar}</span>

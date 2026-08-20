@@ -8,8 +8,10 @@ export const dynamic = "force-dynamic";
 
 export default async function ColorPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ kid?: string }>;
 }) {
   const { id } = await params;
   if (isDemoMode() || id.startsWith("demo-")) {
@@ -30,6 +32,13 @@ export default async function ColorPage({
     .single();
   if (!drawing) notFound();
 
+  // Torna alla home mantenendo il bambino selezionato (solo un id valido).
+  const kid = (await searchParams).kid;
+  const backHref =
+    kid && /^[0-9a-f-]{36}$/i.test(kid)
+      ? `/?kid=${encodeURIComponent(kid)}`
+      : "/";
+
   return (
     <main>
       <ColoringWorkspace
@@ -38,6 +47,7 @@ export default async function ColorPage({
         content={drawing.content}
         initialFills={(drawing.fills ?? {}) as Record<string, string>}
         prompt={drawing.prompt}
+        backHref={backHref}
       />
     </main>
   );

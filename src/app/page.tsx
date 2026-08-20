@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { KidSwitcher, KID_COOKIE } from "@/components/KidSwitcher";
+import { KidSwitcher } from "@/components/KidSwitcher";
 import { PromptForm } from "@/components/PromptForm";
 import { UpgradeButton } from "@/components/UpgradeButton";
 import { DemoHome } from "@/components/demo/DemoHome";
@@ -11,7 +10,11 @@ import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
-export default async function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ kid?: string }>;
+}) {
   if (isDemoMode()) return <DemoHome />;
 
   const supabase = await createClient();
@@ -20,7 +23,7 @@ export default async function HomePage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  // Bambino attivo (cookie): filtra la galleria e tagga i nuovi disegni.
+  // Bambino attivo: arriva da ?kid=<id> nell'URL e filtra la galleria.
   // Se la migrazione 0002 non è ancora applicata, kids è null e la
   // funzionalità resta semplicemente spenta.
   const { data: kids } = await supabase
@@ -28,10 +31,9 @@ export default async function HomePage() {
     .select("id, name, avatar")
     .order("created_at");
   const kidsEnabled = Array.isArray(kids);
-  const cookieStore = await cookies();
-  const cookieKid = cookieStore.get(KID_COOKIE)?.value ?? null;
+  const requestedKid = (await searchParams).kid ?? null;
   const activeKidId =
-    kids?.some((k) => k.id === cookieKid) === true ? cookieKid : null;
+    kids?.some((k) => k.id === requestedKid) === true ? requestedKid : null;
 
   interface DrawingRow {
     id: string;
@@ -89,13 +91,15 @@ export default async function HomePage() {
 
       <section className="rounded-3xl bg-white p-6 shadow-xl">
         <h2 className="mb-1 text-xl font-extrabold">
-          Cosa vuoi colorare oggi?
+          {activeKidId
+            ? `Cosa vuoi colorare, ${kidById.get(activeKidId)?.name}?`
+            : "Cosa vuoi colorare oggi?"}
         </h2>
         <p className="mb-4 text-sm text-stone-500">
           Scrivi un&apos;idea e creiamo il disegno: poi tocca le aree per
           riempirle di colore!
         </p>
-        <PromptForm remaining={quota.remaining} />
+        <PromptForm remaining={quota.remaining} kidId={activeKidId} />
         <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
           <span className="font-semibold text-stone-500">
             Oggi: {quota.usedToday}/{quota.limit} disegni
@@ -117,15 +121,35 @@ export default async function HomePage() {
             : "I tuoi disegni"}
         </h2>
         {!drawings?.length ? (
-          <p className="rounded-3xl bg-white/60 p-8 text-center text-stone-400">
-            Ancora nessun disegno: creane uno qui sopra! 🎨
-          </p>
+          <div className="rounded-3xl bg-white/60 p-8 text-center text-stone-400">
+            {activeKidId ? (
+              <>
+                <p>
+                  {kidById.get(activeKidId)?.name} non ha ancora disegni
+                  suoi. 🎨
+                </p>
+                <p className="mt-1 text-sm">
+                  Creane uno qui sopra, oppure{" "}
+                  <Link href="/" className="font-bold underline">
+                    guarda tutti i disegni
+                  </Link>
+                  .
+                </p>
+              </>
+            ) : (
+              <p>Ancora nessun disegno: creane uno qui sopra! 🎨</p>
+            )}
+          </div>
         ) : (
           <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3">
             {drawings.map((d) => (
               <li key={d.id}>
                 <Link
-                  href={`/color/${d.id}`}
+                  href={
+                    activeKidId
+                      ? `/color/${d.id}?kid=${encodeURIComponent(activeKidId)}`
+                      : `/color/${d.id}`
+                  }
                   className="block rounded-3xl bg-white p-4 shadow transition hover:shadow-lg active:scale-95"
                 >
                   <div className="mb-2 text-4xl">
