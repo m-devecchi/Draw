@@ -30,6 +30,28 @@ aggiungere un provider di immagini raster (Gemini, DALL·E, ...) implementando
 `src/lib/generation/raster.ts` e impostando `GENERATION_PROVIDER=raster`: la
 UI di coloritura ha già il **flood fill su canvas** per le immagini raster.
 
+### Riuso dei disegni (come si tiene basso il costo)
+
+Un disegno da colorare **non è personale**: «un dinosauro felice» chiesto
+da due genitori diversi è lo stesso identico foglio. Prima di chiamare il
+modello si cerca se quel soggetto è già stato disegnato:
+
+- la richiesta viene **normalizzata** (`src/lib/prompt-key.ts`): via
+  maiuscole, accenti, punteggiatura e articoli iniziali, così «Un
+  Dinosauro Felice!» e «il dinosauro felice» sono la stessa cosa;
+- la ricerca tiene conto anche della **fascia d'età**: lo stesso soggetto
+  per un bimbo di 2 anni e per uno di 8 sono due disegni diversi;
+- se l'utente ha **già ricevuto** tutte le varianti esistenti e siamo sotto
+  le 3 per soggetto, se ne genera una nuova: nessuno si ritrova due volte
+  lo stesso foglio;
+- `drawing_templates.uses` misura quanto la cache sta lavorando, e
+  `generations.cached` quante richieste hanno davvero chiamato il modello.
+
+Il costo così **non cresce col numero di utenti** ma col numero di soggetti
+diversi — una curva che si appiattisce. Con `CACHE_HITS_FREE=true` i riusi
+non consumano nemmeno la quota giornaliera: non costando nulla, si può
+essere generosi.
+
 ### Quote e piani
 
 - Ogni generazione registra un evento in `public.generations` (scritto solo

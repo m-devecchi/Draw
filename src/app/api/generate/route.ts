@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { isDemoMode } from "@/lib/config";
 import { getGenerationProvider } from "@/lib/generation";
+import {
+  bumpUses,
+  findReusable,
+  saveTemplate,
+} from "@/lib/drawing-cache";
 import { getQuotaStatus, parseLimit } from "@/lib/quota";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -110,25 +115,45 @@ export async function POST(request: Request) {
 
   const admin = createAdminClient();
   const provider = getGenerationProvider();
+  const ageBand = demoParsed.data.ageBand;
+
+  // Un disegno da colorare non è personale: se questo soggetto è già stato
+  // disegnato lo si riusa, senza chiamare (e pagare) il modello.
+  const { template, key } = await findReusable(admin, user.id, prompt, ageBand);
+
+  // Un riuso non costa nulla: volendo si può non farlo pesare sulla quota
+  // (CACHE_HITS_FREE=true), così gli utenti gratuiti ottengono di più
+  // senza che questo si traduca in spesa.
+  const riusoGratuito = Boolean(template) && process.env.CACHE_HITS_FREE === "true";
 
   // L'evento di generazione viene registrato PRIMA della chiamata al modello:
   // la quota conta i tentativi, così richieste concorrenti non la aggirano.
-  const { data: generation, error: genError } = await admin
-    .from("generations")
-    .insert({ user_id: user.id, provider: provider.name, prompt })
-    .select("id")
-    .single();
-  if (genError) {
-    return NextResponse.json(
-      { error: "Errore interno, riprova" },
-      { status: 500 }
-    );
+  let generationId: string | null = null;
+  if (!riusoGratuito) {
+    const { data: generation, error: genError } = await admin
+      .from("generations")
+      .insert({
+        user_id: user.id,
+        provider: provider.name,
+        prompt,
+        ...(template ? { cached: true } : {}),
+      })
+      .select("id")
+      .single();
+    if (genError) {
+      return NextResponse.json(
+        { error: "Errore interno, riprova" },
+        { status: 500 }
+      );
+    }
+    generationId = generation.id;
   }
 
   try {
-    const result = await provider.generate(prompt, {
-      ageBand: demoParsed.data.ageBand,
-    });
+    // Riuso: nessuna chiamata al modello, risposta immediata.
+    const result = template
+      ? { kind: template.kind, content: template.content }
+      : await provider.generate(prompt, { ageBand });
 
     // Bambino richiesto dal client, accettato solo se appartiene all'utente.
     const requestedKid = demoParsed.data.kidId;
@@ -143,8 +168,20 @@ export async function POST(request: Request) {
       kidId = kid?.id ?? null;
     }
 
-    // kid_id incluso solo se valorizzato: così l'insert funziona anche
-    // prima che la migrazione 0002 (profili bambino) sia applicata.
+    // Disegno appena creato: si registra perché altri possano riusarlo.
+    const templateId = template
+      ? template.id
+      : await saveTemplate(admin, {
+          key,
+          prompt,
+          ageBand,
+          provider: provider.name,
+          kind: result.kind,
+          content: result.content,
+        });
+
+    // kid_id e template_id inclusi solo se valorizzati: così l'insert
+    // funziona anche prima che le migrazioni siano applicate.
     const base = {
       user_id: user.id,
       prompt,
@@ -152,6 +189,7 @@ export async function POST(request: Request) {
       kind: result.kind,
       content: result.content,
       ...(kidId ? { kid_id: kidId } : {}),
+      ...(templateId ? { template_id: templateId } : {}),
     };
 
     // Primo tentativo con l'età; se la migrazione 0005 non è ancora
@@ -159,9 +197,19 @@ export async function POST(request: Request) {
     // fallire la creazione del disegno.
     let { data: drawing, error: drawError } = await admin
       .from("drawings")
-      .insert({ ...base, age_band: demoParsed.data.ageBand })
+      .insert({ ...base, age_band: ageBand })
       .select("id")
       .single();
+    // La colonna manca finché non si applica la migrazione: si riprova
+    // senza i campi nuovi invece di far fallire la creazione.
+    if (drawError?.message?.includes("template_id")) {
+      delete (base as Record<string, unknown>).template_id;
+      ({ data: drawing, error: drawError } = await admin
+        .from("drawings")
+        .insert({ ...base, age_band: ageBand })
+        .select("id")
+        .single());
+    }
     if (drawError?.message?.includes("age_band")) {
       ({ data: drawing, error: drawError } = await admin
         .from("drawings")
@@ -173,10 +221,14 @@ export async function POST(request: Request) {
       throw new Error(drawError?.message ?? "insert fallita");
     }
 
-    return NextResponse.json({ id: drawing.id });
+    if (template) await bumpUses(admin, template.id);
+
+    return NextResponse.json({ id: drawing.id, cached: Boolean(template) });
   } catch (err) {
     // Generazione fallita: l'evento viene rimosso per non consumare quota.
-    await admin.from("generations").delete().eq("id", generation.id);
+    if (generationId) {
+      await admin.from("generations").delete().eq("id", generationId);
+    }
     const message =
       err instanceof Error ? err.message : "Generazione non riuscita";
     return NextResponse.json({ error: message }, { status: 502 });
