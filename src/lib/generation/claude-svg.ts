@@ -1,16 +1,44 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { sanitizeSvg } from "./sanitize-svg";
-import type { GenerationProvider, GenerationResult } from "./types";
+import type {
+  GenerationOptions,
+  GenerationProvider,
+  GenerationResult,
+} from "./types";
 
-const SYSTEM_PROMPT = `Sei un illustratore di album da colorare per bambini dai 3 agli 8 anni.
+// La complessità del disegno è la cosa che conta di più su carta: per un
+// bimbo di 2 anni servono poche aree enormi e linee spesse (colorabili
+// senza uscire dai bordi), per uno di 8 una scena ricca di dettagli.
+const COMPLEXITY: Record<string, string> = {
+  small: `DIFFICOLTÀ: bambino di 2-3 anni.
+- Da 5 a 9 aree colorabili IN TUTTO, ciascuna molto grande (almeno 150x150 unità).
+- stroke-width tra 12 e 16: linee molto spesse, facili da seguire col pastello.
+- Un solo soggetto enorme, che riempie quasi tutta la tavola, in posa frontale e simmetrica.
+- Nessun dettaglio piccolo: niente dita, denti, piume, singoli capelli. Occhi e bocca grandi e semplici.
+- Al massimo UN elemento di contorno (un sole, una nuvola), grande e staccato dal soggetto.`,
+
+  medium: `DIFFICOLTÀ: bambino di 4-6 anni.
+- Da 12 a 20 aree colorabili, di dimensione media, ben separate.
+- stroke-width tra 7 e 10.
+- Soggetto grande al centro, con qualche dettaglio riconoscibile (zampe, ali, ruote, finestre).
+- Due o tre elementi di contorno semplici (sole, nuvole, erba, stelle).`,
+
+  big: `DIFFICOLTÀ: bambino di 7 anni o più.
+- Da 25 a 45 aree colorabili: una scena ricca, con primo piano e sfondo.
+- stroke-width tra 4 e 6.
+- Dettagli veri: motivi sui vestiti, mattoni, squame, foglie, finestre, sassi.
+- Sfondo completo e coerente (paesaggio, cielo, terreno), anch'esso a zone colorabili.`,
+};
+
+const SYSTEM_PROMPT = `Sei un illustratore di album da colorare per bambini dai 2 agli 10 anni.
 
 Dato il soggetto richiesto, produci UN SOLO documento SVG con queste regole:
 
 STILE
-- Solo contorni: tratti neri (stroke="#000000"), spessore generoso (stroke-width 4-8), nessuna sfumatura, nessun colore.
+- Solo contorni: tratti neri (stroke="#000000"), nessuna sfumatura, nessun colore. Lo spessore lo indica la DIFFICOLTÀ.
 - Ogni forma chiusa colorabile deve avere fill="#FFFFFF" (verrà riempita toccandola).
-- Stile semplice, tondeggiante e amichevole, adatto ai bambini piccoli: pochi dettagli, aree ampie e ben separate, soggetto grande al centro.
-- Aggiungi qualche elemento di contorno semplice (sole, nuvole, erba, stelle...) coerente col soggetto, anch'esso colorabile.
+- Stile tondeggiante e amichevole. Il numero di aree, lo spessore delle linee e la quantità di dettagli seguono la DIFFICOLTÀ indicata nel messaggio: rispettala, è la cosa più importante.
+- Gli elementi di contorno (sole, nuvole, erba, stelle...) sono coerenti col soggetto e anch'essi colorabili.
 - Niente testo, niente scritte.
 
 STRUTTURA TECNICA
@@ -36,7 +64,12 @@ export class ClaudeSvgProvider implements GenerationProvider {
     this.model = process.env.GENERATION_MODEL ?? "claude-opus-5";
   }
 
-  async generate(prompt: string): Promise<GenerationResult> {
+  async generate(
+    prompt: string,
+    options?: GenerationOptions
+  ): Promise<GenerationResult> {
+    const complexity = COMPLEXITY[options?.ageBand ?? "medium"] ?? COMPLEXITY.medium;
+
     // Streaming: l'SVG può essere lungo e va oltre i timeout non-streaming.
     const stream = this.client.messages.stream({
       model: this.model,
@@ -46,7 +79,7 @@ export class ClaudeSvgProvider implements GenerationProvider {
       messages: [
         {
           role: "user",
-          content: `Disegno da colorare, soggetto: ${prompt}`,
+          content: `Disegno da colorare, soggetto: ${prompt}\n\n${complexity}`,
         },
       ],
     });

@@ -37,7 +37,11 @@ function demoQuotaExceeded(request: Request): boolean {
   return false;
 }
 
-async function handleDemo(request: Request, prompt: string) {
+async function handleDemo(
+  request: Request,
+  prompt: string,
+  ageBand: "small" | "medium" | "big"
+) {
   if (demoQuotaExceeded(request)) {
     return NextResponse.json(
       {
@@ -48,7 +52,9 @@ async function handleDemo(request: Request, prompt: string) {
     );
   }
   try {
-    const result = await getGenerationProvider().generate(prompt);
+    const result = await getGenerationProvider().generate(prompt, {
+      ageBand,
+    });
     // Nessun database: il client salva il disegno in localStorage.
     return NextResponse.json({
       demo: true,
@@ -73,7 +79,7 @@ export async function POST(request: Request) {
   }
 
   if (isDemoMode()) {
-    return handleDemo(request, demoParsed.data.prompt);
+    return handleDemo(request, demoParsed.data.prompt, demoParsed.data.ageBand);
   }
 
   const supabase = await createClient();
@@ -120,7 +126,9 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await provider.generate(prompt);
+    const result = await provider.generate(prompt, {
+      ageBand: demoParsed.data.ageBand,
+    });
 
     // Bambino richiesto dal client, accettato solo se appartiene all'utente.
     const requestedKid = demoParsed.data.kidId;

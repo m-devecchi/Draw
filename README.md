@@ -162,6 +162,24 @@ Senza questo passaggio i link di conferma email puntano a `localhost`.
 
 Ogni `git push` sul branch di default fa partire un nuovo deploy automatico.
 
+## 🖨️ Stampa su carta (uso principale)
+
+Il valore dell'app non è colorare a schermo: è **generare la pagina**.
+Nessun sito di disegni da stampare produce «un unicorno pompiere che salva
+un gatto dal vulcano» — l'idea che il bambino ha davvero in testa.
+
+Il flusso pensato per le famiglie che non danno il telefono ai bambini:
+il genitore scrive il prompt (20 secondi, telefono in mano all'adulto),
+**stampa**, e il bambino colora coi pastelli veri al tavolo. Zero schermo
+per il bambino.
+
+- Pulsante 🖨️ nella coloritura e su ogni card della galleria → pagina
+  `/print/[id]`, foglio A4 verticale, disegno centrato, margini 12 mm.
+- Di default **solo linee nere** (si risparmia inchiostro e c'è tutto da
+  colorare); un interruttore stampa il disegno già colorato, tratti a
+  mano libera compresi.
+- I comandi non finiscono sulla carta (`@media print`).
+
 ## 🎉 Esperienza di coloritura
 
 - **Nove effetti di riempimento**: tinta piatta 🎨, sfumatura 🌈, pois ✨,
@@ -179,6 +197,10 @@ Ogni `git push` sul branch di default fa partire un nuovo deploy automatico.
   **7+** tutto. L'età viene salvata **col disegno**, così riaprendolo si
   ritrovano gli strumenti giusti anche se sullo stesso telefono disegnano
   più fratelli. L'ultima scelta resta preselezionata per comodità.
+- **L'età guida anche la complessità del disegno generato**, che è ciò che
+  conta di più su carta: 5-9 aree enormi con linee spesse 12-16 per i
+  2-3 anni; 12-20 aree per i 4-6; 25-45 aree con sfondo e dettagli per i
+  più grandi.
 - **Idee illustrate** in home: dodici pulsanti con disegno e parola, per
   chi non sa ancora leggere; la quota del giorno è mostrata a matite.
 

@@ -361,6 +361,13 @@ export function ColoringWorkspace({
         >
           🧼
         </button>
+        <Link
+          href={`/print/${drawingId}`}
+          aria-label="Stampa il disegno"
+          className={floatingBtn}
+        >
+          🖨️
+        </Link>
         <button
           type="button"
           onClick={handleDownload}

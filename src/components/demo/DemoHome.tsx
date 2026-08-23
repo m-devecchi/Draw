@@ -105,6 +105,13 @@ export function DemoHome() {
                     {new Date(d.createdAt).toLocaleDateString("it-IT")}
                   </p>
                 </Link>
+                <Link
+                  href={`/print/${d.id}`}
+                  aria-label={`Stampa il disegno ${d.prompt}`}
+                  className="absolute left-2 top-2 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-sm shadow-md backdrop-blur transition hover:bg-crayon-yellow/40 active:scale-90"
+                >
+                  🖨️
+                </Link>
                 <button
                   type="button"
                   aria-label="Elimina disegno"

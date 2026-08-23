@@ -94,3 +94,50 @@ body {
     transform: translateY(-12px) rotate(6deg);
   }
 }
+
+/* ── Stampa su A4 ────────────────────────────────────────────────────── */
+@media print {
+  /* Fuori dalla carta tutto ciò che è comando o decorazione */
+  .no-print {
+    display: none !important;
+  }
+
+  html,
+  body {
+    background: #fff;
+  }
+
+  .print-page {
+    margin: 0;
+    padding: 0;
+  }
+
+  .print-sheet {
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    max-width: none !important;
+    /* Disegno centrato nel foglio: un quadrato in alto su A4 lascia
+       una fascia bianca sgradevole in fondo alla pagina. */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 265mm;
+  }
+
+  /* Il disegno riempie la pagina mantenendo le proporzioni */
+  .print-sheet .coloring-svg svg {
+    width: 100%;
+    height: auto;
+    max-height: 245mm;
+  }
+
+  .print-title {
+    color: #999 !important;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 12mm;
+  }
+}

@@ -53,7 +53,15 @@ export function DrawingCard({
         </p>
       </Link>
 
-      {/* Cestino: appare sopra la card, non dentro il link */}
+      {/* Stampa e cestino: sopra la card, non dentro il link */}
+      <Link
+        href={`/print/${id}`}
+        aria-label={`Stampa il disegno ${prompt}`}
+        className="absolute left-2 top-2 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-sm shadow-md backdrop-blur transition hover:bg-crayon-yellow/40 active:scale-90"
+      >
+        🖨️
+      </Link>
+
       <button
         type="button"
         aria-label={`Elimina il disegno ${prompt}`}
