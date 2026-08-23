@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { DrawingCard } from "@/components/DrawingCard";
+import { DrawingGallery } from "@/components/DrawingGallery";
 import { QuotaCrayons } from "@/components/QuotaCrayons";
 import { KidSwitcher } from "@/components/KidSwitcher";
 import { PromptForm } from "@/components/PromptForm";
 import { UpgradeButton } from "@/components/UpgradeButton";
 import { DemoHome } from "@/components/demo/DemoHome";
 import { isDemoMode } from "@/lib/config";
+import { parseStrokes } from "@/lib/strokes";
 import { getQuotaStatus } from "@/lib/quota";
 import { createClient } from "@/lib/supabase/server";
 
@@ -45,14 +46,15 @@ export default async function HomePage({
     kid_id?: string | null;
     content: string;
     fills: Record<string, string> | null;
+    strokes?: unknown;
   }
 
   let drawingsQuery = supabase
     .from("drawings")
     .select(
       kidsEnabled
-        ? "id, prompt, kind, created_at, kid_id, content, fills"
-        : ("id, prompt, kind, created_at, content, fills" as string)
+        ? "id, prompt, kind, created_at, kid_id, content, fills, strokes"
+        : ("id, prompt, kind, created_at, content, fills, strokes" as string)
     )
     .order("created_at", { ascending: false })
     .limit(30);
@@ -140,26 +142,23 @@ export default async function HomePage({
             )}
           </div>
         ) : (
-          <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-            {drawings.map((d) => (
-              <DrawingCard
-                key={d.id}
-                id={d.id}
-                prompt={d.prompt}
-                content={d.content}
-                fills={d.fills ?? {}}
-                createdAt={d.created_at}
-                badge={
-                  d.kid_id ? kidById.get(d.kid_id)?.avatar ?? undefined : undefined
-                }
-                href={
-                  activeKidId
-                    ? `/color/${d.id}?kid=${encodeURIComponent(activeKidId)}`
-                    : `/color/${d.id}`
-                }
-              />
-            ))}
-          </ul>
+          <DrawingGallery
+            mode="cloud"
+            hrefSuffix={
+              activeKidId ? `?kid=${encodeURIComponent(activeKidId)}` : ""
+            }
+            drawings={drawings.map((d) => ({
+              id: d.id,
+              prompt: d.prompt,
+              content: d.content,
+              fills: d.fills ?? {},
+              strokes: parseStrokes(d.strokes),
+              createdAt: d.created_at,
+              badge: d.kid_id
+                ? kidById.get(d.kid_id)?.avatar ?? undefined
+                : undefined,
+            }))}
+          />
         )}
       </section>
     </main>

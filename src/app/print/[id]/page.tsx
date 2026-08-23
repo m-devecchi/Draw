@@ -33,10 +33,15 @@ export default async function PrintPage({
 
   return (
     <PrintView
-      content={drawing.content}
-      fills={(drawing.fills ?? {}) as Record<string, string>}
-      strokes={parseStrokes(drawing.strokes)}
-      prompt={drawing.prompt}
+      drawings={[
+        {
+          id: drawing.id,
+          prompt: drawing.prompt,
+          content: drawing.content,
+          fills: (drawing.fills ?? {}) as Record<string, string>,
+          strokes: parseStrokes(drawing.strokes),
+        },
+      ]}
     />
   );
 }

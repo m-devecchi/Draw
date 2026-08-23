@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { DrawingThumb } from "@/components/DrawingThumb";
+import { DrawingGallery } from "@/components/DrawingGallery";
 import { PromptForm } from "@/components/PromptForm";
 import { demoStore, type DemoDrawing } from "@/lib/demo-store";
 import { SAMPLE_DRAWINGS } from "@/lib/samples";
@@ -16,11 +16,6 @@ export function DemoHome() {
   useEffect(() => {
     setDrawings(demoStore.list());
   }, []);
-
-  function handleDelete(id: string) {
-    demoStore.remove(id);
-    setDrawings(demoStore.list());
-  }
 
   // Copia l'esempio nella galleria locale e apre la coloritura:
   // ogni tocco crea una copia nuova, così si può ricolorare da capo.
@@ -92,37 +87,18 @@ export function DemoHome() {
             Ancora nessun disegno: creane uno qui sopra! 🎨
           </p>
         ) : (
-          <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-            {drawings.map((d) => (
-              <li key={d.id} className="relative">
-                <Link
-                  href={`/color/${d.id}`}
-                  className="block rounded-3xl bg-white p-3 shadow transition hover:shadow-lg active:scale-95"
-                >
-                  <DrawingThumb content={d.content} fills={d.fills} />
-                  <p className="mt-2 line-clamp-2 text-sm font-bold">{d.prompt}</p>
-                  <p className="mt-0.5 text-xs text-stone-400">
-                    {new Date(d.createdAt).toLocaleDateString("it-IT")}
-                  </p>
-                </Link>
-                <Link
-                  href={`/print/${d.id}`}
-                  aria-label={`Stampa il disegno ${d.prompt}`}
-                  className="absolute left-2 top-2 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-sm shadow-md backdrop-blur transition hover:bg-crayon-yellow/40 active:scale-90"
-                >
-                  🖨️
-                </Link>
-                <button
-                  type="button"
-                  aria-label="Elimina disegno"
-                  onClick={() => handleDelete(d.id)}
-                  className="absolute right-2 top-2 rounded-full bg-stone-100 px-2 py-1 text-xs text-stone-400 transition hover:bg-red-100 hover:text-red-500"
-                >
-                  ✕
-                </button>
-              </li>
-            ))}
-          </ul>
+          <DrawingGallery
+            mode="demo"
+            onChanged={() => setDrawings(demoStore.list())}
+            drawings={drawings.map((d) => ({
+              id: d.id,
+              prompt: d.prompt,
+              content: d.content,
+              fills: d.fills,
+              strokes: d.strokes,
+              createdAt: d.createdAt,
+            }))}
+          />
         )}
       </section>
     </main>

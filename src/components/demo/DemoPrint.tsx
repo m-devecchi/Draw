@@ -42,10 +42,15 @@ export function DemoPrint({ id }: { id: string }) {
 
   return (
     <PrintView
-      content={drawing.content}
-      fills={drawing.fills}
-      strokes={drawing.strokes}
-      prompt={drawing.prompt}
+      drawings={[
+        {
+          id: drawing.id,
+          prompt: drawing.prompt,
+          content: drawing.content,
+          fills: drawing.fills,
+          strokes: drawing.strokes,
+        },
+      ]}
     />
   );
 }

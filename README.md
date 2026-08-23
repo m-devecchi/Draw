@@ -179,6 +179,10 @@ per il bambino.
   colorare); un interruttore stampa il disegno già colorato, tratti a
   mano libera compresi.
 - I comandi non finiscono sulla carta (`@media print`).
+- **Stampa in blocco**: dalla home «🖨️ Stampa più disegni» attiva la
+  selezione; scelti i disegni si stampano tutti insieme, un disegno per
+  pagina (fino a 20). È il gesto naturale del genitore: si preparano
+  quattro fogli e si porta il pacchetto al tavolo.
 
 ## 🎉 Esperienza di coloritura
 

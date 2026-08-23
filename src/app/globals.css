@@ -112,6 +112,15 @@ body {
     padding: 0;
   }
 
+  /* I margini del contenitore si sommavano all'altezza del foglio e
+     spingevano il disegno su una seconda pagina. */
+  .print-outer {
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: none !important;
+    width: 100% !important;
+  }
+
   .print-sheet {
     box-shadow: none !important;
     border-radius: 0 !important;
@@ -122,14 +131,25 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    min-height: 265mm;
+    /* Area stampabile A4 con margini da 12 mm = 273 mm: si resta sotto,
+       altrimenti si sfora sulla pagina successiva. */
+    min-height: 258mm;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin: 0 !important;
+  }
+
+  /* Un disegno per pagina; l'ultimo non aggiunge una pagina vuota. */
+  .print-sheet + .print-sheet {
+    break-before: page;
+    page-break-before: always;
   }
 
   /* Il disegno riempie la pagina mantenendo le proporzioni */
   .print-sheet .coloring-svg svg {
     width: 100%;
     height: auto;
-    max-height: 245mm;
+    max-height: 235mm;
   }
 
   .print-title {
