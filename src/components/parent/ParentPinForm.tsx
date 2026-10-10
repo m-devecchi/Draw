@@ -70,17 +70,17 @@ export function ParentPinForm({ hasPin }: { hasPin: boolean }) {
         <button
           type="submit"
           disabled={loading || !pin}
-          className="rounded-full bg-crayon-blue px-5 py-2 font-extrabold text-white shadow transition active:scale-95 disabled:opacity-50"
+          className="ink-btn ink-btn-dark px-5 py-2.5"
         >
           {loading ? "..." : hasPin ? "Cambia" : "Imposta"}
         </button>
       </div>
       {done && (
-        <p className="text-sm font-semibold text-crayon-green">
+        <p className="text-sm font-bold text-mint">
           ✓ PIN salvato — da ora serve per entrare qui.
         </p>
       )}
-      {error && <p className="text-sm text-red-500">{error}</p>}
+      {error && <p className="text-sm font-bold text-tomato">{error}</p>}
     </form>
   );
 }

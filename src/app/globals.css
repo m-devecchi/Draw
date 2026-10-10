@@ -1,14 +1,46 @@
 @import "tailwindcss";
 
+/*
+ * Identità "libro da colorare": tutto è disegnato come i fogli che i
+ * bambini riempiono. Contorno d'inchiostro spesso, colori pieni, ombra
+ * netta (niente sfumature né lucidi). Il colore vero lo mette il bambino.
+ */
 @theme {
   --font-sans: var(--font-nunito), "Nunito", "Segoe UI", system-ui, sans-serif;
-  --font-display: var(--font-fredoka), "Fredoka", var(--font-nunito),
-    system-ui, sans-serif;
-  --color-crayon-red: #ff5c5c;
-  --color-crayon-yellow: #ffce3e;
-  --color-crayon-blue: #4ea7ff;
-  --color-crayon-green: #58cc6d;
-  --color-crayon-purple: #a06bff;
+  --font-display: var(--font-baloo), "Baloo 2", var(--font-nunito), system-ui,
+    sans-serif;
+  --font-logo: var(--font-bagel), "Bagel Fat One", var(--font-baloo), system-ui,
+    sans-serif;
+
+  /* Inchiostro e carta */
+  --color-ink: #1d1638;
+  --color-ink-soft: #5d5779;
+  --color-paper: #ffffff;
+  --color-canvas: #f3f1fa;
+  --color-line: #ddd8ee;
+
+  /* Pastelli a cera */
+  --color-sun: #ffd23f;
+  --color-tomato: #ff5e5b;
+  --color-mint: #2ec4a0;
+  --color-sky: #4cc9f0;
+  --color-grape: #8b5cf6;
+  --color-bubble: #ff8fcf;
+
+  /* Tinte chiare per i fondi delle tessere */
+  --color-sun-50: #fff4c7;
+  --color-tomato-50: #ffe1e0;
+  --color-mint-50: #d5f6ec;
+  --color-sky-50: #d9f3fc;
+  --color-grape-50: #ebe3ff;
+  --color-bubble-50: #ffe3f3;
+
+  /* Alias per le pagine non ancora ridisegnate */
+  --color-crayon-red: #ff5e5b;
+  --color-crayon-yellow: #ffd23f;
+  --color-crayon-blue: #4cc9f0;
+  --color-crayon-green: #2ec4a0;
+  --color-crayon-purple: #8b5cf6;
 }
 
 html,
@@ -17,376 +49,252 @@ body {
 }
 
 body {
-  /* Carta da disegno: crema caldo con una trama di puntini leggera */
-  background-color: #fff8ef;
-  background-image: radial-gradient(
-    rgba(160, 107, 255, 0.09) 1.2px,
-    transparent 1.3px
-  );
-  background-size: 22px 22px;
-  color: #3a2e2a;
+  background-color: var(--color-canvas);
+  /* Quadretti leggerissimi, come un album da disegno */
+  background-image:
+    linear-gradient(rgba(29, 22, 56, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(29, 22, 56, 0.035) 1px, transparent 1px);
+  background-size: 28px 28px;
+  color: var(--color-ink);
   -webkit-tap-highlight-color: transparent;
 }
 
-/* ── Sfondo giocoso della home ───────────────────────────────────────── */
-
-/* Macchie di colore sfocate che respirano piano dietro alle schede */
-.blob {
-  position: absolute;
-  border-radius: 9999px;
-  filter: blur(48px);
-  opacity: 0.45;
-  animation: blob-drift 18s ease-in-out infinite alternate;
+::selection {
+  background: var(--color-sun);
+  color: var(--color-ink);
 }
 
-@keyframes blob-drift {
-  0% {
-    transform: translate(0, 0) scale(1);
+:focus-visible {
+  outline: 3px solid var(--color-sky);
+  outline-offset: 3px;
+}
+
+@layer components {
+  /* Scheda disegnata a inchiostro */
+  .ink-card {
+    background: var(--color-paper);
+    border: 2.5px solid var(--color-ink);
+    border-radius: 1.5rem;
+    box-shadow: 5px 5px 0 var(--color-ink);
   }
-  50% {
-    transform: translate(30px, -20px) scale(1.12);
+
+  /* Bottone: si "schiaccia" nell'ombra quando lo premi */
+  .ink-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: 2.5px solid var(--color-ink);
+    border-radius: 1rem;
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-display);
+    font-weight: 700;
+    line-height: 1;
+    box-shadow: 4px 4px 0 var(--color-ink);
+    transition:
+      transform 140ms cubic-bezier(0.34, 1.56, 0.64, 1),
+      box-shadow 140ms ease,
+      background-color 140ms ease;
+    user-select: none;
   }
-  100% {
-    transform: translate(-20px, 25px) scale(0.95);
+  .ink-btn:hover:not(:disabled) {
+    transform: translate(-1px, -1px);
+    box-shadow: 5px 5px 0 var(--color-ink);
+  }
+  .ink-btn:active:not(:disabled) {
+    transform: translate(3px, 3px);
+    box-shadow: 1px 1px 0 var(--color-ink);
+  }
+  .ink-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .ink-btn-primary {
+    background: var(--color-tomato);
+    color: #fff;
+  }
+  .ink-btn-dark {
+    background: var(--color-ink);
+    color: #fff;
+  }
+  .ink-btn-sun {
+    background: var(--color-sun);
+  }
+  .ink-btn-mint {
+    background: var(--color-mint);
+    color: #fff;
+  }
+
+  /* Bottone tondo con sola icona */
+  .ink-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    flex-shrink: 0;
+    border: 2.5px solid var(--color-ink);
+    border-radius: 9999px;
+    background: var(--color-paper);
+    color: var(--color-ink);
+    box-shadow: 3px 3px 0 var(--color-ink);
+    transition:
+      transform 140ms cubic-bezier(0.34, 1.56, 0.64, 1),
+      box-shadow 140ms ease,
+      background-color 140ms ease;
+  }
+  .ink-icon-btn:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0 var(--color-ink);
+  }
+  .ink-icon-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 var(--color-ink);
+  }
+  .ink-icon-btn[aria-pressed="true"] {
+    background: var(--color-sun);
+  }
+
+  /* Campo di testo */
+  .ink-field {
+    width: 100%;
+    border: 2.5px solid var(--color-ink);
+    border-radius: 1rem;
+    background: var(--color-paper);
+    color: var(--color-ink);
+    padding: 0.85rem 1rem;
+    font-weight: 600;
+    outline: none;
+    transition: box-shadow 150ms ease;
+  }
+  .ink-field::placeholder {
+    color: #a39dbd;
+    font-weight: 500;
+  }
+  .ink-field:focus {
+    box-shadow: 0 0 0 4px rgba(76, 201, 240, 0.45);
+  }
+  .ink-field:disabled {
+    background: var(--color-canvas);
+  }
+
+  /* Etichetta / pillola */
+  .ink-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    border: 2px solid var(--color-ink);
+    border-radius: 9999px;
+    background: var(--color-paper);
+    padding: 0.3rem 0.75rem;
+    font-size: 0.8125rem;
+    font-weight: 800;
+    line-height: 1.1;
+  }
+
+  /* Tessera (idee, età, effetti) */
+  .ink-tile {
+    border: 2px solid var(--color-ink);
+    border-radius: 1.1rem;
+    box-shadow: 3px 3px 0 var(--color-ink);
+    transition:
+      transform 160ms cubic-bezier(0.34, 1.56, 0.64, 1),
+      box-shadow 160ms ease,
+      background-color 160ms ease,
+      color 160ms ease;
+  }
+  .ink-tile:hover:not(:disabled) {
+    transform: translate(-1px, -2px) rotate(-1.5deg);
+    box-shadow: 4px 5px 0 var(--color-ink);
+  }
+  .ink-tile:active:not(:disabled) {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 var(--color-ink);
+  }
+  .ink-tile[aria-pressed="true"] {
+    background: var(--color-ink) !important;
+    color: #fff;
+  }
+
+  /* Icone a tratto: maschera colorata con currentColor */
+  .icon {
+    display: inline-block;
+    width: 1.375rem;
+    height: 1.375rem;
+    flex-shrink: 0;
+    background-color: currentColor;
+    -webkit-mask: var(--icon) center / contain no-repeat;
+    mask: var(--icon) center / contain no-repeat;
   }
 }
 
-/* Scarabocchi (stelle, nuvole, spirali) che galleggiano */
-.doodle {
-  position: absolute;
-  animation: doodle-float 7s ease-in-out infinite;
-}
-
-@keyframes doodle-float {
-  0%,
-  100% {
-    transform: translateY(0) rotate(var(--r, 0deg));
-  }
-  50% {
-    transform: translateY(-14px) rotate(calc(var(--r, 0deg) + 8deg));
-  }
-}
-
-/* ── Logo arcobaleno: ogni lettera salta per conto suo ───────────────── */
+/* ── Logo: lettere a contorno che si colorano una alla volta ──────────── */
 .logo-letter {
   display: inline-block;
-  animation: letter-hop 3.2s ease-in-out infinite;
-  text-shadow:
-    0 3px 0 rgba(58, 46, 42, 0.18),
-    0 0 0 transparent;
+  color: #fff;
+  -webkit-text-stroke: 2.5px var(--color-ink);
+  paint-order: stroke fill;
+  text-shadow: 2px 3px 0 var(--color-ink);
+  animation: letter-color 700ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
-@keyframes letter-hop {
-  0%,
-  70%,
-  100% {
+@keyframes letter-color {
+  0% {
+    color: #fff;
     transform: translateY(0) rotate(0);
   }
-  78% {
-    transform: translateY(-7px) rotate(-6deg);
-  }
-  86% {
-    transform: translateY(0) rotate(4deg);
-  }
-}
-
-/* ── Bottoni "caramella": bordo spesso sotto che si schiaccia ────────── */
-.btn-candy {
-  position: relative;
-  box-shadow:
-    0 5px 0 var(--candy-edge, rgba(0, 0, 0, 0.18)),
-    0 10px 18px -6px rgba(58, 46, 42, 0.35);
-  transition:
-    transform 120ms ease,
-    box-shadow 120ms ease,
-    filter 120ms ease;
-}
-
-.btn-candy::after {
-  /* riflesso lucido in alto */
-  content: "";
-  position: absolute;
-  inset: 3px 10% auto;
-  height: 38%;
-  border-radius: 9999px;
-  background: linear-gradient(rgba(255, 255, 255, 0.45), transparent);
-  pointer-events: none;
-}
-
-.btn-candy:hover:not(:disabled) {
-  filter: brightness(1.05) saturate(1.1);
-  transform: translateY(-1px);
-}
-
-.btn-candy:active:not(:disabled) {
-  transform: translateY(4px);
-  box-shadow:
-    0 1px 0 var(--candy-edge, rgba(0, 0, 0, 0.18)),
-    0 3px 6px -3px rgba(58, 46, 42, 0.35);
-}
-
-/* ── Schede "adesivo" ────────────────────────────────────────────────── */
-.card-sticker {
-  border: 3px solid #fff;
-  box-shadow:
-    0 0 0 2px rgba(58, 46, 42, 0.06),
-    0 18px 40px -18px rgba(90, 60, 140, 0.35),
-    0 4px 0 rgba(58, 46, 42, 0.06);
-}
-
-/* Ingresso a "pop" con ritardo scalato (--i = posizione) */
-.pop-in {
-  animation: pop-in 520ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
-  animation-delay: calc(var(--i, 0) * 45ms);
-}
-
-@keyframes pop-in {
-  0% {
-    opacity: 0;
-    transform: translateY(14px) scale(0.85);
+  45% {
+    transform: translateY(-5px) rotate(-6deg);
   }
   100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
+    color: var(--c);
+    transform: translateY(0) rotate(var(--r, 0deg));
   }
 }
 
-/* Polaroid appese: leggermente storte, si raddrizzano al passaggio */
-.polaroid {
-  transform: rotate(var(--tilt, 0deg));
-  transition:
-    transform 260ms cubic-bezier(0.34, 1.56, 0.64, 1),
-    box-shadow 200ms ease;
+/* Scarabocchio a pennarello disegnato sotto una parola */
+.marker-scribble path {
+  stroke-dasharray: 600;
+  stroke-dashoffset: 600;
+  animation: scribble 900ms 350ms cubic-bezier(0.65, 0, 0.35, 1) forwards;
 }
 
-.polaroid:hover {
-  transform: rotate(0deg) translateY(-4px) scale(1.03);
-}
-
-/* Nastro adesivo in cima alla polaroid (solo CSS, niente SVG) */
-.polaroid-tape::before {
-  content: "";
-  position: absolute;
-  top: -10px;
-  left: 50%;
-  width: 64px;
-  height: 20px;
-  transform: translateX(-50%) rotate(-3deg);
-  background: var(--tape, rgba(255, 206, 62, 0.65));
-  border-radius: 3px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
-  z-index: 1;
-  pointer-events: none;
-}
-
-/* Idee: l'emoji dondola quando il dito ci passa sopra */
-.wiggle-on-hover:hover .wiggle-target,
-.wiggle-on-hover[aria-pressed="true"] .wiggle-target {
-  animation: wiggle 600ms ease-in-out;
-}
-
-@keyframes wiggle {
-  0%,
-  100% {
-    transform: rotate(0) scale(1);
-  }
-  25% {
-    transform: rotate(-14deg) scale(1.15);
-  }
-  50% {
-    transform: rotate(10deg) scale(1.15);
-  }
-  75% {
-    transform: rotate(-6deg) scale(1.08);
-  }
-}
-
-/* Testo con sfumatura arcobaleno che scorre */
-.rainbow-text {
-  background: linear-gradient(
-    90deg,
-    #ff5c5c,
-    #ff9f43,
-    #ffce3e,
-    #58cc6d,
-    #4ea7ff,
-    #a06bff,
-    #ff5c5c
-  );
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: rainbow-slide 6s linear infinite;
-}
-
-@keyframes rainbow-slide {
+@keyframes scribble {
   to {
-    background-position: 200% center;
-  }
-}
-
-/* Matitone della palette: lucido, come una caramella */
-.swatch-gloss {
-  background-image:
-    radial-gradient(
-      circle at 32% 28%,
-      rgba(255, 255, 255, 0.75) 0 14%,
-      rgba(255, 255, 255, 0) 32%
-    ),
-    radial-gradient(
-      circle at 70% 80%,
-      rgba(0, 0, 0, 0.18),
-      rgba(0, 0, 0, 0) 55%
-    );
-}
-
-/* ── Schizzo di colore nel punto toccato ─────────────────────────────── */
-.splash-ring {
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  margin: -8px 0 0 -8px;
-  border-radius: 9999px;
-  border: 4px solid currentColor;
-  pointer-events: none;
-  animation: splash-ring 520ms ease-out forwards;
-}
-
-@keyframes splash-ring {
-  0% {
-    transform: scale(0.3);
-    opacity: 0.95;
-  }
-  100% {
-    transform: scale(5.5);
-    opacity: 0;
-    border-width: 1px;
-  }
-}
-
-.splash-dot {
-  position: absolute;
-  width: var(--s, 10px);
-  height: var(--s, 10px);
-  margin: calc(var(--s, 10px) / -2) 0 0 calc(var(--s, 10px) / -2);
-  border-radius: 9999px;
-  background: currentColor;
-  pointer-events: none;
-  animation: splash-dot 620ms cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
-}
-
-@keyframes splash-dot {
-  0% {
-    transform: translate(0, 0) scale(1);
-    opacity: 1;
-  }
-  100% {
-    transform: translate(var(--dx), var(--dy)) scale(0.2);
-    opacity: 0;
-  }
-}
-
-.splash-star {
-  position: absolute;
-  font-size: 18px;
-  line-height: 1;
-  margin: -9px 0 0 -9px;
-  pointer-events: none;
-  animation: splash-star 760ms ease-out forwards;
-}
-
-@keyframes splash-star {
-  0% {
-    transform: translate(0, 0) scale(0.2) rotate(0);
-    opacity: 1;
-  }
-  60% {
-    opacity: 1;
-  }
-  100% {
-    transform: translate(var(--dx), var(--dy)) scale(1.1) rotate(160deg);
-    opacity: 0;
-  }
-}
-
-/* ── Festa a disegno completato ──────────────────────────────────────── */
-.bravo-banner {
-  animation: bravo 2600ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
-@keyframes bravo {
-  0% {
-    transform: translate(-50%, -50%) scale(0) rotate(-20deg);
-    opacity: 0;
-  }
-  18% {
-    transform: translate(-50%, -50%) scale(1.15) rotate(4deg);
-    opacity: 1;
-  }
-  28% {
-    transform: translate(-50%, -50%) scale(1) rotate(-2deg);
-  }
-  80% {
-    transform: translate(-50%, -50%) scale(1) rotate(0);
-    opacity: 1;
-  }
-  100% {
-    transform: translate(-50%, -60%) scale(0.85);
-    opacity: 0;
-  }
-}
-
-/* Matita che disegna una linea ondulata durante l'attesa */
-.draw-squiggle {
-  stroke-dasharray: 420;
-  stroke-dashoffset: 420;
-  animation: draw-squiggle 2.2s ease-in-out infinite;
-}
-
-@keyframes draw-squiggle {
-  0% {
-    stroke-dashoffset: 420;
-  }
-  60%,
-  80% {
-    stroke-dashoffset: 0;
-  }
-  100% {
-    stroke-dashoffset: -420;
-  }
-}
-
-.pencil-ride {
-  offset-path: path("M10 40 C 40 5, 70 75, 100 40 S 160 5, 190 40 S 250 75, 280 40");
-  animation: pencil-ride 2.2s ease-in-out infinite;
-}
-
-@keyframes pencil-ride {
-  0% {
-    offset-distance: 0%;
-  }
-  60%,
-  100% {
-    offset-distance: 100%;
-  }
-}
-
-/* Chi preferisce meno movimento non riceve animazioni continue */
-@media (prefers-reduced-motion: reduce) {
-  .blob,
-  .doodle,
-  .logo-letter,
-  .rainbow-text,
-  .draw-squiggle,
-  .pencil-ride,
-  .crayon-bounce {
-    animation: none !important;
-  }
-  .draw-squiggle {
     stroke-dashoffset: 0;
   }
 }
+
+/* Ingresso morbido degli elementi in lista (--i = posizione) */
+.rise-in {
+  animation: rise-in 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--i, 0) * 40ms);
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+/* Scheda di un disegno (esempi e galleria) */
+.drawing-card {
+  transition:
+    transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 180ms ease;
+}
+.drawing-card:hover {
+  transform: translate(-2px, -3px);
+  box-shadow: 7px 8px 0 var(--color-ink);
+}
+.drawing-card:active {
+  transform: translate(3px, 3px);
+  box-shadow: 2px 2px 0 var(--color-ink);
+}
+
+/* ── Coloritura ──────────────────────────────────────────────────────── */
 
 /* Le aree del disegno reagiscono al tocco */
 .coloring-svg svg {
@@ -404,62 +312,174 @@ body {
 
 .coloring-svg [data-colorable="1"] {
   cursor: pointer;
-  transition: fill 150ms ease;
 }
 
-.coloring-svg [data-colorable="1"]:active {
-  filter: brightness(0.92);
+/* Matitone della palette: il colore scelto si solleva dalla barra */
+.swatch {
+  transition:
+    transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 220ms ease;
+  box-shadow: 0 3px 0 var(--color-ink);
+}
+.swatch:hover {
+  transform: translateY(-3px);
+}
+.swatch[aria-pressed="true"] {
+  transform: translateY(-10px) scale(1.14);
+  box-shadow:
+    0 0 0 3px #fff,
+    0 0 0 5.5px var(--color-ink),
+    0 8px 0 3px var(--color-ink);
 }
 
-/* "Pop" della regione appena colorata */
-.coloring-svg .region-pop {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: region-pop 280ms ease-out;
+/* Gocce di colore che schizzano via dal punto toccato */
+.splash-dot {
+  position: absolute;
+  width: var(--s, 10px);
+  height: var(--s, 10px);
+  margin: calc(var(--s, 10px) / -2) 0 0 calc(var(--s, 10px) / -2);
+  border-radius: 9999px;
+  background: currentColor;
+  border: 2px solid var(--color-ink);
+  pointer-events: none;
+  animation: splash-dot 600ms cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
 }
 
-@keyframes region-pop {
+@keyframes splash-dot {
   0% {
-    transform: scale(1);
-  }
-  40% {
-    transform: scale(1.05);
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
   }
   100% {
-    transform: scale(1);
+    transform: translate(var(--dx), var(--dy)) scale(0.2);
+    opacity: 0;
   }
 }
 
-/* Rimbalzo del colore selezionato nella palette */
-.swatch-picked {
-  animation: swatch-bounce 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+.splash-star {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  background: var(--color-sun);
+  clip-path: polygon(
+    50% 0%,
+    61% 35%,
+    98% 35%,
+    68% 57%,
+    79% 91%,
+    50% 70%,
+    21% 91%,
+    32% 57%,
+    2% 35%,
+    39% 35%
+  );
+  pointer-events: none;
+  animation: splash-star 760ms ease-out forwards;
 }
 
-@keyframes swatch-bounce {
+@keyframes splash-star {
   0% {
-    transform: translateY(0) scale(1);
+    transform: translate(0, 0) scale(0.2) rotate(0);
+    opacity: 1;
   }
   60% {
-    transform: translateY(-12px) scale(1.35);
+    opacity: 1;
   }
   100% {
-    transform: translateY(-8px) scale(1.25);
+    transform: translate(var(--dx), var(--dy)) scale(1.2) rotate(160deg);
+    opacity: 0;
   }
 }
 
-/* Matite che rimbalzano durante l'attesa della generazione */
-.crayon-bounce {
-  display: inline-block;
-  animation: crayon-bounce 900ms ease-in-out infinite;
+/* Festa a disegno completato: non blocca i tocchi e se ne va da sola */
+.celebrate-card {
+  animation: celebrate 2800ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
-@keyframes crayon-bounce {
-  0%,
-  100% {
-    transform: translateY(0) rotate(-6deg);
+@keyframes celebrate {
+  0% {
+    transform: translate(-50%, 30px) scale(0.6) rotate(-6deg);
+    opacity: 0;
   }
-  50% {
-    transform: translateY(-12px) rotate(6deg);
+  14% {
+    transform: translate(-50%, 0) scale(1.06) rotate(2deg);
+    opacity: 1;
+  }
+  24% {
+    transform: translate(-50%, 0) scale(1) rotate(-1deg);
+  }
+  82% {
+    transform: translate(-50%, 0) scale(1) rotate(-1deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -20px) scale(0.9) rotate(-1deg);
+    opacity: 0;
+  }
+}
+
+.celebrate-trophy {
+  animation: trophy 1100ms 200ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes trophy {
+  0% {
+    transform: scale(0) rotate(-30deg);
+  }
+  60% {
+    transform: scale(1.2) rotate(8deg);
+  }
+  100% {
+    transform: scale(1) rotate(0);
+  }
+}
+
+/* ── Attesa della generazione: una stella che si disegna da sola ──────── */
+.draw-path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: draw-path 2.4s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+@keyframes draw-path {
+  0% {
+    stroke-dashoffset: 1;
+  }
+  55%,
+  80% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: -1;
+  }
+}
+
+.progress-stripes {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--color-tomato) 0 12px,
+    #ff8a87 12px 24px
+  );
+  background-size: 34px 34px;
+  animation: stripes 700ms linear infinite;
+  transition: width 900ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes stripes {
+  to {
+    background-position: 34px 0;
+  }
+}
+
+/* Chi preferisce meno movimento non riceve animazioni */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
   }
 }
 

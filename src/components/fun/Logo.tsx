@@ -1,34 +1,42 @@
-// Logo "Colora" con ogni lettera di un colore a matitone diverso:
-// le lettere saltellano a turno, come se qualcuno le stesse colorando.
+// Logo: le lettere di "Colora" nascono a contorno, come su un foglio da
+// colorare, e si riempiono di colore una dopo l'altra.
 const LETTERS = [
-  ["C", "#ff5c5c"],
-  ["o", "#ff9f43"],
-  ["l", "#f5b700"],
-  ["o", "#58cc6d"],
-  ["r", "#4ea7ff"],
-  ["a", "#a06bff"],
+  ["C", "#ff5e5b", "-4deg"],
+  ["o", "#ffd23f", "3deg"],
+  ["l", "#2ec4a0", "-2deg"],
+  ["o", "#4cc9f0", "4deg"],
+  ["r", "#8b5cf6", "-3deg"],
+  ["a", "#ff8fcf", "2deg"],
 ] as const;
 
-export function Logo({ className = "" }: { className?: string }) {
+export function Logo({
+  size = "text-[2.1rem]",
+  as: Tag = "h1",
+}: {
+  size?: string;
+  as?: "h1" | "div";
+}) {
   return (
-    <h1
+    <Tag
       aria-label="Colora"
-      className={`flex items-center gap-1.5 font-display text-4xl font-bold tracking-tight ${className}`}
+      className={`flex select-none font-logo leading-none tracking-wide ${size}`}
     >
-      <span aria-hidden="true" className="logo-letter mr-1 text-3xl" style={{ animationDelay: "-0.4s" }}>
-        🖍️
-      </span>
-      <span aria-hidden="true" className="flex">
-        {LETTERS.map(([ch, color], i) => (
-          <span
-            key={i}
-            className="logo-letter"
-            style={{ color, animationDelay: `${i * 0.12}s` }}
-          >
-            {ch}
-          </span>
-        ))}
-      </span>
-    </h1>
+      {LETTERS.map(([ch, color, rot], i) => (
+        <span
+          key={i}
+          aria-hidden="true"
+          className="logo-letter"
+          style={
+            {
+              "--c": color,
+              "--r": rot,
+              animationDelay: `${150 + i * 110}ms`,
+            } as React.CSSProperties
+          }
+        >
+          {ch}
+        </span>
+      ))}
+    </Tag>
   );
 }

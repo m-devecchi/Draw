@@ -1,6 +1,7 @@
 "use client";
 
 import { AGE_BANDS, AGE_SETUP, type AgeBand } from "@/lib/age-bands";
+import { Emoji } from "@/components/ui/Emoji";
 
 // Scelta dell'età, dentro il modulo di creazione: si indica a ogni
 // disegno, come il prompt. Su un telefono di famiglia il fratello che
@@ -15,11 +16,11 @@ export function AgeSelect({
   disabled?: boolean;
 }) {
   return (
-    <div>
-      <p className="mb-2 text-sm font-bold text-stone-400">
-        Chi colora questo disegno? 👶
-      </p>
-      <div className="grid grid-cols-3 gap-2">
+    <fieldset>
+      <legend className="mb-2 text-sm font-extrabold text-ink">
+        Chi colora questo disegno?
+      </legend>
+      <div className="grid grid-cols-3 gap-2.5">
         {AGE_BANDS.map((band) => {
           const setup = AGE_SETUP[band];
           const active = value === band;
@@ -30,20 +31,16 @@ export function AgeSelect({
               disabled={disabled}
               onClick={() => onChange(band)}
               aria-pressed={active}
-              className={`wiggle-on-hover flex flex-col items-center gap-0.5 rounded-2xl px-2 py-2 transition active:scale-95 disabled:opacity-40 ${
-                active
-                  ? "-translate-y-0.5 bg-crayon-yellow shadow-[0_4px_0_#e0a800] ring-2 ring-white"
-                  : "bg-stone-50 shadow-[0_3px_0_rgba(58,46,42,0.07)] hover:bg-crayon-yellow/30"
-              }`}
+              className="ink-tile flex items-center justify-center gap-2 bg-paper px-2 py-2 disabled:opacity-40 max-sm:flex-col max-sm:gap-0.5"
             >
-              <span className="wiggle-target text-2xl">{setup.icon}</span>
-              <span className="text-xs font-extrabold text-stone-600">
+              <Emoji char={setup.icon} size={34} decorative />
+              <span className="font-display text-[0.95rem] font-bold leading-tight">
                 {setup.label}
               </span>
             </button>
           );
         })}
       </div>
-    </div>
+    </fieldset>
   );
 }

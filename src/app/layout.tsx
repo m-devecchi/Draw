@@ -1,13 +1,20 @@
 import type { Metadata, Viewport } from "next";
-import { Fredoka, Nunito } from "next/font/google";
+import { Bagel_Fat_One, Baloo_2, Nunito } from "next/font/google";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 import "./globals.css";
 
-// Fredoka per titoli e logo (tondo, da cartone), Nunito per il testo.
-const fredoka = Fredoka({
+// Bagel Fat One solo per il logo, Baloo 2 per i titoli (tondo e deciso,
+// leggibile anche da chi impara a leggere), Nunito per il testo.
+const bagel = Bagel_Fat_One({
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
-  variable: "--font-fredoka",
+  weight: "400",
+  variable: "--font-bagel",
+  display: "swap",
+});
+const baloo = Baloo_2({
+  subsets: ["latin"],
+  weight: ["500", "600", "700", "800"],
+  variable: "--font-baloo",
   display: "swap",
 });
 const nunito = Nunito({
@@ -30,7 +37,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#ffce3e",
+  themeColor: "#ffd23f",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -41,7 +48,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="it" className={`${fredoka.variable} ${nunito.variable}`}>
+    <html lang="it" className={`${bagel.variable} ${baloo.variable} ${nunito.variable}`}>
       <body className="min-h-dvh antialiased">
         <ServiceWorkerRegistration />
         {children}

@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/components/ui/Icon";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const MIN_SCALE = 1;
@@ -181,9 +182,9 @@ export function PinchZoom({
           type="button"
           onClick={reset}
           aria-label="Torna alla vista intera"
-          className="absolute bottom-28 right-4 z-20 flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-xl shadow-lg backdrop-blur transition active:scale-90"
+          className="ink-icon-btn absolute bottom-32 right-4 z-20 !h-12 !w-12"
         >
-          🔍
+          <Icon name="reset" />
         </button>
       )}
     </>

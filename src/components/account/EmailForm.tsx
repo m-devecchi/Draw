@@ -41,23 +41,23 @@ export function EmailForm({ currentEmail }: { currentEmail: string }) {
           }}
           placeholder={`Nuova email (attuale: ${currentEmail})`}
           autoComplete="email"
-          className="flex-1 rounded-2xl border-2 border-stone-200 px-4 py-2 outline-none focus:border-crayon-blue"
+          className="ink-field flex-1 !py-2.5"
         />
         <button
           type="submit"
           disabled={state === "saving" || !email.trim()}
-          className="rounded-full bg-crayon-blue px-5 py-2 font-extrabold text-white shadow transition active:scale-95 disabled:opacity-50"
+          className="ink-btn ink-btn-dark px-5 py-2.5"
         >
           {state === "saving" ? "..." : "Cambia"}
         </button>
       </div>
       {state === "sent" && (
-        <p className="text-sm font-semibold text-crayon-green">
+        <p className="text-sm font-bold text-mint">
           ✓ Ti abbiamo mandato un link di conferma su entrambe le caselle (la
           vecchia e la nuova): il cambio si completa dopo la conferma.
         </p>
       )}
-      {error && <p className="text-sm text-red-500">{error}</p>}
+      {error && <p className="text-sm font-bold text-tomato">{error}</p>}
     </form>
   );
 }

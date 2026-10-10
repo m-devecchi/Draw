@@ -7,8 +7,11 @@ import { PromptForm } from "@/components/PromptForm";
 import { UpgradeButton } from "@/components/UpgradeButton";
 import { DemoHome } from "@/components/demo/DemoHome";
 import { EmptyGallery } from "@/components/fun/EmptyGallery";
+import { Footer } from "@/components/fun/Footer";
+import { HomeHero, Scribble, SectionTitle } from "@/components/fun/HomeHero";
 import { Logo } from "@/components/fun/Logo";
-import { PlayfulBackdrop } from "@/components/fun/PlayfulBackdrop";
+import { Emoji } from "@/components/ui/Emoji";
+import { Icon } from "@/components/ui/Icon";
 import { isDemoMode } from "@/lib/config";
 import { parseStrokes } from "@/lib/strokes";
 import { getQuotaStatus } from "@/lib/quota";
@@ -72,68 +75,74 @@ export default async function HomePage({
   const drawings = (drawingsRes.data ?? []) as unknown as DrawingRow[];
   const kidById = new Map((kids ?? []).map((k) => [k.id, k]));
 
+  const activeKid = activeKidId ? kidById.get(activeKidId) : undefined;
+
   return (
-    <main className="relative mx-auto max-w-3xl p-4 pb-16 sm:p-6">
-      <PlayfulBackdrop />
-      <header className="mb-6 flex items-center justify-between">
+    <main className="mx-auto max-w-5xl px-4 pb-10 pt-5 sm:px-6 sm:pt-8">
+      <header className="mb-6 flex items-center justify-between gap-3">
         <Logo />
-        <div className="flex items-center gap-3">
-          <span
-            className={`rounded-full px-3 py-1 text-xs font-bold ${
-              quota.plan === "premium"
-                ? "bg-crayon-yellow shadow-[0_3px_0_#e0a800]"
-                : "bg-white text-stone-600 shadow-[0_3px_0_#e7e5e4]"
-            }`}
-          >
-            {quota.plan === "premium" ? "⭐ Premium" : "Free"}
-          </span>
+        <div className="flex items-center gap-2.5">
+          {quota.plan === "premium" && (
+            <span className="ink-chip bg-sun">
+              <Icon name="star" className="!h-4 !w-4" />
+              Premium
+            </span>
+          )}
           {/* Area genitori: protetta dal cancello parentale */}
           <Link
             href="/parent-gate?next=/account"
             aria-label="Area genitori"
-            className="btn-candy flex h-11 w-11 items-center justify-center rounded-full bg-white text-lg"
+            className="ink-icon-btn"
           >
-            🔒
+            <Icon name="lock" />
           </Link>
         </div>
       </header>
 
-      <section className="card-sticker pop-in rounded-[2rem] bg-white/95 p-6 backdrop-blur">
-        <h2 className="mb-4 font-display text-3xl font-semibold leading-tight">
-          {activeKidId ? (
-            `${kidById.get(activeKidId)?.avatar} Cosa vuoi colorare, ${kidById.get(activeKidId)?.name}?`
+      <HomeHero
+        title={
+          activeKid ? (
+            <>
+              <Emoji
+                char={activeKid.avatar}
+                size={44}
+                decorative
+                className="-mt-2 mr-1 align-middle"
+              />
+              Cosa <Scribble>coloriamo</Scribble>, {activeKid.name}?
+            </>
           ) : (
             <>
-              Cosa vuoi <span className="rainbow-text">colorare</span> oggi?
+              Cosa <Scribble>coloriamo</Scribble> oggi?
             </>
-          )}
-        </h2>
+          )
+        }
+      >
         <PromptForm remaining={quota.remaining} kidId={activeKidId} />
-        <div className="mt-4 flex flex-wrap items-center gap-3">
+        <div className="mt-5 flex flex-wrap items-center gap-3">
           <QuotaCrayons used={quota.usedToday} limit={quota.limit} />
           {quota.plan === "free" && quota.remaining === 0 && <UpgradeButton />}
         </div>
-      </section>
+      </HomeHero>
 
       {(kids?.length ?? 0) > 0 && (
-        <div className="mt-6">
+        <div className="mt-8">
           <KidSwitcher kids={kids ?? []} activeKidId={activeKidId} />
         </div>
       )}
 
-      <section className="mt-8">
-        <h2 className="mb-3 font-display text-2xl font-semibold">
-          {activeKidId
-            ? `I disegni di ${kidById.get(activeKidId)?.name ?? ""}`
-            : "I tuoi disegni"}
-        </h2>
+      <section className="mt-10">
+        <SectionTitle
+          title={
+            activeKid ? `I disegni di ${activeKid.name}` : "I tuoi disegni"
+          }
+        />
         {!drawings?.length ? (
           <EmptyGallery>
-            {activeKidId ? (
+            {activeKid ? (
               <>
-                <p>
-                  {kidById.get(activeKidId)?.name} non ha ancora disegni
-                  suoi.
+                <p className="font-bold">
+                  {activeKid.name} non ha ancora disegni suoi.
                 </p>
                 <p className="mt-1 text-sm">
                   Creane uno qui sopra, oppure{" "}
@@ -143,11 +152,7 @@ export default async function HomePage({
                   .
                 </p>
               </>
-            ) : (
-              <p className="font-bold">
-                Ancora nessun disegno: creane uno qui sopra!
-              </p>
-            )}
+            ) : undefined}
           </EmptyGallery>
         ) : (
           <DrawingGallery
@@ -169,6 +174,7 @@ export default async function HomePage({
           />
         )}
       </section>
+      <Footer />
     </main>
   );
 }

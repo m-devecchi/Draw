@@ -1,5 +1,6 @@
 "use client";
 
+import { Emoji } from "@/components/ui/Emoji";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -67,15 +68,15 @@ export function KidProfiles({ initialKids }: { initialKids: KidProfile[] }) {
           {kids.map((kid) => (
             <li
               key={kid.id}
-              className="flex items-center gap-2 rounded-full bg-stone-50 py-1.5 pl-3 pr-1.5 font-bold"
+              className="ink-chip gap-2 py-1 pl-2 pr-1 text-sm"
             >
-              <span className="text-xl">{kid.avatar}</span>
+              <Emoji char={kid.avatar} size={26} decorative />
               {kid.name}
               <button
                 type="button"
                 aria-label={`Rimuovi ${kid.name}`}
                 onClick={() => handleRemove(kid.id)}
-                className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-xs text-stone-400 shadow-sm transition hover:text-red-500 active:scale-90"
+                className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-ink bg-paper text-xs transition hover:bg-tomato-50 active:scale-90"
               >
                 ✕
               </button>
@@ -93,13 +94,11 @@ export function KidProfiles({ initialKids }: { initialKids: KidProfile[] }) {
               aria-label={`Avatar ${a}`}
               aria-pressed={avatar === a}
               onClick={() => setAvatar(a)}
-              className={`flex h-11 w-11 items-center justify-center rounded-full text-2xl transition active:scale-90 ${
-                avatar === a
-                  ? "bg-crayon-yellow shadow ring-2 ring-stone-600/50"
-                  : "bg-stone-50"
+              className={`flex h-12 w-12 items-center justify-center rounded-full border-2 border-ink transition active:scale-90 ${
+                avatar === a ? "bg-sun shadow-[2px_2px_0_#1d1638]" : "bg-paper"
               }`}
             >
-              {a}
+              <Emoji char={a} size={34} decorative />
             </button>
           ))}
         </div>
@@ -110,18 +109,18 @@ export function KidProfiles({ initialKids }: { initialKids: KidProfile[] }) {
             maxLength={30}
             onChange={(e) => setName(e.target.value)}
             placeholder="Nome del bambino"
-            className="flex-1 rounded-2xl border-2 border-stone-200 px-4 py-2 outline-none focus:border-crayon-blue"
+            className="ink-field flex-1 !py-2.5"
           />
           <button
             type="submit"
             disabled={loading || !name.trim()}
-            className="rounded-full bg-crayon-green px-5 py-2 font-extrabold text-white shadow transition active:scale-95 disabled:opacity-50"
+            className="ink-btn ink-btn-mint px-5 py-2.5"
           >
             {loading ? "..." : "＋ Aggiungi"}
           </button>
         </div>
       </form>
-      {error && <p className="text-sm text-red-500">{error}</p>}
+      {error && <p className="text-sm font-bold text-tomato">{error}</p>}
     </div>
   );
 }

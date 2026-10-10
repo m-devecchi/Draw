@@ -34,21 +34,21 @@ export function ProfileNameForm({ initialName }: { initialName: string }) {
           setName(e.target.value);
           setState("idle");
         }}
-        className="flex-1 rounded-2xl border-2 border-stone-200 px-4 py-2 outline-none focus:border-crayon-blue"
+        className="ink-field flex-1 !py-2.5"
         placeholder="Come ti chiami?"
       />
       <button
         type="submit"
         disabled={state === "saving" || !name.trim()}
-        className="rounded-full bg-crayon-blue px-5 py-2 font-extrabold text-white shadow transition active:scale-95 disabled:opacity-50"
+        className="ink-btn ink-btn-dark px-5 py-2.5"
       >
         {state === "saving" ? "..." : "Salva"}
       </button>
       {state === "saved" && (
-        <span className="text-sm font-semibold text-crayon-green">✓ Salvato</span>
+        <span className="text-sm font-bold text-mint">✓ Salvato</span>
       )}
       {state === "error" && (
-        <span className="text-sm text-red-500">Errore, riprova</span>
+        <span className="text-sm font-bold text-tomato">Errore, riprova</span>
       )}
     </form>
   );

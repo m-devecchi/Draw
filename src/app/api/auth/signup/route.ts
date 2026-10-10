@@ -7,7 +7,7 @@ const bodySchema = z.object({
   email: z.string().trim().toLowerCase().email("Email non valida"),
   password: z
     .string()
-    .min(6, "La password deve avere almeno 6 caratteri")
+    .min(8, "La password deve avere almeno 8 caratteri")
     .max(72, "Password troppo lunga"),
 });
 

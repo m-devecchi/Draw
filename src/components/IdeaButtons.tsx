@@ -1,8 +1,9 @@
 "use client";
 
+import { Emoji } from "@/components/ui/Emoji";
+
 // Idee pronte come grandi pulsanti illustrati: un bambino che non sa
 // ancora leggere riconosce il disegno dall'immagine e tocca quello.
-// Sostituiscono le vecchie "pilloline" grigie di testo.
 export const IDEAS = [
   { emoji: "🦕", label: "dinosauro", prompt: "Un dinosauro felice" },
   { emoji: "🐱", label: "gattino", prompt: "Un gattino con un palloncino" },
@@ -18,8 +19,15 @@ export const IDEAS = [
   { emoji: "🐻", label: "orsetto", prompt: "Un orsetto con il miele" },
 ] as const;
 
-// Un pastello di sfondo per ogni idea, a rotazione.
-const TINTS = ["#fff1c2", "#ffe0e0", "#dcefff", "#dcf6e1", "#efe4ff", "#ffe6f5"];
+// Un fondo pastello per ogni tessera, a rotazione.
+const TINTS = [
+  "bg-sky-50",
+  "bg-sun-50",
+  "bg-mint-50",
+  "bg-bubble-50",
+  "bg-grape-50",
+  "bg-tomato-50",
+];
 
 export function IdeaButtons({
   selected,
@@ -31,13 +39,13 @@ export function IdeaButtons({
   disabled?: boolean;
 }) {
   return (
-    <ul className="grid grid-cols-4 gap-2 sm:grid-cols-6">
+    <ul className="grid grid-cols-4 gap-2.5 sm:grid-cols-6">
       {IDEAS.map((idea, i) => {
         const active = selected === idea.prompt;
         return (
           <li
             key={idea.label}
-            className="pop-in"
+            className="rise-in"
             style={{ "--i": i } as React.CSSProperties}
           >
             <button
@@ -45,17 +53,10 @@ export function IdeaButtons({
               disabled={disabled}
               onClick={() => onPick(idea.prompt)}
               aria-pressed={active}
-              style={active ? undefined : { backgroundColor: TINTS[i % TINTS.length] }}
-              className={`wiggle-on-hover flex w-full flex-col items-center gap-0.5 rounded-2xl px-1 py-2 transition hover:-translate-y-0.5 active:scale-90 disabled:opacity-40 ${
-                active
-                  ? "bg-crayon-yellow shadow-[0_4px_0_#e0a800] ring-2 ring-white"
-                  : "shadow-[0_3px_0_rgba(58,46,42,0.08)]"
-              }`}
+              className={`ink-tile flex w-full flex-col items-center gap-0.5 px-1 pb-1.5 pt-2 disabled:opacity-40 ${TINTS[i % TINTS.length]}`}
             >
-              <span className="wiggle-target text-3xl drop-shadow-sm">
-                {idea.emoji}
-              </span>
-              <span className="text-[11px] font-bold text-stone-500">
+              <Emoji char={idea.emoji} size={46} />
+              <span className="text-[0.72rem] font-extrabold leading-tight">
                 {idea.label}
               </span>
             </button>

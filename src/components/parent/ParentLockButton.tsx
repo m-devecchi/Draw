@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/components/ui/Icon";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -20,9 +21,10 @@ export function ParentLockButton() {
       type="button"
       onClick={handleClick}
       disabled={loading}
-      className="rounded-full bg-crayon-purple px-5 py-2 font-bold text-white shadow transition active:scale-95 disabled:opacity-50"
+      className="ink-btn ink-btn-dark px-5 py-2.5"
     >
-      🔒 Chiudi area genitori
+      <Icon name="lock" className="!h-5 !w-5" />
+      Chiudi area genitori
     </button>
   );
 }

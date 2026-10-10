@@ -48,7 +48,7 @@ export function DrawingThumb({
     <div
       ref={ref}
       aria-hidden="true"
-      className="coloring-svg pointer-events-none aspect-square overflow-hidden rounded-2xl bg-white"
+      className="coloring-svg pointer-events-none aspect-square overflow-hidden bg-white"
     />
   );
 }

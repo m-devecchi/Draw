@@ -5,12 +5,11 @@ import { useRouter } from "next/navigation";
 import { DrawingGallery } from "@/components/DrawingGallery";
 import { PromptForm } from "@/components/PromptForm";
 import { EmptyGallery } from "@/components/fun/EmptyGallery";
+import { Footer } from "@/components/fun/Footer";
+import { HomeHero, Scribble, SectionTitle } from "@/components/fun/HomeHero";
 import { Logo } from "@/components/fun/Logo";
-import { PlayfulBackdrop } from "@/components/fun/PlayfulBackdrop";
 import { demoStore, type DemoDrawing } from "@/lib/demo-store";
 import { SAMPLE_DRAWINGS } from "@/lib/samples";
-
-const TILTS = [-2.5, 1.8, -1.2, 2.4];
 
 // Home della modalità PoC: niente login, disegni salvati sul dispositivo.
 export function DemoHome() {
@@ -36,62 +35,57 @@ export function DemoHome() {
   }
 
   return (
-    <main className="relative mx-auto max-w-3xl p-4 pb-16 sm:p-6">
-      <PlayfulBackdrop />
-      <header className="mb-6 flex items-center justify-between">
+    <main className="mx-auto max-w-5xl px-4 pb-10 pt-5 sm:px-6 sm:pt-8">
+      <header className="mb-6 flex items-center justify-between gap-3">
         <Logo />
-        <span className="rotate-2 rounded-full bg-crayon-yellow px-3 py-1 text-xs font-extrabold shadow-[0_3px_0_#e0a800]">
-          PoC · senza account
-        </span>
+        <span className="ink-chip -rotate-2 bg-mint-50">Prova senza account</span>
       </header>
 
-      <section className="card-sticker pop-in rounded-[2rem] bg-white/95 p-6 backdrop-blur">
-        <h2 className="mb-4 font-display text-3xl font-semibold leading-tight">
-          Cosa vuoi <span className="rainbow-text">colorare</span> oggi?
-        </h2>
+      <HomeHero
+        title={
+          <>
+            Cosa <Scribble>coloriamo</Scribble> oggi?
+          </>
+        }
+      >
         <PromptForm remaining={999} />
-        <p className="mt-4 text-xs text-stone-400">
+        <p className="mt-4 text-xs font-semibold text-ink/60">
           Versione dimostrativa: i disegni restano su questo dispositivo.
-          Login, quota giornaliera e Premium si attivano configurando Supabase
-          (vedi README).
         </p>
-      </section>
+      </HomeHero>
 
-      <section className="mt-8">
-        <h2 className="mb-1 font-display text-2xl font-semibold">
-          Disegni di esempio — senza API key
-        </h2>
-        <p className="mb-3 text-sm text-stone-500">
-          Prova subito la coloritura: tocca un esempio e via!
-        </p>
-        <ul className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <section className="mt-12">
+        <SectionTitle
+          title="Disegni di esempio"
+          hint="Pronti da colorare subito: tocca e via."
+        />
+        <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 lg:grid-cols-5">
           {SAMPLE_DRAWINGS.map((s, i) => (
             <li
               key={s.slug}
-              className="pop-in"
+              className="rise-in"
               style={{ "--i": i } as React.CSSProperties}
             >
               <button
                 type="button"
                 onClick={() => handleSample(s.slug)}
-                className="polaroid card-sticker block w-full rounded-3xl bg-white p-3 text-left hover:shadow-2xl active:scale-95"
-                style={{ "--tilt": `${TILTS[i % TILTS.length]}deg` } as React.CSSProperties}
+                className="ink-card drawing-card block w-full p-2.5 text-left"
               >
                 <div
-                  className="coloring-svg pointer-events-none mb-2 overflow-hidden rounded-2xl border border-stone-100"
+                  className="coloring-svg pointer-events-none overflow-hidden rounded-2xl border-2 border-ink/15"
                   dangerouslySetInnerHTML={{ __html: s.content }}
                 />
-                <p className="line-clamp-2 text-sm font-bold">{s.prompt}</p>
+                <p className="mt-2 line-clamp-2 px-1 font-display text-[1.02rem] font-bold leading-tight">
+                  {s.prompt}
+                </p>
               </button>
             </li>
           ))}
         </ul>
       </section>
 
-      <section className="mt-8">
-        <h2 className="mb-3 font-display text-2xl font-semibold">
-          I tuoi disegni
-        </h2>
+      <section className="mt-12">
+        <SectionTitle title="I tuoi disegni" />
         {!drawings.length ? (
           <EmptyGallery />
         ) : (
@@ -109,7 +103,7 @@ export function DemoHome() {
           />
         )}
       </section>
+      <Footer />
     </main>
   );
 }
-

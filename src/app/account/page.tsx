@@ -1,3 +1,5 @@
+import { Emoji } from "@/components/ui/Emoji";
+import { Icon } from "@/components/ui/Icon";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { DeleteAccountButton } from "@/components/account/DeleteAccountButton";
@@ -67,19 +69,19 @@ export default async function AccountPage() {
         <Link
           href="/"
           aria-label="Torna ai disegni"
-          className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-xl shadow transition active:scale-90"
+          className="ink-icon-btn"
         >
-          🏠
+          <Icon name="home" />
         </Link>
-        <h1 className="text-3xl font-extrabold text-crayon-purple">
+        <h1 className="font-display text-3xl font-extrabold">
           Il tuo account
         </h1>
       </header>
 
       {/* Profilo */}
-      <section className="rounded-3xl bg-white p-6 shadow-xl">
-        <h2 className="mb-1 text-xl font-extrabold">Profilo</h2>
-        <p className="mb-4 text-sm text-stone-500">
+      <section className="ink-card p-6">
+        <h2 className="mb-1 font-display text-2xl font-extrabold">Profilo</h2>
+        <p className="mb-4 text-sm font-semibold text-ink-soft">
           {user.email}
           {memberSince && ` · con noi dal ${memberSince}`}
         </p>
@@ -87,49 +89,49 @@ export default async function AccountPage() {
       </section>
 
       {/* Piano e utilizzo */}
-      <section className="mt-6 rounded-3xl bg-white p-6 shadow-xl">
-        <h2 className="mb-4 text-xl font-extrabold">Piano e utilizzo</h2>
+      <section className="ink-card mt-6 p-6">
+        <h2 className="mb-4 font-display text-2xl font-extrabold">Piano e utilizzo</h2>
         <div className="mb-4 grid grid-cols-3 gap-3 text-center">
-          <div className="rounded-2xl bg-stone-50 p-3">
-            <p className="text-2xl font-extrabold text-crayon-purple">
-              {quota.plan === "premium" ? "⭐" : "🖍️"}
+          <div className="rounded-2xl border-2 border-ink bg-canvas p-3">
+            <p className="font-display text-3xl font-extrabold">
+              <Emoji char={quota.plan === "premium" ? "⭐" : "🖍️"} size={36} decorative />
             </p>
-            <p className="text-xs font-bold text-stone-500">
+            <p className="text-xs font-extrabold text-ink-soft">
               {quota.plan === "premium" ? "Premium" : "Free"}
             </p>
           </div>
-          <div className="rounded-2xl bg-stone-50 p-3">
-            <p className="text-2xl font-extrabold text-crayon-blue">
+          <div className="rounded-2xl border-2 border-ink bg-canvas p-3">
+            <p className="font-display text-3xl font-extrabold">
               {quota.usedToday}/{quota.limit}
             </p>
-            <p className="text-xs font-bold text-stone-500">oggi</p>
+            <p className="text-xs font-extrabold text-ink-soft">oggi</p>
           </div>
-          <div className="rounded-2xl bg-stone-50 p-3">
-            <p className="text-2xl font-extrabold text-crayon-green">
+          <div className="rounded-2xl border-2 border-ink bg-canvas p-3">
+            <p className="font-display text-3xl font-extrabold">
               {drawingsCount ?? 0}
             </p>
-            <p className="text-xs font-bold text-stone-500">disegni totali</p>
+            <p className="text-xs font-extrabold text-ink-soft">disegni totali</p>
           </div>
         </div>
         {quota.plan === "free" ? (
           <div className="flex flex-wrap items-center gap-3">
-            <p className="text-sm text-stone-500">
+            <p className="text-sm font-semibold text-ink-soft">
               Col piano Premium crei fino a {`50`} disegni al giorno.
             </p>
             <UpgradeButton />
           </div>
         ) : (
-          <p className="text-sm text-stone-500">
-            Sei Premium ⭐ — grazie! La gestione dell&apos;abbonamento arriverà
+          <p className="text-sm font-semibold text-ink-soft">
+            Sei Premium, grazie! La gestione dell&apos;abbonamento arriverà
             qui.
           </p>
         )}
       </section>
 
       {/* Bambini */}
-      <section className="mt-6 rounded-3xl bg-white p-6 shadow-xl">
-        <h2 className="mb-1 text-xl font-extrabold">I tuoi bambini</h2>
-        <p className="mb-4 text-sm text-stone-500">
+      <section className="ink-card mt-6 p-6">
+        <h2 className="mb-1 font-display text-2xl font-extrabold">I tuoi bambini</h2>
+        <p className="mb-4 text-sm font-semibold text-ink-soft">
           Crea un profilo per ogni bimbo: nella home scegli chi sta disegnando
           e ognuno ritrova i propri disegni.
         </p>
@@ -137,9 +139,9 @@ export default async function AccountPage() {
       </section>
 
       {/* Cancello parentale */}
-      <section className="mt-6 rounded-3xl bg-white p-6 shadow-xl">
-        <h2 className="mb-1 text-xl font-extrabold">🔒 PIN genitore</h2>
-        <p className="mb-4 text-sm text-stone-500">
+      <section className="ink-card mt-6 p-6">
+        <h2 className="mb-1 font-display text-2xl font-extrabold">PIN genitore</h2>
+        <p className="mb-4 text-sm font-semibold text-ink-soft">
           {parentProfile?.parent_pin_hash
             ? "Questa area è protetta dal tuo PIN. Puoi cambiarlo qui."
             : "Senza PIN l'area genitori è protetta solo da una domanda di matematica. Imposta un PIN: è più sicuro."}
@@ -148,25 +150,26 @@ export default async function AccountPage() {
       </section>
 
       {/* Sicurezza */}
-      <section className="mt-6 rounded-3xl bg-white p-6 shadow-xl">
-        <h2 className="mb-4 text-xl font-extrabold">Cambia email</h2>
+      <section className="ink-card mt-6 p-6">
+        <h2 className="mb-4 font-display text-2xl font-extrabold">Cambia email</h2>
         <EmailForm currentEmail={user.email ?? ""} />
       </section>
 
-      <section className="mt-6 rounded-3xl bg-white p-6 shadow-xl">
-        <h2 className="mb-4 text-xl font-extrabold">Cambia password</h2>
+      <section className="ink-card mt-6 p-6">
+        <h2 className="mb-4 font-display text-2xl font-extrabold">Cambia password</h2>
         <PasswordForm />
       </section>
 
       {/* Esci + zona pericolosa */}
-      <section className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-3xl bg-white p-6 shadow-xl">
+      <section className="ink-card mt-6 flex flex-wrap items-center justify-between gap-3 p-6">
         <ParentLockButton />
         <form action="/auth/signout" method="post">
           <button
             type="submit"
-            className="rounded-full bg-stone-100 px-5 py-2 font-bold text-stone-600 shadow transition active:scale-95"
+            className="ink-btn px-5 py-2.5"
           >
-            👋 Esci
+            <Icon name="logout" className="!h-5 !w-5" />
+            Esci
           </button>
         </form>
         <DeleteAccountButton />

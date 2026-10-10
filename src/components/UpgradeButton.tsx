@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/components/ui/Icon";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -37,11 +38,12 @@ export function UpgradeButton() {
         type="button"
         onClick={handleClick}
         disabled={loading}
-        className="rounded-full bg-crayon-yellow px-4 py-1.5 text-sm font-extrabold shadow transition active:scale-95 disabled:opacity-50"
+        className="ink-btn ink-btn-dark px-4 py-2 text-sm"
       >
-        ⭐ Passa a Premium
+        <Icon name="star" className="!h-4 !w-4 text-sun" />
+        Passa a Premium
       </button>
-      {message && <span className="text-xs text-stone-500">{message}</span>}
+      {message && <span className="text-xs font-bold text-ink/70">{message}</span>}
     </span>
   );
 }

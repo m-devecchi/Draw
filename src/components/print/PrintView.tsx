@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/components/ui/Icon";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { applyFills, indexRegions } from "@/lib/svg-regions";
@@ -66,32 +67,32 @@ export function PrintView({
   return (
     <div className="print-page">
       {/* Comandi: non finiscono sulla carta */}
-      <div className="no-print sticky top-0 z-10 flex flex-wrap items-center gap-2 bg-stone-50/95 p-3 shadow backdrop-blur">
+      <div className="no-print sticky top-0 z-10 flex flex-wrap items-center gap-2.5 border-b-[2.5px] border-ink bg-paper/95 p-3 backdrop-blur">
         <Link
           href={backHref}
           aria-label="Torna ai disegni"
-          className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-xl shadow transition active:scale-90"
+          className="ink-icon-btn"
         >
-          🏠
+          <Icon name="home" />
         </Link>
         <button
           type="button"
           onClick={() => window.print()}
-          className="rounded-full bg-crayon-green px-6 py-3 text-lg font-extrabold text-white shadow-lg transition active:scale-95"
+          className="ink-btn ink-btn-mint px-6 py-3 text-lg"
         >
-          🖨️ Stampa
+          <Icon name="print" />
+          Stampa
         </button>
         <button
           type="button"
           onClick={() => setColored((c) => !c)}
           aria-pressed={colored}
-          className={`rounded-full px-4 py-3 text-sm font-bold shadow transition active:scale-95 ${
-            colored ? "bg-crayon-yellow" : "bg-white text-stone-500"
-          }`}
+          className={`ink-btn px-4 py-3 text-base ${colored ? "ink-btn-sun" : ""}`}
         >
-          {colored ? "🎨 Con i colori" : "✏️ Solo linee"}
+          <Icon name={colored ? "bucket" : "pencil"} className="!h-5 !w-5" />
+          {colored ? "Con i colori" : "Solo linee"}
         </button>
-        <span className="ml-auto text-sm font-semibold text-stone-400">
+        <span className="ml-auto text-sm font-bold text-ink-soft">
           {drawings.length === 1
             ? "Foglio A4"
             : `${drawings.length} fogli A4`}
@@ -103,10 +104,10 @@ export function PrintView({
         {drawings.map((d) => (
           <div
             key={d.id}
-            className="print-sheet mb-4 rounded-2xl bg-white p-4 shadow-lg"
+            className="print-sheet ink-card mb-5 p-4"
           >
             <div data-sheet={d.id} className="coloring-svg w-full" />
-            <p className="print-title mt-2 text-center text-sm font-bold text-stone-400">
+            <p className="print-title mt-2 text-center text-sm font-bold text-ink-soft">
               {d.prompt}
             </p>
           </div>

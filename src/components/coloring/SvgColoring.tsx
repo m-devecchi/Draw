@@ -7,6 +7,7 @@ import {
   useRef,
 } from "react";
 import { applyFills, indexRegions } from "@/lib/svg-regions";
+import { clientToLocal, spreadFill } from "@/lib/spread-fill";
 
 export interface SvgColoringHandle {
   /** Esporta il disegno colorato come PNG (data URL). */
@@ -52,14 +53,14 @@ export const SvgColoring = forwardRef<
     function handleTap(e: Event) {
       const target = (e.target as Element).closest?.("[data-colorable='1']");
       if (!target) return;
-      // Piccolo "pop" della regione toccata, per un feedback giocoso.
-      target.classList.remove("region-pop");
-      void target.getBoundingClientRect(); // forza il reflow per riavviare l'animazione
-      target.classList.add("region-pop");
-      target.addEventListener(
-        "animationend",
-        () => target.classList.remove("region-pop"),
-        { once: true }
+      // Il colore nuovo si allarga dal punto toccato.
+      const me = e as MouseEvent;
+      const el = target as SVGGraphicsElement;
+      spreadFill(
+        el,
+        me.clientX || me.clientY
+          ? clientToLocal(el, me.clientX, me.clientY)
+          : null
       );
       onRegionTap(Number(target.getAttribute("data-region")));
     }

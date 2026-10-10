@@ -16,6 +16,8 @@ import {
   unlockAudio,
 } from "@/lib/sounds";
 import { ColorPalette } from "./ColorPalette";
+import { Emoji } from "@/components/ui/Emoji";
+import { Icon } from "@/components/ui/Icon";
 import { FreehandLayer } from "./FreehandLayer";
 import { Confetti } from "./Confetti";
 import { PinchZoom } from "./PinchZoom";
@@ -267,13 +269,14 @@ export function ColoringWorkspace({
     }
   }
 
-  const floatingBtn =
-    "pointer-events-auto flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-xl shadow-[0_4px_0_rgba(58,46,42,0.12),0_8px_20px_-6px_rgba(58,46,42,0.35)] ring-1 ring-black/5 backdrop-blur transition hover:-translate-y-0.5 active:translate-y-0.5 active:scale-90";
+  // Bottoni della barra: icone a tratto dentro un'unica "pillola".
+  const barBtn =
+    "flex h-10 w-10 items-center justify-center rounded-full transition hover:bg-canvas active:scale-90 aria-pressed:bg-sun";
 
   return (
     <div
       ref={rootRef}
-      className="fixed inset-0 overflow-hidden bg-white"
+      className="fixed inset-0 overflow-hidden"
       onPointerDownCapture={(e) => {
         lastPointer.current = { x: e.clientX, y: e.clientY };
       }}
@@ -320,91 +323,96 @@ export function ColoringWorkspace({
         <Link
           href={backHref}
           aria-label="Torna ai disegni"
-          className={floatingBtn}
+          className="ink-icon-btn pointer-events-auto"
         >
-          🏠
+          <Icon name="home" />
         </Link>
         {prompt && (
-          <span className="pointer-events-auto max-w-[40vw] truncate rounded-full bg-white/90 px-4 py-2 font-display text-base font-semibold text-stone-600 shadow-lg ring-1 ring-black/5 backdrop-blur">
+          <span className="ink-chip pointer-events-auto hidden max-w-[34vw] truncate py-2 font-display text-[0.95rem] sm:inline-block">
             {prompt}
           </span>
         )}
         {kind === "svg" && saveState !== "idle" && (
           <span
-            className="rounded-full bg-white/90 px-3 py-2 text-xs font-bold text-stone-400 shadow-lg backdrop-blur"
+            className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-ink bg-mint-50"
             aria-live="polite"
+            aria-label={saveState === "saving" ? "Salvataggio" : "Salvato"}
           >
-            {saveState === "saving" ? "…" : "✓"}
+            {saveState === "saving" ? (
+              <span className="h-2 w-2 animate-pulse rounded-full bg-ink" />
+            ) : (
+              <Icon name="check" className="!h-4 !w-4" />
+            )}
           </span>
         )}
         <span className="flex-1" />
-        {kind === "svg" && freehand && (
+        <div className="pointer-events-auto flex items-center gap-0.5 rounded-full border-[2.5px] border-ink bg-paper p-1 shadow-[4px_4px_0_#1d1638]">
+          {kind === "svg" && freehand && (
+            <button
+              type="button"
+              onClick={() => setTool((t) => (t === "fill" ? "draw" : "fill"))}
+              aria-label={
+                tool === "fill"
+                  ? "Passa alla mano libera"
+                  : "Torna a riempire le aree"
+              }
+              aria-pressed={tool === "draw"}
+              className={barBtn}
+            >
+              <Icon name={tool === "fill" ? "bucket" : "pencil"} />
+            </button>
+          )}
           <button
             type="button"
-            onClick={() => setTool((t) => (t === "fill" ? "draw" : "fill"))}
-            aria-label={
-              tool === "fill"
-                ? "Passa alla mano libera"
-                : "Torna a riempire le aree"
-            }
-            aria-pressed={tool === "draw"}
-            className={`${floatingBtn} ${
-              tool === "draw" ? "bg-crayon-yellow" : ""
-            }`}
+            onClick={handleUndo}
+            aria-label="Annulla"
+            className={barBtn}
           >
-            {tool === "fill" ? "🪣" : "✏️"}
+            <Icon name="undo" />
           </button>
-        )}
-        <button
-          type="button"
-          onClick={() => {
-            const next = !muted;
-            setMutedState(next);
-            setMuted(next);
-            // Riattivando si sente subito una nota: riscontro immediato
-            // che l'audio del dispositivo funziona davvero.
-            if (!next) {
-              unlockAudio();
-              playFill(0);
-            }
-          }}
-          aria-label={muted ? "Riattiva i suoni" : "Silenzia i suoni"}
-          aria-pressed={muted}
-          className={floatingBtn}
-        >
-          {muted ? "🔇" : "🔊"}
-        </button>
-        <button
-          type="button"
-          onClick={handleUndo}
-          aria-label="Annulla"
-          className={floatingBtn}
-        >
-          ↩️
-        </button>
-        <button
-          type="button"
-          onClick={handleReset}
-          aria-label="Ricomincia"
-          className={floatingBtn}
-        >
-          🧼
-        </button>
-        <Link
-          href={`/print/${drawingId}`}
-          aria-label="Stampa il disegno"
-          className={floatingBtn}
-        >
-          🖨️
-        </Link>
-        <button
-          type="button"
-          onClick={handleDownload}
-          aria-label="Scarica il disegno"
-          className={`${floatingBtn} bg-crayon-blue/90 text-white`}
-        >
-          ⬇️
-        </button>
+          <button
+            type="button"
+            onClick={handleReset}
+            aria-label="Ricomincia"
+            className={barBtn}
+          >
+            <Icon name="reset" />
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              const next = !muted;
+              setMutedState(next);
+              setMuted(next);
+              // Riattivando si sente subito una nota: riscontro immediato
+              // che l'audio del dispositivo funziona davvero.
+              if (!next) {
+                unlockAudio();
+                playFill(0);
+              }
+            }}
+            aria-label={muted ? "Riattiva i suoni" : "Silenzia i suoni"}
+            aria-pressed={muted}
+            className={barBtn}
+          >
+            <Icon name={muted ? "mute" : "volume"} />
+          </button>
+          <Link
+            href={`/print/${drawingId}`}
+            aria-label="Stampa il disegno"
+            className={barBtn}
+          >
+            <Icon name="print" />
+          </Link>
+          <button
+            type="button"
+            onClick={handleDownload}
+            aria-label="Scarica il disegno"
+            className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-ink bg-sky transition hover:brightness-105 active:scale-90"
+          >
+            <Icon name="download" />
+          </button>
+        </div>
       </div>
 
       {/* Palette in sovrapposizione in basso */}
@@ -425,7 +433,8 @@ export function ColoringWorkspace({
 
 const BRAVO_WORDS = ["Bravo!", "Che bello!", "Fantastico!", "Capolavoro!"];
 
-// Scritta gigante che salta fuori a disegno finito, poi se ne va da sola.
+// Scheda che salta fuori a disegno finito e se ne va da sola: non blocca
+// i tocchi, così si può subito ritoccare o ricominciare.
 function BravoBanner() {
   const [word] = useState(
     () => BRAVO_WORDS[Math.floor(Math.random() * BRAVO_WORDS.length)]
@@ -433,18 +442,17 @@ function BravoBanner() {
   return (
     <div
       aria-live="polite"
-      className="bravo-banner pointer-events-none absolute left-1/2 top-1/2 z-30 flex flex-col items-center"
+      className="celebrate-card ink-card pointer-events-none absolute left-1/2 top-[22%] z-30 flex w-max max-w-[calc(100vw-2rem)] items-center gap-3 whitespace-nowrap bg-sun px-5 py-3 sm:px-7 sm:py-4"
     >
-      <span className="text-6xl drop-shadow-lg">🏆</span>
-      <span
-        className="rainbow-text font-display text-6xl font-bold sm:text-7xl"
-        style={{
-          WebkitTextStroke: "2px rgba(255,255,255,0.9)",
-          filter: "drop-shadow(0 6px 0 rgba(58,46,42,0.18))",
-        }}
-      >
-        {word}
-      </span>
+      <Emoji char="🏆" size={64} className="celebrate-trophy" decorative />
+      <div>
+        <p className="font-display text-4xl font-extrabold leading-none sm:text-5xl">
+          {word}
+        </p>
+        <p className="mt-1 text-sm font-extrabold text-ink/70">
+          Disegno finito!
+        </p>
+      </div>
     </div>
   );
 }

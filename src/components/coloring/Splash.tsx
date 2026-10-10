@@ -7,11 +7,9 @@ export interface SplashHandle {
   burst(x: number, y: number, color: string, sparkle?: boolean): void;
 }
 
-const STARS = ["✨", "⭐", "💫"];
-
 /**
- * Schizzo di colore dove il dito ha toccato: un'onda e qualche goccia
- * che volano via. Elementi DOM creati e rimossi a mano, così ogni tocco
+ * Gocce di colore che schizzano via dal punto toccato, mentre il colore
+ * si allarga nell'area. Elementi DOM creati e rimossi a mano, così ogni tocco
  * non fa ri-renderizzare la pagina.
  */
 export const Splash = forwardRef<SplashHandle>(function Splash(_, ref) {
@@ -38,29 +36,24 @@ export const Splash = forwardRef<SplashHandle>(function Splash(_, ref) {
         pieces.push(el);
       };
 
-      add("splash-ring", {});
-      const drops = 9;
+      const drops = 7;
       for (let i = 0; i < drops; i++) {
         const angle = (i / drops) * Math.PI * 2 + Math.random() * 0.5;
-        const dist = 34 + Math.random() * 34;
+        const dist = 30 + Math.random() * 30;
         add("splash-dot", {
           "--dx": `${Math.cos(angle) * dist}px`,
           "--dy": `${Math.sin(angle) * dist}px`,
-          "--s": `${6 + Math.random() * 8}px`,
+          "--s": `${8 + Math.random() * 7}px`,
         });
       }
       if (sparkle) {
         for (let i = 0; i < 3; i++) {
           const angle = Math.random() * Math.PI * 2;
           const dist = 40 + Math.random() * 30;
-          add(
-            "splash-star",
-            {
-              "--dx": `${Math.cos(angle) * dist}px`,
-              "--dy": `${Math.sin(angle) * dist - 20}px`,
-            },
-            STARS[i % STARS.length]
-          );
+          add("splash-star", {
+            "--dx": `${Math.cos(angle) * dist}px`,
+            "--dy": `${Math.sin(angle) * dist - 20}px`,
+          });
         }
       }
       setTimeout(() => pieces.forEach((p) => p.remove()), 900);

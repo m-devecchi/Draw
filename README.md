@@ -334,3 +334,10 @@ public/                      # manifest PWA, service worker, icone
   `STRIPE_SECRET_KEY` non raggiungono mai il client.
 - Header di sicurezza HTTP in `next.config.ts`; webhook Stripe verificato con
   firma.
+
+## Crediti
+
+Le illustrazioni a contorno nero (idee, età, avatar) sono di
+[OpenMoji](https://openmoji.org), licenza
+[CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/); i file
+sono in `public/openmoji/`.

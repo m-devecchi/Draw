@@ -3,6 +3,12 @@
 import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { AutoColorDemo } from "@/components/fun/AutoColorDemo";
+import { Logo } from "@/components/fun/Logo";
+import { SAMPLE_DRAWINGS } from "@/lib/samples";
+
+const DEMO =
+  SAMPLE_DRAWINGS.find((s) => s.slug === "castello") ?? SAMPLE_DRAWINGS[0];
 
 function LoginForm() {
   const router = useRouter();
@@ -126,22 +132,36 @@ function LoginForm() {
   }
 
   return (
-    <main className="flex min-h-dvh items-center justify-center p-6">
-      <div className="w-full max-w-sm rounded-3xl bg-white p-8 shadow-xl">
-        <div className="mb-6 text-center">
-          <div className="mb-2 text-5xl">🖍️</div>
-          <h1 className="text-3xl font-extrabold text-crayon-purple">Colora</h1>
-          <p className="mt-1 text-sm text-stone-500">
-            Disegni da colorare per i più piccoli
-          </p>
+    <main className="mx-auto grid min-h-dvh max-w-5xl content-center items-center gap-7 px-4 py-6 sm:px-6 lg:grid-cols-[1.1fr_1fr] lg:gap-12">
+      {/* Presentazione: cosa fa l'app, mostrato e non spiegato */}
+      <section className="grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-3 lg:flex lg:flex-col lg:items-start lg:gap-6">
+        <Logo as="div" size="text-[2.6rem] sm:text-6xl" />
+        <p className="col-start-1 font-display text-xl font-bold leading-snug [text-wrap:balance] sm:text-3xl lg:max-w-md">
+          Scrivi cosa vuoi disegnare. Diventa un foglio da colorare con un
+          tocco.
+        </p>
+        <div className="col-start-2 row-span-2 row-start-1 w-32 rotate-3 rounded-3xl border-[2.5px] border-ink bg-paper p-1.5 shadow-[5px_5px_0_#1d1638] sm:w-56 sm:p-2.5 lg:w-80 lg:-rotate-2">
+          <AutoColorDemo content={DEMO.content} className="overflow-hidden rounded-2xl" />
         </div>
+      </section>
 
-        <div className="mb-6 grid grid-cols-2 rounded-full bg-stone-100 p-1 text-sm font-bold">
+      <div className="ink-card mx-auto w-full max-w-md p-6 sm:p-8">
+        <h1 className="mb-1 font-display text-3xl font-extrabold">
+          {mode === "signin" ? "Bentornato!" : "Crea il tuo account"}
+        </h1>
+        <p className="mb-5 font-semibold text-ink-soft">
+          {mode === "signin"
+            ? "Entra per ritrovare i tuoi disegni."
+            : "Gratis, con due disegni nuovi ogni giorno."}
+        </p>
+
+        <div className="mb-5 grid grid-cols-2 gap-1 rounded-2xl border-[2.5px] border-ink bg-canvas p-1 font-display font-bold">
           <button
             type="button"
             onClick={() => setMode("signin")}
-            className={`rounded-full py-2 transition ${
-              mode === "signin" ? "bg-crayon-yellow shadow" : "text-stone-500"
+            aria-pressed={mode === "signin"}
+            className={`rounded-xl py-2 transition ${
+              mode === "signin" ? "bg-sun shadow-[2px_2px_0_#1d1638]" : "text-ink-soft"
             }`}
           >
             Accedi
@@ -149,15 +169,16 @@ function LoginForm() {
           <button
             type="button"
             onClick={() => setMode("signup")}
-            className={`rounded-full py-2 transition ${
-              mode === "signup" ? "bg-crayon-yellow shadow" : "text-stone-500"
+            aria-pressed={mode === "signup"}
+            className={`rounded-xl py-2 transition ${
+              mode === "signup" ? "bg-sun shadow-[2px_2px_0_#1d1638]" : "text-ink-soft"
             }`}
           >
             Registrati
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
           <input
             type="email"
             required
@@ -165,7 +186,7 @@ function LoginForm() {
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-2xl border-2 border-stone-200 px-4 py-3 outline-none focus:border-crayon-blue"
+            className="ink-field"
           />
           <input
             type="password"
@@ -175,22 +196,22 @@ function LoginForm() {
             placeholder="Password (min 8 caratteri)"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-2xl border-2 border-stone-200 px-4 py-3 outline-none focus:border-crayon-blue"
+            className="ink-field"
           />
           {error && (
-            <p className="rounded-xl bg-red-50 p-3 text-sm text-red-600">
+            <p role="alert" className="rounded-2xl border-2 border-ink bg-tomato-50 p-3 text-sm font-bold">
               {error}
             </p>
           )}
           {info && (
-            <p className="rounded-xl bg-green-50 p-3 text-sm text-green-700">
+            <p className="rounded-2xl border-2 border-ink bg-mint-50 p-3 text-sm font-bold">
               {info}
             </p>
           )}
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-2xl bg-crayon-purple py-3 text-lg font-extrabold text-white shadow-lg transition active:scale-95 disabled:opacity-50"
+            className="ink-btn ink-btn-primary mt-1 w-full py-3.5 text-xl"
           >
             {loading
               ? "Un attimo..."
@@ -204,24 +225,24 @@ function LoginForm() {
           <button
             type="button"
             onClick={handleForgotPassword}
-            className="mt-3 w-full text-center text-sm font-semibold text-stone-400 underline-offset-2 hover:underline"
+            className="mt-3 w-full text-center text-sm font-bold text-ink-soft underline-offset-2 hover:underline"
           >
             Password dimenticata?
           </button>
         )}
 
-        <div className="my-5 flex items-center gap-3 text-xs font-bold text-stone-300">
-          <span className="h-px flex-1 bg-stone-200" />
+        <div className="my-5 flex items-center gap-3 text-xs font-extrabold uppercase tracking-wider text-ink-soft">
+          <span className="h-[2px] flex-1 rounded bg-ink/10" />
           oppure
-          <span className="h-px flex-1 bg-stone-200" />
+          <span className="h-[2px] flex-1 rounded bg-ink/10" />
         </div>
 
-        <div className="space-y-2">
+        <div className="flex flex-col gap-3">
           <button
             type="button"
             onClick={() => handleOAuth("google")}
             disabled={oauthLoading !== null}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-stone-200 py-3 font-bold text-stone-600 transition hover:bg-stone-50 active:scale-95 disabled:opacity-50"
+            className="ink-btn w-full py-3 text-base"
           >
             <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
               <path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3l5.7-5.7C34.2 6.1 29.4 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.6-.4-3.9z"/>
@@ -235,7 +256,7 @@ function LoginForm() {
             type="button"
             onClick={() => handleOAuth("apple")}
             disabled={oauthLoading !== null}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-black py-3 font-bold text-white transition active:scale-95 disabled:opacity-50"
+            className="ink-btn ink-btn-dark w-full py-3 text-base"
           >
             <svg width="16" height="18" viewBox="0 0 814 1000" fill="currentColor" aria-hidden="true">
               <path d="M788 341c-6 4-107 61-107 190 0 149 131 202 135 203-1 3-21 72-69 142-43 62-88 124-156 124s-86-40-165-40c-77 0-104 41-167 41s-107-57-157-127C44 790 0 668 0 553c0-185 120-283 239-283 63 0 115 42 155 42 38 0 97-44 169-44 27 0 125 2 189 96zM554 127C586 89 608 36 608 0c0-5 0-10-1-14-52 2-113 34-150 77-29 33-56 86-56 122 0 6 1 11 1 13 3 1 8 1 13 1 46 0 104-31 139-72z"/>

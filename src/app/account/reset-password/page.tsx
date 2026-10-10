@@ -35,10 +35,10 @@ export default function ResetPasswordPage() {
 
   return (
     <main className="flex min-h-dvh items-center justify-center p-6">
-      <div className="w-full max-w-sm rounded-3xl bg-white p-8 shadow-xl">
+      <div className="ink-card w-full max-w-sm p-7 sm:p-8">
         <div className="mb-6 text-center">
           <div className="mb-2 text-5xl">🔑</div>
-          <h1 className="text-2xl font-extrabold text-crayon-purple">
+          <h1 className="font-display text-3xl font-extrabold">
             Scegli la nuova password
           </h1>
         </div>
@@ -51,7 +51,7 @@ export default function ResetPasswordPage() {
             placeholder="Nuova password (min 8 caratteri)"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-2xl border-2 border-stone-200 px-4 py-3 outline-none focus:border-crayon-blue"
+            className="ink-field"
           />
           <input
             type="password"
@@ -60,17 +60,17 @@ export default function ResetPasswordPage() {
             placeholder="Ripeti la password"
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
-            className="w-full rounded-2xl border-2 border-stone-200 px-4 py-3 outline-none focus:border-crayon-blue"
+            className="ink-field"
           />
           {error && (
-            <p className="rounded-xl bg-red-50 p-3 text-sm text-red-600">
+            <p className="rounded-2xl border-2 border-ink bg-tomato-50 p-3 text-sm font-bold">
               {error}
             </p>
           )}
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-2xl bg-crayon-purple py-3 text-lg font-extrabold text-white shadow-lg transition active:scale-95 disabled:opacity-50"
+            className="ink-btn ink-btn-primary w-full py-3.5 text-lg"
           >
             {loading ? "Un attimo..." : "Salva e entra"}
           </button>

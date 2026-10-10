@@ -38,7 +38,7 @@ export const AGE_SETUP: Record<AgeBand, AgeSetup> = {
   small: {
     label: "2-3 anni",
     hint: "Pochi colori grandi, nessun effetto: solo toccare e colorare.",
-    icon: "🍼",
+    icon: "🧸",
     colors: BIG_COLORS,
     effects: ["flat"],
     freehand: false,
@@ -47,7 +47,7 @@ export const AGE_SETUP: Record<AgeBand, AgeSetup> = {
   medium: {
     label: "4-6 anni",
     hint: "Palette completa, sei effetti e mano libera.",
-    icon: "🧒",
+    icon: "🪁",
     colors: PALETTE,
     effects: ["flat", "gradient", "dots", "stripes", "hearts", "stars"],
     freehand: true,
@@ -56,7 +56,7 @@ export const AGE_SETUP: Record<AgeBand, AgeSetup> = {
   big: {
     label: "7 anni e più",
     hint: "Tutti gli effetti e tutti gli strumenti.",
-    icon: "🧑",
+    icon: "🎒",
     colors: PALETTE,
     effects: EFFECTS,
     freehand: true,

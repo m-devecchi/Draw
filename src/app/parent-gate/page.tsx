@@ -1,3 +1,4 @@
+import { Emoji } from "@/components/ui/Emoji";
 import { redirect } from "next/navigation";
 import { ParentGateForm } from "@/components/parent/ParentGateForm";
 import { isDemoMode } from "@/lib/config";
@@ -40,13 +41,13 @@ export default async function ParentGatePage({
 
   return (
     <main className="flex min-h-dvh items-center justify-center p-6">
-      <div className="w-full max-w-sm rounded-3xl bg-white p-8 shadow-xl">
+      <div className="ink-card w-full max-w-sm p-7 sm:p-8">
         <div className="mb-6 text-center">
-          <div className="mb-2 text-5xl">🔒</div>
-          <h1 className="text-2xl font-extrabold text-crayon-purple">
+          <Emoji char="🔒" size={72} decorative className="mx-auto mb-2" />
+          <h1 className="font-display text-3xl font-extrabold">
             Area genitori
           </h1>
-          <p className="mt-2 text-sm text-stone-500">
+          <p className="mt-2 text-sm font-semibold text-ink-soft">
             {hasPin
               ? "Inserisci il PIN per continuare."
               : "Rispondi alla domanda per continuare."}

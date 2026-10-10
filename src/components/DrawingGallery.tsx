@@ -4,17 +4,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { DrawingThumb } from "./DrawingThumb";
+import { Emoji } from "@/components/ui/Emoji";
+import { Icon } from "@/components/ui/Icon";
 import { demoStore } from "@/lib/demo-store";
 import type { Stroke } from "@/lib/strokes";
-
-// Inclinazioni e colori del nastro: la bacheca sembra fatta a mano.
-const TILTS = [-2, 1.5, -1, 2.2, -1.6, 0.8];
-const TAPES = [
-  "rgba(255,206,62,0.7)",
-  "rgba(255,138,212,0.6)",
-  "rgba(78,167,255,0.55)",
-  "rgba(88,204,109,0.55)",
-];
 
 export interface GalleryDrawing {
   id: string;
@@ -74,10 +67,13 @@ export function DrawingGallery({
 
   const selectedIds = [...selected];
 
+  const smallBtn =
+    "flex h-9 w-9 items-center justify-center rounded-full border-2 border-ink bg-paper shadow-[2px_2px_0_#1d1638] transition hover:-translate-y-px active:translate-x-px active:translate-y-px active:shadow-none";
+
   return (
     <div>
       {/* Barra della selezione */}
-      <div className="mb-3 flex flex-wrap items-center gap-2">
+      <div className="mb-4 flex flex-wrap items-center gap-2.5">
         <button
           type="button"
           onClick={() => {
@@ -85,11 +81,10 @@ export function DrawingGallery({
             setSelected(new Set());
           }}
           aria-pressed={selecting}
-          className={`btn-candy rounded-full px-4 py-2 text-sm font-bold ${
-            selecting ? "bg-crayon-yellow" : "bg-white text-stone-500"
-          }`}
+          className={`ink-btn px-4 py-2.5 text-[0.95rem] ${selecting ? "ink-btn-sun" : ""}`}
         >
-          {selecting ? "✕ Annulla selezione" : "🖨️ Stampa più disegni"}
+          <Icon name={selecting ? "x" : "print"} className="!h-5 !w-5" />
+          {selecting ? "Annulla selezione" : "Stampa più disegni"}
         </button>
 
         {selecting && (
@@ -103,17 +98,17 @@ export function DrawingGallery({
                     : new Set(drawings.map((d) => d.id))
                 )
               }
-              className="btn-candy rounded-full bg-white px-4 py-2 text-sm font-bold text-stone-500"
+              className="ink-btn px-4 py-2.5 text-[0.95rem]"
             >
               {selected.size === drawings.length ? "Nessuno" : "Tutti"}
             </button>
             {selectedIds.length > 0 && (
               <Link
                 href={`/print/insieme?ids=${selectedIds.join(",")}`}
-                style={{ "--candy-edge": "#3a9c4c" } as React.CSSProperties}
-                className="btn-candy rounded-full bg-crayon-green px-5 py-2 text-sm font-extrabold text-white"
+                className="ink-btn ink-btn-mint px-5 py-2.5 text-[0.95rem]"
               >
-                🖨️ Stampa {selectedIds.length}{" "}
+                <Icon name="print" className="!h-5 !w-5" />
+                Stampa {selectedIds.length}{" "}
                 {selectedIds.length === 1 ? "disegno" : "disegni"}
               </Link>
             )}
@@ -121,17 +116,27 @@ export function DrawingGallery({
         )}
       </div>
 
-      <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+      <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 sm:gap-5">
         {drawings.map((d, i) => {
           const isSelected = selected.has(d.id);
-          const look = {
-            "--tilt": `${TILTS[i % TILTS.length]}deg`,
-            "--tape": TAPES[i % TAPES.length],
-          } as React.CSSProperties;
+          const caption = (
+            <div className="mt-2 px-1">
+              <p className="line-clamp-2 font-display text-[1.02rem] font-bold leading-tight">
+                {d.prompt}
+              </p>
+              <p className="mt-1 flex items-center gap-1.5 text-xs font-bold text-ink-soft">
+                {d.badge && <Emoji char={d.badge} size={18} decorative />}
+                {new Date(d.createdAt).toLocaleDateString("it-IT", {
+                  day: "numeric",
+                  month: "short",
+                })}
+              </p>
+            </div>
+          );
           return (
             <li
               key={d.id}
-              className="pop-in relative"
+              className="rise-in relative"
               style={{ "--i": Math.min(i, 12) } as React.CSSProperties}
             >
               {selecting ? (
@@ -139,84 +144,76 @@ export function DrawingGallery({
                   type="button"
                   onClick={() => toggle(d.id)}
                   aria-pressed={isSelected}
-                  style={look}
-                  className={`polaroid card-sticker block w-full rounded-3xl bg-white p-3 text-left active:scale-95 ${
-                    isSelected ? "ring-4 ring-crayon-green" : ""
+                  className={`ink-card drawing-card block w-full p-2.5 text-left ${
+                    isSelected ? "!bg-mint-50" : ""
                   }`}
                 >
-                  <DrawingThumb
-                    content={d.content}
-                    fills={d.fills}
-                    strokes={d.strokes}
-                  />
-                  <p className="mt-2 line-clamp-2 text-sm font-bold">
-                    {d.prompt}
-                  </p>
+                  <div className="overflow-hidden rounded-2xl border-2 border-ink/15">
+                    <DrawingThumb
+                      content={d.content}
+                      fills={d.fills}
+                      strokes={d.strokes}
+                    />
+                  </div>
+                  {caption}
                   <span
-                    className={`absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full text-sm font-extrabold shadow ${
-                      isSelected
-                        ? "bg-crayon-green text-white"
-                        : "bg-white text-stone-300"
+                    className={`absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full border-2 border-ink ${
+                      isSelected ? "bg-mint text-white" : "bg-paper text-transparent"
                     }`}
                   >
-                    {isSelected ? "✓" : ""}
+                    <Icon name="check" className="!h-5 !w-5" />
                   </span>
                 </button>
               ) : (
                 <>
                   <Link
                     href={`/color/${d.id}${hrefSuffix}`}
-                    style={look}
-                    className="polaroid polaroid-tape card-sticker relative block rounded-3xl bg-white p-3 hover:shadow-2xl active:scale-95"
+                    className="ink-card drawing-card block p-2.5"
                   >
-                    <DrawingThumb
-                      content={d.content}
-                      fills={d.fills}
-                      strokes={d.strokes}
-                    />
-                    <p className="mt-2 line-clamp-2 text-sm font-bold">
-                      {d.prompt}
-                    </p>
-                    <p className="mt-0.5 text-xs text-stone-400">
-                      {d.badge ? `${d.badge} · ` : ""}
-                      {new Date(d.createdAt).toLocaleDateString("it-IT")}
-                    </p>
+                    <div className="overflow-hidden rounded-2xl border-2 border-ink/15">
+                      <DrawingThumb
+                        content={d.content}
+                        fills={d.fills}
+                        strokes={d.strokes}
+                      />
+                    </div>
+                    {caption}
                   </Link>
                   <Link
                     href={`/print/${d.id}`}
                     aria-label={`Stampa il disegno ${d.prompt}`}
-                    className="absolute left-2 top-2 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-sm shadow-md backdrop-blur transition hover:bg-crayon-yellow/40 active:scale-90"
+                    className={`${smallBtn} absolute left-4 top-4`}
                   >
-                    🖨️
+                    <Icon name="print" className="!h-[1.1rem] !w-[1.1rem]" />
                   </Link>
                   <button
                     type="button"
                     aria-label={`Elimina il disegno ${d.prompt}`}
                     onClick={() => setConfirming(d.id)}
-                    className="absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-sm shadow-md backdrop-blur transition hover:bg-red-50 active:scale-90"
+                    className={`${smallBtn} absolute right-4 top-4 hover:bg-tomato-50`}
                   >
-                    🗑️
+                    <Icon name="trash" className="!h-[1.1rem] !w-[1.1rem]" />
                   </button>
                 </>
               )}
 
               {confirming === d.id && (
-                <div className="pop-in absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-3xl bg-white/95 p-3 text-center backdrop-blur">
-                  <p className="text-sm font-bold text-stone-600">
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-3xl border-[2.5px] border-ink bg-paper/95 p-3 text-center backdrop-blur-sm">
+                  <p className="font-display text-lg font-bold leading-tight">
                     Butto via questo disegno?
                   </p>
                   <div className="flex gap-2">
                     <button
                       type="button"
                       onClick={() => handleDelete(d.id)}
-                      className="rounded-full bg-red-500 px-4 py-2 text-sm font-extrabold text-white shadow transition active:scale-95"
+                      className="ink-btn ink-btn-primary px-4 py-2 text-sm"
                     >
                       Sì, butta
                     </button>
                     <button
                       type="button"
                       onClick={() => setConfirming(null)}
-                      className="rounded-full bg-stone-100 px-4 py-2 text-sm font-bold text-stone-600 transition active:scale-95"
+                      className="ink-btn px-4 py-2 text-sm"
                     >
                       No
                     </button>

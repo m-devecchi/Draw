@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useTransition } from "react";
+import { Emoji } from "@/components/ui/Emoji";
 import type { KidProfile } from "@/components/account/KidProfiles";
 
 // Selettore "chi sta disegnando?".
@@ -27,23 +28,22 @@ export function KidSwitcher({
     });
   }
 
-  const chip = (active: boolean) =>
-    `flex items-center gap-1.5 rounded-full px-4 py-2 font-bold transition active:scale-95 ${
-      active ? "bg-crayon-yellow shadow" : "bg-white text-stone-500 shadow-sm"
-    }`;
+  const chip = () =>
+    "ink-tile flex items-center gap-1.5 rounded-full bg-paper py-1.5 pl-2 pr-4 font-display font-bold";
 
   return (
     <div
       className={`flex flex-wrap items-center gap-2 ${pending ? "opacity-60" : ""}`}
     >
-      <span className="text-sm font-semibold text-stone-500">Chi disegna?</span>
+      <span className="mr-1 text-sm font-extrabold">Chi disegna?</span>
       <button
         type="button"
         onClick={() => select(null)}
         aria-pressed={activeKidId === null}
-        className={chip(activeKidId === null)}
+        className={chip()}
       >
-        👨‍👩‍👧 Tutti
+        <Emoji char="👨‍👩‍👧" size={28} decorative />
+        Tutti
       </button>
       {kids.map((kid) => (
         <button
@@ -51,9 +51,9 @@ export function KidSwitcher({
           type="button"
           onClick={() => select(kid.id)}
           aria-pressed={activeKidId === kid.id}
-          className={chip(activeKidId === kid.id)}
+          className={chip()}
         >
-          <span className="text-lg">{kid.avatar}</span>
+          <Emoji char={kid.avatar} size={28} decorative />
           {kid.name}
         </button>
       ))}

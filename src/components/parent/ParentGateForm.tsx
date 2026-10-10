@@ -48,7 +48,7 @@ export function ParentGateForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {!hasPin && challenge && (
-        <p className="text-center text-3xl font-extrabold text-stone-700">
+        <p className="text-center font-display text-4xl font-extrabold">
           {challenge.a} × {challenge.b} = ?
         </p>
       )}
@@ -61,25 +61,25 @@ export function ParentGateForm({
         onChange={(e) => setValue(e.target.value)}
         placeholder={hasPin ? "PIN" : "Risposta"}
         autoComplete={hasPin ? "current-password" : "off"}
-        className="w-full rounded-2xl border-2 border-stone-200 px-4 py-3 text-center text-2xl tracking-widest outline-none focus:border-crayon-blue"
+        className="ink-field text-center text-2xl tracking-[0.4em]"
       />
       {error && (
-        <p className="rounded-xl bg-red-50 p-3 text-center text-sm text-red-600">
+        <p className="rounded-2xl border-2 border-ink bg-tomato-50 p-3 text-center text-sm font-bold">
           {error}
         </p>
       )}
       <button
         type="submit"
         disabled={loading || !value}
-        className="w-full rounded-2xl bg-crayon-purple py-3 text-lg font-extrabold text-white shadow-lg transition active:scale-95 disabled:opacity-50"
+        className="ink-btn ink-btn-primary w-full py-3.5 text-lg"
       >
         {loading ? "Un attimo..." : "Entra"}
       </button>
       <Link
         href="/"
-        className="block text-center text-sm font-semibold text-stone-400"
+        className="block text-center text-sm font-bold text-ink-soft"
       >
-        ← Torna ai disegni
+        Torna ai disegni
       </Link>
     </form>
   );
