@@ -34,26 +34,48 @@ function LoginForm() {
         router.push(next);
         router.refresh();
       } else {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
-          },
+        // Il server crea l'account già confermato; poi si entra subito.
+        const res = await fetch("/api/auth/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
         });
-        if (error) throw error;
-        if (data.session) {
-          router.push(next);
-          router.refresh();
-        } else {
-          setInfo("Controlla la tua email per confermare la registrazione.");
+        const result = await res.json().catch(() => null);
+        if (!res.ok) {
+          throw new Error(result?.error ?? "Registrazione non riuscita, riprova.");
         }
+
+        if (result?.confirm) {
+          // Conferma via email richiesta (REQUIRE_EMAIL_CONFIRMATION=true)
+          const { data, error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+              emailRedirectTo: `${window.location.origin}/auth/callback`,
+            },
+          });
+          if (error) throw error;
+          if (!data.session) {
+            setInfo("Controlla la tua email per confermare la registrazione.");
+            return;
+          }
+        } else {
+          const { error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
+          if (error) throw error;
+        }
+        router.push(next);
+        router.refresh();
       }
     } catch (err) {
       setError(
         err instanceof Error && err.message === "Invalid login credentials"
           ? "Email o password non corretti."
-          : err instanceof Error
+          : err instanceof Error && err.message === "Email not confirmed"
+            ? "Questo account non è ancora confermato: scrivici e lo sblocchiamo."
+            : err instanceof Error
             ? err.message
             : "Qualcosa è andato storto, riprova."
       );

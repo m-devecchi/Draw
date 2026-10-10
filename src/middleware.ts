@@ -3,7 +3,13 @@ import { NextResponse, type NextRequest } from "next/server";
 import { isDemoMode } from "@/lib/config";
 
 // Rotte raggiungibili senza login.
-const PUBLIC_PATHS = ["/login", "/auth", "/api/billing/webhook", "/manifest.webmanifest"];
+const PUBLIC_PATHS = [
+  "/login",
+  "/auth",
+  "/api/auth/signup",
+  "/api/billing/webhook",
+  "/manifest.webmanifest",
+];
 
 export async function middleware(request: NextRequest) {
   // Modalità PoC (Supabase non configurato): nessuna autenticazione.

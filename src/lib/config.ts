@@ -14,3 +14,12 @@ export function isSupabaseConfigured(): boolean {
 export function isDemoMode(): boolean {
   return !isSupabaseConfigured();
 }
+
+// Conferma della registrazione via email. Spenta di serie in questa fase:
+// l'account viene creato dal server già confermato, qualunque sia
+// l'impostazione "Confirm email" del pannello Supabase. Con
+// REQUIRE_EMAIL_CONFIRMATION=true si torna al flusso classico (email con
+// link di conferma).
+export function requireEmailConfirmation(): boolean {
+  return process.env.REQUIRE_EMAIL_CONFIRMATION === "true";
+}
