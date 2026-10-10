@@ -1,12 +1,14 @@
-// Logo: le lettere di "Colora" nascono a contorno, come su un foglio da
-// colorare, e si riempiono di colore una dopo l'altra.
+import { Hanko } from "@/components/ui/Stamps";
+
+// Logo: lettere a contorno sottile che si colorano una dopo l'altra, come
+// la copertina di un album da colorare, poi il timbro hanko si posa accanto.
 const LETTERS = [
-  ["C", "#ff5e5b", "-4deg"],
-  ["o", "#ffd23f", "3deg"],
-  ["l", "#2ec4a0", "-2deg"],
-  ["o", "#4cc9f0", "4deg"],
-  ["r", "#8b5cf6", "-3deg"],
-  ["a", "#ff8fcf", "2deg"],
+  ["C", "#efb2ae"],
+  ["o", "#f4d27c"],
+  ["l", "#a6cb8c"],
+  ["o", "#a5cae3"],
+  ["r", "#bba8d8"],
+  ["a", "#efa877"],
 ] as const;
 
 export function Logo({
@@ -19,24 +21,25 @@ export function Logo({
   return (
     <Tag
       aria-label="Colora"
-      className={`flex select-none font-logo leading-none tracking-wide ${size}`}
+      className={`flex select-none items-center gap-1.5 font-logo font-black leading-none tracking-wide ${size}`}
     >
-      {LETTERS.map(([ch, color, rot], i) => (
-        <span
-          key={i}
-          aria-hidden="true"
-          className="logo-letter"
-          style={
-            {
-              "--c": color,
-              "--r": rot,
-              animationDelay: `${150 + i * 110}ms`,
-            } as React.CSSProperties
-          }
-        >
-          {ch}
-        </span>
-      ))}
+      <span aria-hidden="true" className="flex">
+        {LETTERS.map(([ch, color], i) => (
+          <span
+            key={i}
+            className="logo-letter"
+            style={
+              {
+                "--c": color,
+                animationDelay: `${120 + i * 90}ms`,
+              } as React.CSSProperties
+            }
+          >
+            {ch}
+          </span>
+        ))}
+      </span>
+      <Hanko className="hanko h-[0.95em] w-[0.95em]" />
     </Tag>
   );
 }

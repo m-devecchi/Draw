@@ -126,7 +126,7 @@ export function PromptForm({
       {error && (
         <p
           role="alert"
-          className="rounded-2xl border-2 border-ink bg-tomato-50 p-3 text-sm font-bold"
+          className="rounded-2xl border border-line-strong bg-tomato-50 p-3 text-sm font-bold"
         >
           {error}
         </p>
@@ -166,29 +166,31 @@ function DrawingLoader() {
 
   return (
     <div
-      className="flex items-center gap-4 rounded-2xl border-[2.5px] border-ink bg-paper p-4"
+      className="flex items-center gap-4 rounded-2xl border border-line bg-paper p-4"
       aria-live="polite"
     >
       <svg viewBox="0 0 64 64" className="h-16 w-16 shrink-0" aria-hidden="true">
+        {/* Fiore di ciliegio tracciato a pennello */}
         <path
           className="draw-path"
           pathLength={1}
-          d="M32 6l7.6 16.2 17.6 2.1-13 12.1 3.4 17.4L32 45.1 16.4 53.8l3.4-17.4-13-12.1 17.6-2.1z"
+          d="M32 30C27 22 25 14 32 9c7 5 5 13 0 21m0 0c5-8 12-12 18-7-1 8-9 11-18 7m0 0c9 1 15 7 11 14-8 2-12-5-11-14m0 0c1 9-3 16-11 14-4-7 2-13 11-14m0 0c-9 4-17 1-18-7 6-5 13-1 18 7"
           fill="none"
-          stroke="#1d1638"
-          strokeWidth="4"
+          stroke="#c85a45"
+          strokeWidth="1.8"
           strokeLinejoin="round"
           strokeLinecap="round"
         />
+        <circle cx="32" cy="31" r="2.2" fill="#f4d27c" />
       </svg>
       <div className="min-w-0 flex-1">
-        <p className="font-display text-lg font-bold leading-tight">
+        <p className="font-display text-lg font-semibold leading-tight">
           {LOADER_STEPS[step]}
         </p>
-        <div className="mt-2 h-4 overflow-hidden rounded-full border-2 border-ink bg-canvas">
+        <div className="mt-2.5 h-2 overflow-hidden rounded-full bg-canvas">
           <div
-            className="progress-stripes h-full rounded-full"
-            style={{ width: `${25 + step * 23}%` }}
+            className="progress-bar h-full w-full rounded-full bg-bubble"
+            style={{ transform: `scaleX(${0.25 + step * 0.23})` }}
           />
         </div>
       </div>

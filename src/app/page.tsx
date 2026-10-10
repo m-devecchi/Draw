@@ -83,7 +83,7 @@ export default async function HomePage({
         <Logo />
         <div className="flex items-center gap-2.5">
           {quota.plan === "premium" && (
-            <span className="ink-chip bg-sun">
+            <span className="ink-chip bg-sun-50">
               <Icon name="star" className="!h-4 !w-4" />
               Premium
             </span>

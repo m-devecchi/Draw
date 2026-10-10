@@ -19,7 +19,7 @@ export function DemoPrint({ id }: { id: string }) {
   if (drawing === undefined) {
     return (
       <main className="flex min-h-dvh items-center justify-center">
-        <p className="animate-pulse font-display text-xl font-bold text-ink-soft">Preparo il foglio...</p>
+        <p className="animate-pulse font-display text-xl font-semibold text-ink-soft">Preparo il foglio...</p>
       </main>
     );
   }

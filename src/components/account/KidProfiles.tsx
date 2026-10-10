@@ -76,7 +76,7 @@ export function KidProfiles({ initialKids }: { initialKids: KidProfile[] }) {
                 type="button"
                 aria-label={`Rimuovi ${kid.name}`}
                 onClick={() => handleRemove(kid.id)}
-                className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-ink bg-paper text-xs transition hover:bg-tomato-50 active:scale-90"
+                className="flex h-7 w-7 items-center justify-center rounded-full border border-line-strong bg-paper text-xs transition hover:bg-tomato-50 active:scale-90"
               >
                 ✕
               </button>
@@ -94,8 +94,8 @@ export function KidProfiles({ initialKids }: { initialKids: KidProfile[] }) {
               aria-label={`Avatar ${a}`}
               aria-pressed={avatar === a}
               onClick={() => setAvatar(a)}
-              className={`flex h-12 w-12 items-center justify-center rounded-full border-2 border-ink transition active:scale-90 ${
-                avatar === a ? "bg-sun shadow-[2px_2px_0_#1d1638]" : "bg-paper"
+              className={`flex h-12 w-12 items-center justify-center rounded-full border border-line-strong transition active:scale-90 ${
+                avatar === a ? "border-ink bg-sun-50 shadow-soft" : "bg-paper"
               }`}
             >
               <Emoji char={a} size={34} decorative />

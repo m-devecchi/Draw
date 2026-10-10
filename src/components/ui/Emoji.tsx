@@ -31,7 +31,7 @@ export function Emoji({
       width={size}
       height={size}
       draggable={false}
-      className={`inline-block select-none ${className}`}
+      className={`emoji-soft inline-block select-none ${className}`}
     />
   );
 }

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { applyFills, indexRegions } from "@/lib/svg-regions";
 import type { Stroke } from "@/lib/strokes";
+import { refineLines } from "@/lib/refine-lines";
 
 /**
  * Pagina di stampa A4.
@@ -42,7 +43,7 @@ export function PrintView({
         (d) => d.id === container.getAttribute("data-sheet")
       );
       if (!drawing) return;
-      container.innerHTML = drawing.content;
+      container.innerHTML = refineLines(drawing.content);
       indexRegions(container);
       // "Solo linee": tutte le aree tornano bianche.
       applyFills(container, colored ? drawing.fills : {});
@@ -67,7 +68,7 @@ export function PrintView({
   return (
     <div className="print-page">
       {/* Comandi: non finiscono sulla carta */}
-      <div className="no-print sticky top-0 z-10 flex flex-wrap items-center gap-2.5 border-b-[2.5px] border-ink bg-paper/95 p-3 backdrop-blur">
+      <div className="no-print sticky top-0 z-10 flex flex-wrap items-center gap-2.5 border-b border-line bg-paper/90 p-3 backdrop-blur">
         <Link
           href={backHref}
           aria-label="Torna ai disegni"

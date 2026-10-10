@@ -68,7 +68,7 @@ export function DrawingGallery({
   const selectedIds = [...selected];
 
   const smallBtn =
-    "flex h-9 w-9 items-center justify-center rounded-full border-2 border-ink bg-paper shadow-[2px_2px_0_#1d1638] transition hover:-translate-y-px active:translate-x-px active:translate-y-px active:shadow-none";
+    "flex h-9 w-9 items-center justify-center rounded-full border border-line bg-paper/90 text-ink shadow-soft backdrop-blur-sm transition-transform duration-150 ease-out active:scale-[0.92]";
 
   return (
     <div>
@@ -121,7 +121,7 @@ export function DrawingGallery({
           const isSelected = selected.has(d.id);
           const caption = (
             <div className="mt-2 px-1">
-              <p className="line-clamp-2 font-display text-[1.02rem] font-bold leading-tight">
+              <p className="line-clamp-2 font-display text-[1.02rem] font-semibold leading-tight">
                 {d.prompt}
               </p>
               <p className="mt-1 flex items-center gap-1.5 text-xs font-bold text-ink-soft">
@@ -148,7 +148,7 @@ export function DrawingGallery({
                     isSelected ? "!bg-mint-50" : ""
                   }`}
                 >
-                  <div className="overflow-hidden rounded-2xl border-2 border-ink/15">
+                  <div className="overflow-hidden rounded-2xl border border-line">
                     <DrawingThumb
                       content={d.content}
                       fills={d.fills}
@@ -157,7 +157,7 @@ export function DrawingGallery({
                   </div>
                   {caption}
                   <span
-                    className={`absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full border-2 border-ink ${
+                    className={`absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full border border-line-strong ${
                       isSelected ? "bg-mint text-white" : "bg-paper text-transparent"
                     }`}
                   >
@@ -170,7 +170,7 @@ export function DrawingGallery({
                     href={`/color/${d.id}${hrefSuffix}`}
                     className="ink-card drawing-card block p-2.5"
                   >
-                    <div className="overflow-hidden rounded-2xl border-2 border-ink/15">
+                    <div className="overflow-hidden rounded-2xl border border-line">
                       <DrawingThumb
                         content={d.content}
                         fills={d.fills}
@@ -198,8 +198,8 @@ export function DrawingGallery({
               )}
 
               {confirming === d.id && (
-                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-3xl border-[2.5px] border-ink bg-paper/95 p-3 text-center backdrop-blur-sm">
-                  <p className="font-display text-lg font-bold leading-tight">
+                <div className="fade-in absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-[1.25rem] border border-line bg-paper/95 p-3 text-center backdrop-blur-sm">
+                  <p className="font-display text-lg font-semibold leading-tight">
                     Butto via questo disegno?
                   </p>
                   <div className="flex gap-2">

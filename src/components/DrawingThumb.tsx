@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { applyFills, indexRegions } from "@/lib/svg-regions";
 import type { Stroke } from "@/lib/strokes";
+import { refineLines } from "@/lib/refine-lines";
 
 /**
  * Anteprima del disegno con i colori applicati.
@@ -23,7 +24,7 @@ export function DrawingThumb({
   useEffect(() => {
     const container = ref.current;
     if (!container) return;
-    container.innerHTML = content;
+    container.innerHTML = refineLines(content);
     indexRegions(container);
     applyFills(container, fills);
 

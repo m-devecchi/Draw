@@ -8,6 +8,7 @@ import {
 } from "react";
 import { applyFills, indexRegions } from "@/lib/svg-regions";
 import { clientToLocal, spreadFill } from "@/lib/spread-fill";
+import { refineLines } from "@/lib/refine-lines";
 
 export interface SvgColoringHandle {
   /** Esporta il disegno colorato come PNG (data URL). */
@@ -35,7 +36,7 @@ export const SvgColoring = forwardRef<
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
-    container.innerHTML = content;
+    container.innerHTML = refineLines(content);
 
     onRegionCount?.(indexRegions(container));
   }, [content, onRegionCount]);

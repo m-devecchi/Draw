@@ -1,6 +1,6 @@
 // Quota giornaliera mostrata a pastelli invece che come "1/2 disegni":
 // un bambino capisce a colpo d'occhio quanti disegni restano.
-const CRAYON_COLORS = ["#ff5e5b", "#4cc9f0", "#2ec4a0", "#ffd23f", "#8b5cf6"];
+const CRAYON_COLORS = ["#dd7a68", "#a5cae3", "#a6cb8c", "#f4d27c", "#bba8d8"];
 
 function Crayon({ color, used }: { color: string; used: boolean }) {
   return (
@@ -14,11 +14,11 @@ function Crayon({ color, used }: { color: string; used: boolean }) {
       <path
         d="M3 12 7 2l4 10v19a1.5 1.5 0 0 1-1.5 1.5h-5A1.5 1.5 0 0 1 3 31z"
         fill={used ? "#ffffff" : color}
-        stroke="#1d1638"
-        strokeWidth="1.8"
+        stroke="#4a443f"
+        strokeWidth="1.1"
         strokeLinejoin="round"
       />
-      <path d="M3 17h8M3 26h8" stroke="#1d1638" strokeWidth="1.5" />
+      <path d="M3 17h8M3 26h8" stroke="#4a443f" strokeWidth="0.9" />
     </svg>
   );
 }

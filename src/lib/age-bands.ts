@@ -24,14 +24,14 @@ export interface AgeSetup {
 // Otto colori ben distinti per i più piccoli: niente sfumature di grigio
 // o tonalità simili tra loro, che confondono.
 const BIG_COLORS = [
-  "#ff5c5c",
-  "#ff9f43",
-  "#ffce3e",
-  "#58cc6d",
-  "#4ea7ff",
-  "#a06bff",
-  "#ff8ad4",
-  "#b5651d",
+  "#dd7a68",
+  "#efa877",
+  "#f4d27c",
+  "#a6cb8c",
+  "#a5cae3",
+  "#bba8d8",
+  "#efb2ae",
+  "#b38a6d",
 ] as const;
 
 export const AGE_SETUP: Record<AgeBand, AgeSetup> = {

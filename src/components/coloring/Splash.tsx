@@ -36,14 +36,14 @@ export const Splash = forwardRef<SplashHandle>(function Splash(_, ref) {
         pieces.push(el);
       };
 
-      const drops = 7;
+      const drops = 6;
       for (let i = 0; i < drops; i++) {
         const angle = (i / drops) * Math.PI * 2 + Math.random() * 0.5;
-        const dist = 30 + Math.random() * 30;
+        const dist = 22 + Math.random() * 22;
         add("splash-dot", {
           "--dx": `${Math.cos(angle) * dist}px`,
           "--dy": `${Math.sin(angle) * dist}px`,
-          "--s": `${8 + Math.random() * 7}px`,
+          "--s": `${4 + Math.random() * 6}px`,
         });
       }
       if (sparkle) {

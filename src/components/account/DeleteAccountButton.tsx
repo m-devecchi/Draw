@@ -42,7 +42,7 @@ export function DeleteAccountButton() {
   }
 
   return (
-    <div className="space-y-3 rounded-2xl border-2 border-ink bg-tomato-50 p-4">
+    <div className="space-y-3 rounded-2xl border border-line-strong bg-tomato-50 p-4">
       <p className="text-sm font-bold text-tomato">
         Verranno cancellati per sempre account, disegni e abbonamento. Per
         confermare scrivi <span className="font-extrabold">ELIMINA</span>:

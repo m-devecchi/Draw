@@ -44,7 +44,7 @@ export default async function ParentGatePage({
       <div className="ink-card w-full max-w-sm p-7 sm:p-8">
         <div className="mb-6 text-center">
           <Emoji char="🔒" size={72} decorative className="mx-auto mb-2" />
-          <h1 className="font-display text-3xl font-extrabold">
+          <h1 className="font-display text-3xl font-semibold">
             Area genitori
           </h1>
           <p className="mt-2 text-sm font-semibold text-ink-soft">

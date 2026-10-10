@@ -16,10 +16,10 @@ import {
   unlockAudio,
 } from "@/lib/sounds";
 import { ColorPalette } from "./ColorPalette";
-import { Emoji } from "@/components/ui/Emoji";
+import { WellDoneStamp } from "@/components/ui/Stamps";
 import { Icon } from "@/components/ui/Icon";
 import { FreehandLayer } from "./FreehandLayer";
-import { Confetti } from "./Confetti";
+import { Petals } from "./Petals";
 import { PinchZoom } from "./PinchZoom";
 import { Splash, type SplashHandle } from "./Splash";
 import { ERASER } from "./palette";
@@ -271,7 +271,7 @@ export function ColoringWorkspace({
 
   // Bottoni della barra: icone a tratto dentro un'unica "pillola".
   const barBtn =
-    "flex h-10 w-10 items-center justify-center rounded-full transition hover:bg-canvas active:scale-90 aria-pressed:bg-sun";
+    "flex h-10 w-10 items-center justify-center rounded-full text-ink transition-[transform,background-color] duration-150 ease-out active:scale-[0.92] aria-pressed:bg-sun-50 [@media(hover:hover)]:hover:bg-canvas";
 
   return (
     <div
@@ -313,8 +313,8 @@ export function ColoringWorkspace({
         )}
       </PinchZoom>
 
-      {/* Coriandoli quando il disegno e' completo */}
-      <Confetti trigger={confettiTrigger} />
+      {/* Petali di ciliegio quando il disegno e' completo */}
+      <Petals trigger={confettiTrigger} />
       <Splash ref={splashRef} />
       {confettiTrigger > 0 && <BravoBanner key={confettiTrigger} />}
 
@@ -334,19 +334,19 @@ export function ColoringWorkspace({
         )}
         {kind === "svg" && saveState !== "idle" && (
           <span
-            className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-ink bg-mint-50"
+            className="fade-in flex h-7 w-7 items-center justify-center rounded-full border border-line bg-mint-50 text-ink"
             aria-live="polite"
             aria-label={saveState === "saving" ? "Salvataggio" : "Salvato"}
           >
             {saveState === "saving" ? (
-              <span className="h-2 w-2 animate-pulse rounded-full bg-ink" />
+              <span className="h-2 w-2 animate-pulse rounded-full bg-ink-soft" />
             ) : (
               <Icon name="check" className="!h-4 !w-4" />
             )}
           </span>
         )}
         <span className="flex-1" />
-        <div className="pointer-events-auto flex items-center gap-0.5 rounded-full border-[2.5px] border-ink bg-paper p-1 shadow-[4px_4px_0_#1d1638]">
+        <div className="pointer-events-auto flex items-center gap-0.5 rounded-full border border-line bg-paper p-1 shadow-soft">
           {kind === "svg" && freehand && (
             <button
               type="button"
@@ -408,7 +408,7 @@ export function ColoringWorkspace({
             type="button"
             onClick={handleDownload}
             aria-label="Scarica il disegno"
-            className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-ink bg-sky transition hover:brightness-105 active:scale-90"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-sky-50 text-ink transition-transform duration-150 ease-out active:scale-[0.92]"
           >
             <Icon name="download" />
           </button>
@@ -433,8 +433,8 @@ export function ColoringWorkspace({
 
 const BRAVO_WORDS = ["Bravo!", "Che bello!", "Fantastico!", "Capolavoro!"];
 
-// Scheda che salta fuori a disegno finito e se ne va da sola: non blocca
-// i tocchi, così si può subito ritoccare o ricominciare.
+// A disegno finito si posa il timbro "よくできました" ("ben fatto!") e la
+// scheda se ne va da sola: non blocca i tocchi.
 function BravoBanner() {
   const [word] = useState(
     () => BRAVO_WORDS[Math.floor(Math.random() * BRAVO_WORDS.length)]
@@ -442,16 +442,14 @@ function BravoBanner() {
   return (
     <div
       aria-live="polite"
-      className="celebrate-card ink-card pointer-events-none absolute left-1/2 top-[22%] z-30 flex w-max max-w-[calc(100vw-2rem)] items-center gap-3 whitespace-nowrap bg-sun px-5 py-3 sm:px-7 sm:py-4"
+      className="celebrate-card ink-card pointer-events-none absolute left-1/2 top-[18%] z-30 flex w-max max-w-[calc(100vw-2rem)] items-center gap-4 whitespace-nowrap py-3 pl-3 pr-6 shadow-lift"
     >
-      <Emoji char="🏆" size={64} className="celebrate-trophy" decorative />
+      <WellDoneStamp className="celebrate-stamp h-24 w-24 shrink-0" />
       <div>
-        <p className="font-display text-4xl font-extrabold leading-none sm:text-5xl">
+        <p className="font-display text-4xl font-semibold leading-none">
           {word}
         </p>
-        <p className="mt-1 text-sm font-extrabold text-ink/70">
-          Disegno finito!
-        </p>
+        <p className="mt-2 text-sm font-bold text-ink-soft">Disegno finito</p>
       </div>
     </div>
   );

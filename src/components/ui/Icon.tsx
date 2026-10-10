@@ -33,7 +33,7 @@ const cache = new Map<string, string>();
 function maskUrl(name: IconName): string {
   let url = cache.get(name);
   if (!url) {
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${PATHS[name]}</svg>`;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${PATHS[name]}</svg>`;
     url = `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
     cache.set(name, url);
   }

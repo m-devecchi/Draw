@@ -1,26 +1,20 @@
 import type { Metadata, Viewport } from "next";
-import { Bagel_Fat_One, Baloo_2, Nunito } from "next/font/google";
+import { Klee_One, Zen_Maru_Gothic } from "next/font/google";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 import "./globals.css";
 
-// Bagel Fat One solo per il logo, Baloo 2 per i titoli (tondo e deciso,
-// leggibile anche da chi impara a leggere), Nunito per il testo.
-const bagel = Bagel_Fat_One({
+// Klee One: la scrittura a mano dei quaderni giapponesi, per i titoli.
+// Zen Maru Gothic: tondo e morbido, per testo, bottoni e logo.
+const klee = Klee_One({
   subsets: ["latin"],
-  weight: "400",
-  variable: "--font-bagel",
+  weight: ["400", "600"],
+  variable: "--font-klee",
   display: "swap",
 });
-const baloo = Baloo_2({
+const zen = Zen_Maru_Gothic({
   subsets: ["latin"],
-  weight: ["500", "600", "700", "800"],
-  variable: "--font-baloo",
-  display: "swap",
-});
-const nunito = Nunito({
-  subsets: ["latin"],
-  weight: ["400", "600", "700", "800", "900"],
-  variable: "--font-nunito",
+  weight: ["400", "500", "700", "900"],
+  variable: "--font-zen",
   display: "swap",
 });
 
@@ -37,7 +31,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#ffd23f",
+  themeColor: "#f5f0e6",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -48,7 +42,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="it" className={`${bagel.variable} ${baloo.variable} ${nunito.variable}`}>
+    <html lang="it" className={`${klee.variable} ${zen.variable}`}>
       <body className="min-h-dvh antialiased">
         <ServiceWorkerRegistration />
         {children}

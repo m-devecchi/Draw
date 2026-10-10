@@ -1,28 +1,28 @@
 import { AutoColorDemo } from "@/components/fun/AutoColorDemo";
-import { Icon } from "@/components/ui/Icon";
 import { SAMPLE_DRAWINGS } from "@/lib/samples";
 
 const DEMO = SAMPLE_DRAWINGS.find((s) => s.slug === "dino") ?? SAMPLE_DRAWINGS[0];
 
-// Parola sottolineata con uno scarabocchio a pennarello che si disegna.
+// Parola sottolineata da una pennellata morbida che si disegna.
 export function Scribble({ children }: { children: React.ReactNode }) {
   return (
     <span className="relative inline-block whitespace-nowrap">
-      <span className="relative z-10">{children}</span>
       <svg
         viewBox="0 0 200 24"
         preserveAspectRatio="none"
         aria-hidden="true"
-        className="marker-scribble absolute -bottom-1.5 left-[-4%] h-[0.42em] w-[108%]"
+        className="brush-stroke absolute bottom-[0.02em] left-[-3%] h-[0.38em] w-[106%]"
       >
         <path
-          d="M4 15 C 40 4, 70 22, 104 12 S 168 6, 196 13"
+          d="M4 14 C 40 6, 70 19, 104 12 S 168 8, 196 12"
           fill="none"
-          stroke="#ff5e5b"
-          strokeWidth="7"
+          stroke="#efb2ae"
+          strokeOpacity="0.75"
+          strokeWidth="11"
           strokeLinecap="round"
         />
       </svg>
+      <span className="relative">{children}</span>
     </span>
   );
 }
@@ -39,39 +39,39 @@ export function HomeHero({
   children: React.ReactNode;
 }) {
   return (
-    <section className="ink-card relative overflow-hidden bg-sun p-5 sm:p-8">
-      {/* Puntini da carta da pacchi sul fondo giallo */}
+    <section className="ink-card relative overflow-hidden p-5 sm:p-9">
+      {/* Onde seigaiha che sfumano dall'angolo */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 opacity-[0.18]"
+        className="seigaiha pointer-events-none absolute inset-0 opacity-[0.22]"
         style={{
-          backgroundImage:
-            "radial-gradient(#1d1638 1.2px, transparent 1.4px)",
-          backgroundSize: "16px 16px",
+          maskImage:
+            "radial-gradient(120% 90% at 100% 0%, black, transparent 60%)",
+          WebkitMaskImage:
+            "radial-gradient(120% 90% at 100% 0%, black, transparent 60%)",
         }}
       />
-      <div className="relative flex items-start gap-4">
+      <div className="relative flex items-start gap-4 sm:gap-8">
         <div className="min-w-0 flex-1">
-          <span className="ink-chip mb-3 bg-paper">
-            <Icon name="sparkles" className="!h-4 !w-4" />
+          <p className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-ink-soft">
             Nuovo disegno
-          </span>
-          <h2 className="font-display text-[2.15rem] font-extrabold leading-[1.02] tracking-tight [text-wrap:balance] sm:text-5xl">
+          </p>
+          <h2 className="font-display text-[2.2rem] font-semibold leading-[1.12] [text-wrap:balance] sm:text-[3.3rem]">
             {title}
           </h2>
-          <p className="mt-3 hidden max-w-sm font-semibold text-ink/75 sm:block">
+          <p className="mt-4 hidden max-w-sm leading-relaxed text-ink-soft sm:block">
             Scrivi un soggetto: in pochi secondi diventa un foglio da colorare
             con un tocco.
           </p>
         </div>
-        <div className="w-[7.5rem] shrink-0 rotate-3 rounded-2xl border-[2.5px] border-ink bg-paper p-1.5 shadow-[4px_4px_0_#1d1638] sm:w-60 sm:p-2.5">
+        <div className="washi-tape relative w-[7.25rem] shrink-0 rotate-2 rounded-md border border-line bg-paper p-1.5 shadow-soft sm:w-60 sm:p-2.5">
           <AutoColorDemo
             content={DEMO.content}
-            className="overflow-hidden rounded-xl"
+            className="overflow-hidden rounded-sm"
           />
         </div>
       </div>
-      <div className="relative mt-6">{children}</div>
+      <div className="relative mt-7">{children}</div>
     </section>
   );
 }
@@ -86,10 +86,10 @@ export function SectionTitle({
 }) {
   return (
     <div className="mb-4">
-      <h2 className="font-display text-[1.7rem] font-extrabold leading-tight tracking-tight">
+      <h2 className="font-display text-[1.75rem] font-semibold leading-tight">
         {title}
       </h2>
-      {hint && <p className="font-semibold text-ink-soft">{hint}</p>}
+      {hint && <p className="mt-0.5 text-ink-soft">{hint}</p>}
     </div>
   );
 }

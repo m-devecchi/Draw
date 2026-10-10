@@ -136,17 +136,17 @@ function LoginForm() {
       {/* Presentazione: cosa fa l'app, mostrato e non spiegato */}
       <section className="grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-3 lg:flex lg:flex-col lg:items-start lg:gap-6">
         <Logo as="div" size="text-[2.6rem] sm:text-6xl" />
-        <p className="col-start-1 font-display text-xl font-bold leading-snug [text-wrap:balance] sm:text-3xl lg:max-w-md">
+        <p className="col-start-1 font-display text-xl font-semibold leading-snug [text-wrap:balance] sm:text-3xl lg:max-w-md">
           Scrivi cosa vuoi disegnare. Diventa un foglio da colorare con un
           tocco.
         </p>
-        <div className="col-start-2 row-span-2 row-start-1 w-32 rotate-3 rounded-3xl border-[2.5px] border-ink bg-paper p-1.5 shadow-[5px_5px_0_#1d1638] sm:w-56 sm:p-2.5 lg:w-80 lg:-rotate-2">
+        <div className="col-start-2 row-span-2 row-start-1 w-32 rotate-3 rounded-3xl border border-line bg-paper p-1.5 shadow-soft sm:w-56 sm:p-2.5 lg:w-80 lg:-rotate-2">
           <AutoColorDemo content={DEMO.content} className="overflow-hidden rounded-2xl" />
         </div>
       </section>
 
       <div className="ink-card mx-auto w-full max-w-md p-6 sm:p-8">
-        <h1 className="mb-1 font-display text-3xl font-extrabold">
+        <h1 className="mb-1 font-display text-3xl font-semibold">
           {mode === "signin" ? "Bentornato!" : "Crea il tuo account"}
         </h1>
         <p className="mb-5 font-semibold text-ink-soft">
@@ -155,13 +155,13 @@ function LoginForm() {
             : "Gratis, con due disegni nuovi ogni giorno."}
         </p>
 
-        <div className="mb-5 grid grid-cols-2 gap-1 rounded-2xl border-[2.5px] border-ink bg-canvas p-1 font-display font-bold">
+        <div className="mb-5 grid grid-cols-2 gap-1 rounded-2xl border border-line bg-canvas p-1 font-display font-semibold">
           <button
             type="button"
             onClick={() => setMode("signin")}
             aria-pressed={mode === "signin"}
             className={`rounded-xl py-2 transition ${
-              mode === "signin" ? "bg-sun shadow-[2px_2px_0_#1d1638]" : "text-ink-soft"
+              mode === "signin" ? "bg-paper shadow-soft" : "text-ink-soft"
             }`}
           >
             Accedi
@@ -171,7 +171,7 @@ function LoginForm() {
             onClick={() => setMode("signup")}
             aria-pressed={mode === "signup"}
             className={`rounded-xl py-2 transition ${
-              mode === "signup" ? "bg-sun shadow-[2px_2px_0_#1d1638]" : "text-ink-soft"
+              mode === "signup" ? "bg-paper shadow-soft" : "text-ink-soft"
             }`}
           >
             Registrati
@@ -199,12 +199,12 @@ function LoginForm() {
             className="ink-field"
           />
           {error && (
-            <p role="alert" className="rounded-2xl border-2 border-ink bg-tomato-50 p-3 text-sm font-bold">
+            <p role="alert" className="rounded-2xl border border-line-strong bg-tomato-50 p-3 text-sm font-bold">
               {error}
             </p>
           )}
           {info && (
-            <p className="rounded-2xl border-2 border-ink bg-mint-50 p-3 text-sm font-bold">
+            <p className="rounded-2xl border border-line-strong bg-mint-50 p-3 text-sm font-bold">
               {info}
             </p>
           )}
@@ -232,9 +232,9 @@ function LoginForm() {
         )}
 
         <div className="my-5 flex items-center gap-3 text-xs font-extrabold uppercase tracking-wider text-ink-soft">
-          <span className="h-[2px] flex-1 rounded bg-ink/10" />
+          <span className="h-px flex-1 bg-line" />
           oppure
-          <span className="h-[2px] flex-1 rounded bg-ink/10" />
+          <span className="h-px flex-1 bg-line" />
         </div>
 
         <div className="flex flex-col gap-3">

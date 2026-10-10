@@ -28,7 +28,7 @@ export function DemoPrintBatch({ ids }: { ids: string[] }) {
   if (drawings === null) {
     return (
       <main className="flex min-h-dvh items-center justify-center">
-        <p className="animate-pulse font-display text-xl font-bold text-ink-soft">Preparo i fogli...</p>
+        <p className="animate-pulse font-display text-xl font-semibold text-ink-soft">Preparo i fogli...</p>
       </main>
     );
   }

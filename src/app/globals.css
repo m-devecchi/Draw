@@ -1,46 +1,57 @@
 @import "tailwindcss";
 
 /*
- * Identità "libro da colorare": tutto è disegnato come i fogli che i
- * bambini riempiono. Contorno d'inchiostro spesso, colori pieni, ombra
- * netta (niente sfumature né lucidi). Il colore vero lo mette il bambino.
+ * Identità "nurie": un album da colorare giapponese. Carta washi, linee
+ * sottili color inchiostro sumi, colori tradizionali tenui, un timbro
+ * hanko rosso come firma. Il colore pieno lo mette il bambino.
  */
 @theme {
-  --font-sans: var(--font-nunito), "Nunito", "Segoe UI", system-ui, sans-serif;
-  --font-display: var(--font-baloo), "Baloo 2", var(--font-nunito), system-ui,
+  --font-sans: var(--font-zen), "Zen Maru Gothic", "Hiragino Maru Gothic ProN",
+    system-ui, sans-serif;
+  --font-display: var(--font-klee), "Klee One", var(--font-zen), system-ui,
     sans-serif;
-  --font-logo: var(--font-bagel), "Bagel Fat One", var(--font-baloo), system-ui,
-    sans-serif;
+  --font-logo: var(--font-zen), "Zen Maru Gothic", system-ui, sans-serif;
 
   /* Inchiostro e carta */
-  --color-ink: #1d1638;
-  --color-ink-soft: #5d5779;
-  --color-paper: #ffffff;
-  --color-canvas: #f3f1fa;
-  --color-line: #ddd8ee;
+  --color-ink: #3d3833;
+  --color-ink-soft: #7c746c;
+  --color-paper: #fffdf9;
+  --color-canvas: #f5f0e6;
+  --color-line: #e6ddcf;
+  --color-line-strong: #cdbfac;
 
-  /* Pastelli a cera */
-  --color-sun: #ffd23f;
-  --color-tomato: #ff5e5b;
-  --color-mint: #2ec4a0;
-  --color-sky: #4cc9f0;
-  --color-grape: #8b5cf6;
-  --color-bubble: #ff8fcf;
+  /* Colori tradizionali (i nomi restano quelli dei pastelli) */
+  --color-sun: #f3d27f; /* yamabuki */
+  --color-tomato: #c85a45; /* shu, il rosso dei timbri */
+  --color-mint: #8db897; /* wakatake */
+  --color-sky: #9fc4dd; /* mizu */
+  --color-grape: #b5a4d5; /* fuji */
+  --color-bubble: #eeb6b3; /* sakura */
 
-  /* Tinte chiare per i fondi delle tessere */
-  --color-sun-50: #fff4c7;
-  --color-tomato-50: #ffe1e0;
-  --color-mint-50: #d5f6ec;
-  --color-sky-50: #d9f3fc;
-  --color-grape-50: #ebe3ff;
-  --color-bubble-50: #ffe3f3;
+  --color-sun-50: #fbf2d9;
+  --color-tomato-50: #f9e4dd;
+  --color-mint-50: #e6f0e4;
+  --color-sky-50: #e4eff6;
+  --color-grape-50: #eee8f5;
+  --color-bubble-50: #fbe9e7;
 
-  /* Alias per le pagine non ancora ridisegnate */
-  --color-crayon-red: #ff5e5b;
-  --color-crayon-yellow: #ffd23f;
-  --color-crayon-blue: #4cc9f0;
-  --color-crayon-green: #2ec4a0;
-  --color-crayon-purple: #8b5cf6;
+  --color-crayon-red: #c85a45;
+  --color-crayon-yellow: #f3d27f;
+  --color-crayon-blue: #9fc4dd;
+  --color-crayon-green: #8db897;
+  --color-crayon-purple: #b5a4d5;
+
+  --shadow-soft: 0 1px 2px rgb(61 56 51 / 0.05),
+    0 10px 28px -14px rgb(61 56 51 / 0.22);
+  --shadow-lift: 0 2px 6px rgb(61 56 51 / 0.06),
+    0 22px 44px -18px rgb(61 56 51 / 0.32);
+}
+
+:root {
+  /* Curve di movimento (Emil Kowalski) */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 html,
@@ -50,61 +61,56 @@ body {
 
 body {
   background-color: var(--color-canvas);
-  /* Quadretti leggerissimi, come un album da disegno */
-  background-image:
-    linear-gradient(rgba(29, 22, 56, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(29, 22, 56, 0.035) 1px, transparent 1px);
-  background-size: 28px 28px;
+  /* Carta washi: grana fine e qualche fibra lunga */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .42 0 0 0 0 .37 0 0 0 0 .3 0 0 0 .07 0'/%3E%3C/filter%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012 .22' numOctaves='2' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .55 0 0 0 0 .5 0 0 0 0 .42 0 0 0 .9 -.62'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3Crect width='100%25' height='100%25' filter='url(%23f)' opacity='.35'/%3E%3C/svg%3E");
+  background-size: 260px 260px;
   color: var(--color-ink);
   -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
 }
 
 ::selection {
-  background: var(--color-sun);
+  background: var(--color-bubble-50);
   color: var(--color-ink);
 }
 
 :focus-visible {
-  outline: 3px solid var(--color-sky);
+  outline: 2px solid var(--color-sky);
   outline-offset: 3px;
 }
 
 @layer components {
-  /* Scheda disegnata a inchiostro */
+  /* Foglio dell'album: bordo sottile, ombra morbida */
   .ink-card {
     background: var(--color-paper);
-    border: 2.5px solid var(--color-ink);
-    border-radius: 1.5rem;
-    box-shadow: 5px 5px 0 var(--color-ink);
+    border: 1px solid var(--color-line);
+    border-radius: 1.25rem;
+    box-shadow: var(--shadow-soft);
   }
 
-  /* Bottone: si "schiaccia" nell'ombra quando lo premi */
+  /* Bottone: il premere si sente (scale 0.97, 160ms) */
   .ink-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    border: 2.5px solid var(--color-ink);
-    border-radius: 1rem;
+    border: 1px solid var(--color-line-strong);
+    border-radius: 9999px;
     background: var(--color-paper);
     color: var(--color-ink);
-    font-family: var(--font-display);
     font-weight: 700;
     line-height: 1;
-    box-shadow: 4px 4px 0 var(--color-ink);
+    letter-spacing: 0.01em;
+    box-shadow: 0 1px 2px rgb(61 56 51 / 0.06);
     transition:
-      transform 140ms cubic-bezier(0.34, 1.56, 0.64, 1),
-      box-shadow 140ms ease,
-      background-color 140ms ease;
+      transform 160ms var(--ease-out),
+      background-color 200ms ease,
+      border-color 200ms ease,
+      box-shadow 200ms ease;
     user-select: none;
   }
-  .ink-btn:hover:not(:disabled) {
-    transform: translate(-1px, -1px);
-    box-shadow: 5px 5px 0 var(--color-ink);
-  }
   .ink-btn:active:not(:disabled) {
-    transform: translate(3px, 3px);
-    box-shadow: 1px 1px 0 var(--color-ink);
+    transform: scale(0.97);
   }
   .ink-btn:disabled {
     opacity: 0.45;
@@ -112,21 +118,25 @@ body {
   }
   .ink-btn-primary {
     background: var(--color-tomato);
+    border-color: var(--color-tomato);
     color: #fff;
+    box-shadow: 0 6px 16px -8px rgb(200 90 69 / 0.6);
   }
   .ink-btn-dark {
     background: var(--color-ink);
+    border-color: var(--color-ink);
     color: #fff;
   }
   .ink-btn-sun {
-    background: var(--color-sun);
+    background: var(--color-sun-50);
+    border-color: var(--color-sun);
   }
   .ink-btn-mint {
     background: var(--color-mint);
+    border-color: var(--color-mint);
     color: #fff;
   }
 
-  /* Bottone tondo con sola icona */
   .ink-icon-btn {
     display: inline-flex;
     align-items: center;
@@ -134,90 +144,80 @@ body {
     width: 2.75rem;
     height: 2.75rem;
     flex-shrink: 0;
-    border: 2.5px solid var(--color-ink);
+    border: 1px solid var(--color-line);
     border-radius: 9999px;
     background: var(--color-paper);
     color: var(--color-ink);
-    box-shadow: 3px 3px 0 var(--color-ink);
+    box-shadow: var(--shadow-soft);
     transition:
-      transform 140ms cubic-bezier(0.34, 1.56, 0.64, 1),
-      box-shadow 140ms ease,
-      background-color 140ms ease;
-  }
-  .ink-icon-btn:hover {
-    transform: translate(-1px, -1px);
-    box-shadow: 4px 4px 0 var(--color-ink);
+      transform 160ms var(--ease-out),
+      background-color 200ms ease;
   }
   .ink-icon-btn:active {
-    transform: translate(2px, 2px);
-    box-shadow: 1px 1px 0 var(--color-ink);
+    transform: scale(0.94);
   }
   .ink-icon-btn[aria-pressed="true"] {
-    background: var(--color-sun);
+    background: var(--color-sun-50);
   }
 
-  /* Campo di testo */
   .ink-field {
     width: 100%;
-    border: 2.5px solid var(--color-ink);
-    border-radius: 1rem;
+    border: 1px solid var(--color-line-strong);
+    border-radius: 0.9rem;
     background: var(--color-paper);
     color: var(--color-ink);
     padding: 0.85rem 1rem;
-    font-weight: 600;
+    font-weight: 500;
     outline: none;
-    transition: box-shadow 150ms ease;
+    transition:
+      border-color 200ms ease,
+      box-shadow 200ms ease;
   }
   .ink-field::placeholder {
-    color: #a39dbd;
-    font-weight: 500;
+    color: #b0a79c;
   }
   .ink-field:focus {
-    box-shadow: 0 0 0 4px rgba(76, 201, 240, 0.45);
+    border-color: var(--color-sky);
+    box-shadow: 0 0 0 4px rgb(159 196 221 / 0.35);
   }
   .ink-field:disabled {
     background: var(--color-canvas);
   }
 
-  /* Etichetta / pillola */
   .ink-chip {
     display: inline-flex;
     align-items: center;
     gap: 0.375rem;
-    border: 2px solid var(--color-ink);
+    border: 1px solid var(--color-line-strong);
     border-radius: 9999px;
     background: var(--color-paper);
-    padding: 0.3rem 0.75rem;
+    padding: 0.3rem 0.8rem;
     font-size: 0.8125rem;
-    font-weight: 800;
+    font-weight: 700;
     line-height: 1.1;
   }
 
-  /* Tessera (idee, età, effetti) */
+  /* Tessera (idee, età): la scelta si vede da bordo e fondo */
   .ink-tile {
-    border: 2px solid var(--color-ink);
-    border-radius: 1.1rem;
-    box-shadow: 3px 3px 0 var(--color-ink);
+    border: 1px solid var(--color-line);
+    border-radius: 1rem;
     transition:
-      transform 160ms cubic-bezier(0.34, 1.56, 0.64, 1),
-      box-shadow 160ms ease,
-      background-color 160ms ease,
-      color 160ms ease;
-  }
-  .ink-tile:hover:not(:disabled) {
-    transform: translate(-1px, -2px) rotate(-1.5deg);
-    box-shadow: 4px 5px 0 var(--color-ink);
+      transform 160ms var(--ease-out),
+      border-color 200ms ease,
+      background-color 200ms ease,
+      box-shadow 200ms ease;
   }
   .ink-tile:active:not(:disabled) {
-    transform: translate(2px, 2px);
-    box-shadow: 1px 1px 0 var(--color-ink);
+    transform: scale(0.96);
   }
   .ink-tile[aria-pressed="true"] {
-    background: var(--color-ink) !important;
-    color: #fff;
+    border-color: var(--color-ink);
+    box-shadow:
+      0 0 0 1px var(--color-ink),
+      var(--shadow-soft);
+    background: var(--color-paper) !important;
   }
 
-  /* Icone a tratto: maschera colorata con currentColor */
   .icon {
     display: inline-block;
     width: 1.375rem;
@@ -227,76 +227,148 @@ body {
     -webkit-mask: var(--icon) center / contain no-repeat;
     mask: var(--icon) center / contain no-repeat;
   }
+
+  /* Le illustrazioni OpenMoji, ammorbidite per stare sulla carta */
+  .emoji-soft {
+    filter: saturate(0.62) brightness(1.04);
+  }
 }
 
-/* ── Logo: lettere a contorno che si colorano una alla volta ──────────── */
+/* Hover solo dove c'è un puntatore vero: sul touch il tap lo simula */
+@media (hover: hover) and (pointer: fine) {
+  .ink-btn:hover:not(:disabled) {
+    border-color: var(--color-ink-soft);
+  }
+  .ink-btn-primary:hover:not(:disabled) {
+    background: #b9503c;
+    border-color: #b9503c;
+  }
+  .ink-icon-btn:hover {
+    background: var(--color-canvas);
+  }
+  .ink-tile:hover:not(:disabled) {
+    border-color: var(--color-line-strong);
+    box-shadow: var(--shadow-soft);
+  }
+  .drawing-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lift);
+  }
+}
+
+/* Motivo seigaiha (onde) per il riquadro principale */
+.seigaiha {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='28' viewBox='0 0 56 28'%3E%3Cg fill='none' stroke='%237d9dca' stroke-width='.8'%3E%3Cpath d='M0 28a28 28 0 0 1 56 0M7 28a21 21 0 0 1 42 0M14 28a14 14 0 0 1 28 0M21 28a7 7 0 0 1 14 0'/%3E%3Cpath d='M-28 14a28 28 0 0 1 56 0M-21 14a21 21 0 0 1 42 0M-14 14a14 14 0 0 1 28 0M-7 14a7 7 0 0 1 14 0M28 14a28 28 0 0 1 56 0M35 14a21 21 0 0 1 42 0M42 14a14 14 0 0 1 28 0M49 14a7 7 0 0 1 14 0'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 56px 28px;
+}
+
+/* Nastro washi che tiene il foglio: semitrasparente, a pois */
+.washi-tape::before {
+  content: "";
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  width: 46%;
+  height: 18px;
+  transform: translateX(-50%) rotate(-4deg);
+  background-color: rgb(165 202 227 / 0.55);
+  background-image: radial-gradient(rgb(255 255 255 / 0.7) 1.2px, transparent 1.5px);
+  background-size: 7px 7px;
+  mask-image: linear-gradient(90deg, transparent, black 6%, black 94%, transparent);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* ── Logo: lettere a contorno che si colorano, poi il timbro ───────────── */
 .logo-letter {
   display: inline-block;
-  color: #fff;
-  -webkit-text-stroke: 2.5px var(--color-ink);
+  color: var(--color-paper);
+  -webkit-text-stroke: 1.2px var(--color-ink);
   paint-order: stroke fill;
-  text-shadow: 2px 3px 0 var(--color-ink);
-  animation: letter-color 700ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation: letter-color 700ms var(--ease-out) forwards;
 }
 
 @keyframes letter-color {
-  0% {
-    color: #fff;
-    transform: translateY(0) rotate(0);
-  }
-  45% {
-    transform: translateY(-5px) rotate(-6deg);
-  }
-  100% {
+  to {
     color: var(--c);
-    transform: translateY(0) rotate(var(--r, 0deg));
   }
 }
 
-/* Scarabocchio a pennarello disegnato sotto una parola */
-.marker-scribble path {
+.hanko {
+  animation: hanko-stamp 520ms var(--ease-out) 900ms both;
+}
+
+@keyframes hanko-stamp {
+  from {
+    opacity: 0;
+    transform: scale(1.35) rotate(-14deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(-6deg);
+  }
+}
+
+/* Pennellata morbida sotto una parola */
+.brush-stroke path {
   stroke-dasharray: 600;
   stroke-dashoffset: 600;
-  animation: scribble 900ms 350ms cubic-bezier(0.65, 0, 0.35, 1) forwards;
+  animation: brush 900ms var(--ease-in-out) 300ms forwards;
 }
 
-@keyframes scribble {
+@keyframes brush {
   to {
     stroke-dashoffset: 0;
   }
 }
 
-/* Ingresso morbido degli elementi in lista (--i = posizione) */
+/* Ingresso delle liste: 40ms tra un elemento e l'altro */
 .rise-in {
-  animation: rise-in 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: rise-in 360ms var(--ease-out) both;
   animation-delay: calc(var(--i, 0) * 40ms);
 }
 
 @keyframes rise-in {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(8px);
   }
 }
 
-/* Scheda di un disegno (esempi e galleria) */
 .drawing-card {
   transition:
-    transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1),
-    box-shadow 180ms ease;
-}
-.drawing-card:hover {
-  transform: translate(-2px, -3px);
-  box-shadow: 7px 8px 0 var(--color-ink);
+    transform 220ms var(--ease-out),
+    box-shadow 220ms ease;
 }
 .drawing-card:active {
-  transform: translate(3px, 3px);
-  box-shadow: 2px 2px 0 var(--color-ink);
+  transform: scale(0.98);
+}
+
+/* Pannelli che nascono dal loro bottone (cassetto effetti) */
+.pop-from-trigger {
+  transform-origin: var(--origin, bottom left);
+  transition:
+    opacity 200ms var(--ease-out),
+    transform 200ms var(--ease-out);
+  @starting-style {
+    opacity: 0;
+    transform: scale(0.95) translateY(6px);
+  }
+}
+
+/* Comparsa di un riquadro sopra a un altro (conferma eliminazione) */
+.fade-in {
+  transition:
+    opacity 200ms var(--ease-out),
+    transform 200ms var(--ease-out);
+  @starting-style {
+    opacity: 0;
+    transform: scale(0.97);
+  }
 }
 
 /* ── Coloritura ──────────────────────────────────────────────────────── */
 
-/* Le aree del disegno reagiscono al tocco */
 .coloring-svg svg {
   width: 100%;
   height: auto;
@@ -304,8 +376,6 @@ body {
   touch-action: manipulation;
 }
 
-/* Variante a tutto schermo: l'SVG riempie lo spazio disponibile
-   mantenendo le proporzioni (preserveAspectRatio di default). */
 .coloring-svg-fill svg {
   height: 100%;
 }
@@ -314,140 +384,121 @@ body {
   cursor: pointer;
 }
 
-/* Matitone della palette: il colore scelto si solleva dalla barra */
+/* Pastello della palette: quello scelto si alza (stato, 200ms) */
 .swatch {
-  transition:
-    transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1),
-    box-shadow 220ms ease;
-  box-shadow: 0 3px 0 var(--color-ink);
-}
-.swatch:hover {
-  transform: translateY(-3px);
+  transition: transform 200ms var(--ease-out);
+  box-shadow:
+    inset 0 -3px 0 rgb(61 56 51 / 0.08),
+    0 1px 2px rgb(61 56 51 / 0.12);
 }
 .swatch[aria-pressed="true"] {
-  transform: translateY(-10px) scale(1.14);
+  transform: translateY(-8px);
   box-shadow:
-    0 0 0 3px #fff,
-    0 0 0 5.5px var(--color-ink),
-    0 8px 0 3px var(--color-ink);
+    0 0 0 3px var(--color-paper),
+    0 0 0 4px var(--color-ink),
+    0 10px 18px -8px rgb(61 56 51 / 0.45);
+}
+.swatch:active {
+  transform: scale(0.94);
+}
+.swatch[aria-pressed="true"]:active {
+  transform: translateY(-8px) scale(0.94);
 }
 
-/* Gocce di colore che schizzano via dal punto toccato */
+/* Goccioline d'acquerello che si allontanano dal punto toccato */
 .splash-dot {
   position: absolute;
-  width: var(--s, 10px);
-  height: var(--s, 10px);
-  margin: calc(var(--s, 10px) / -2) 0 0 calc(var(--s, 10px) / -2);
+  width: var(--s, 8px);
+  height: var(--s, 8px);
+  margin: calc(var(--s, 8px) / -2) 0 0 calc(var(--s, 8px) / -2);
   border-radius: 9999px;
   background: currentColor;
-  border: 2px solid var(--color-ink);
+  opacity: 0.85;
   pointer-events: none;
-  animation: splash-dot 600ms cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+  animation: splash-dot 520ms var(--ease-out) forwards;
 }
 
 @keyframes splash-dot {
-  0% {
-    transform: translate(0, 0) scale(1);
-    opacity: 1;
-  }
-  100% {
-    transform: translate(var(--dx), var(--dy)) scale(0.2);
+  to {
+    transform: translate(var(--dx), var(--dy)) scale(0.3);
     opacity: 0;
   }
 }
 
 .splash-star {
   position: absolute;
-  width: 16px;
-  height: 16px;
-  margin: -8px 0 0 -8px;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
   background: var(--color-sun);
-  clip-path: polygon(
-    50% 0%,
-    61% 35%,
-    98% 35%,
-    68% 57%,
-    79% 91%,
-    50% 70%,
-    21% 91%,
-    32% 57%,
-    2% 35%,
-    39% 35%
-  );
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
   pointer-events: none;
-  animation: splash-star 760ms ease-out forwards;
+  animation: splash-star 640ms var(--ease-out) forwards;
 }
 
 @keyframes splash-star {
-  0% {
-    transform: translate(0, 0) scale(0.2) rotate(0);
+  from {
+    transform: translate(0, 0) scale(0.6) rotate(0);
     opacity: 1;
   }
-  60% {
-    opacity: 1;
-  }
-  100% {
-    transform: translate(var(--dx), var(--dy)) scale(1.2) rotate(160deg);
+  to {
+    transform: translate(var(--dx), var(--dy)) scale(1) rotate(90deg);
     opacity: 0;
   }
 }
 
-/* Festa a disegno completato: non blocca i tocchi e se ne va da sola */
+/* Festa: il timbro "yoku dekimashita" che si posa sul foglio */
 .celebrate-card {
-  animation: celebrate 2800ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation: celebrate 3200ms var(--ease-out) forwards;
 }
 
 @keyframes celebrate {
   0% {
-    transform: translate(-50%, 30px) scale(0.6) rotate(-6deg);
     opacity: 0;
+    transform: translate(-50%, 12px) scale(0.96);
   }
-  14% {
-    transform: translate(-50%, 0) scale(1.06) rotate(2deg);
+  10% {
     opacity: 1;
+    transform: translate(-50%, 0) scale(1);
   }
-  24% {
-    transform: translate(-50%, 0) scale(1) rotate(-1deg);
-  }
-  82% {
-    transform: translate(-50%, 0) scale(1) rotate(-1deg);
+  86% {
     opacity: 1;
+    transform: translate(-50%, 0) scale(1);
   }
   100% {
-    transform: translate(-50%, -20px) scale(0.9) rotate(-1deg);
     opacity: 0;
+    transform: translate(-50%, -8px) scale(1);
   }
 }
 
-.celebrate-trophy {
-  animation: trophy 1100ms 200ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+.celebrate-stamp {
+  animation: stamp 480ms var(--ease-out) 260ms both;
 }
 
-@keyframes trophy {
-  0% {
-    transform: scale(0) rotate(-30deg);
+@keyframes stamp {
+  from {
+    opacity: 0;
+    transform: scale(1.5) rotate(-18deg);
   }
-  60% {
-    transform: scale(1.2) rotate(8deg);
-  }
-  100% {
-    transform: scale(1) rotate(0);
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(-8deg);
   }
 }
 
-/* ── Attesa della generazione: una stella che si disegna da sola ──────── */
+/* ── Attesa: un pennello che traccia un fiore ──────────────────────────── */
 .draw-path {
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
-  animation: draw-path 2.4s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+  animation: draw-path 2.6s var(--ease-in-out) infinite;
 }
 
 @keyframes draw-path {
   0% {
     stroke-dashoffset: 1;
   }
-  55%,
-  80% {
+  60%,
+  85% {
     stroke-dashoffset: 0;
   }
   100% {
@@ -455,31 +506,46 @@ body {
   }
 }
 
-.progress-stripes {
-  background-image: repeating-linear-gradient(
-    -45deg,
-    var(--color-tomato) 0 12px,
-    #ff8a87 12px 24px
-  );
-  background-size: 34px 34px;
-  animation: stripes 700ms linear infinite;
-  transition: width 900ms cubic-bezier(0.22, 1, 0.36, 1);
+.progress-bar {
+  transform-origin: left;
+  transition: transform 900ms var(--ease-out);
 }
 
-@keyframes stripes {
-  to {
-    background-position: 34px 0;
+/*
+ * Meno movimento richiesto: niente spostamenti, ma le dissolvenze
+ * restano (aiutano a capire cosa cambia). Non si spegne tutto.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .rise-in {
+    animation-name: fade-only;
+  }
+  .logo-letter,
+  .brush-stroke path {
+    animation-duration: 1ms;
+    animation-delay: 0ms;
+  }
+  .hanko,
+  .celebrate-stamp {
+    animation-name: fade-only;
+  }
+  .swatch,
+  .ink-btn,
+  .ink-tile,
+  .ink-icon-btn,
+  .drawing-card {
+    transition-property: background-color, border-color, box-shadow, opacity;
+  }
+  .pop-from-trigger,
+  .fade-in {
+    @starting-style {
+      transform: none;
+    }
   }
 }
 
-/* Chi preferisce meno movimento non riceve animazioni */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 1ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 1ms !important;
+@keyframes fade-only {
+  from {
+    opacity: 0;
   }
 }
 

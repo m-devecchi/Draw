@@ -34,7 +34,7 @@ export function AgeSelect({
               className="ink-tile flex items-center justify-center gap-2 bg-paper px-2 py-2 disabled:opacity-40 max-sm:flex-col max-sm:gap-0.5"
             >
               <Emoji char={setup.icon} size={34} decorative />
-              <span className="font-display text-[0.95rem] font-bold leading-tight">
+              <span className="font-display text-[0.95rem] font-semibold leading-tight">
                 {setup.label}
               </span>
             </button>

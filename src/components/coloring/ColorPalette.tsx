@@ -73,8 +73,8 @@ export function ColorPalette({
     <div className="pointer-events-auto mx-auto w-fit max-w-full px-3">
       {/* Cassetto degli effetti, sopra la palette */}
       {trayOpen && showEffects && (
-        <div className="ink-card mx-auto mb-3 w-fit max-w-full p-3">
-          <p className="mb-2 px-1 font-display text-base font-bold">
+        <div className="ink-card pop-from-trigger mx-auto mb-3 w-fit max-w-full p-3 shadow-lift">
+          <p className="mb-2 px-1 font-display text-base font-semibold">
             Come vuoi colorare?
           </p>
           <div className="grid grid-cols-5 gap-2">
@@ -91,14 +91,14 @@ export function ColorPalette({
                 className="group flex w-14 flex-col items-center gap-1"
               >
                 <span
-                  className={`block h-12 w-12 rounded-2xl border-[2.5px] border-ink transition group-active:scale-90 ${
+                  className={`block h-12 w-12 rounded-2xl border border-line transition-transform duration-150 ease-out group-active:scale-[0.94] ${
                     effect === e
-                      ? "shadow-[0_0_0_3px_#fff,0_0_0_5.5px_#1d1638]"
-                      : "shadow-[2px_2px_0_#1d1638]"
+                      ? "shadow-[0_0_0_3px_#fffdf9,0_0_0_4px_#3d3833]"
+                      : "shadow-soft"
                   }`}
                   style={{ backgroundImage: preview(previewColor, e) }}
                 />
-                <span className="text-[0.62rem] font-extrabold leading-tight">
+                <span className="text-[0.64rem] font-bold leading-tight text-ink-soft">
                   {EFFECT_LABELS[e].name}
                 </span>
               </button>
@@ -107,7 +107,7 @@ export function ColorPalette({
         </div>
       )}
 
-      <div className="flex items-center gap-3 overflow-x-auto rounded-full border-[2.5px] border-ink bg-paper px-4 pb-3 pt-5 shadow-[5px_5px_0_#1d1638] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex items-center gap-3 overflow-x-auto rounded-full border border-line bg-paper/95 px-4 pb-3 pt-5 shadow-lift backdrop-blur [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {showEffects && (
           <>
             <button
@@ -116,14 +116,14 @@ export function ColorPalette({
               aria-label={`Effetto: ${EFFECT_LABELS[effect].name}. Tocca per cambiarlo`}
               aria-expanded={trayOpen}
               title={EFFECT_LABELS[effect].name}
-              className="relative h-12 w-12 shrink-0 rounded-2xl border-[2.5px] border-ink shadow-[0_3px_0_#1d1638] transition active:scale-90"
+              className="relative h-12 w-12 shrink-0 rounded-2xl border border-line shadow-soft transition-transform duration-150 ease-out active:scale-[0.94]"
               style={{ backgroundImage: preview(previewColor, effect) }}
             >
-              <span className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full border-2 border-ink bg-sun">
+              <span className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full border border-line bg-paper text-ink shadow-soft">
                 <Icon name="sparkles" className="!h-3.5 !w-3.5" />
               </span>
             </button>
-            <span className="h-9 w-[2.5px] shrink-0 rounded-full bg-ink/15" />
+            <span className="h-8 w-px shrink-0 bg-line-strong" />
           </>
         )}
 
@@ -135,7 +135,7 @@ export function ColorPalette({
             aria-pressed={selected === color}
             onClick={() => onSelect(color)}
             style={{ backgroundColor: color }}
-            className={`swatch ${swatchSize} shrink-0 rounded-full border-[2.5px] border-ink`}
+            className={`swatch ${swatchSize} shrink-0 rounded-full border border-line`}
           />
         ))}
 
@@ -144,7 +144,7 @@ export function ColorPalette({
           aria-label="Gomma"
           aria-pressed={selected === ERASER}
           onClick={() => onSelect(ERASER)}
-          className={`swatch flex ${swatchSize} shrink-0 items-center justify-center rounded-full border-[2.5px] border-ink bg-paper`}
+          className={`swatch flex ${swatchSize} shrink-0 items-center justify-center rounded-full border border-line bg-paper`}
         >
           <Icon name="eraser" />
         </button>

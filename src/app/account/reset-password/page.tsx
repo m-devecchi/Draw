@@ -38,7 +38,7 @@ export default function ResetPasswordPage() {
       <div className="ink-card w-full max-w-sm p-7 sm:p-8">
         <div className="mb-6 text-center">
           <div className="mb-2 text-5xl">🔑</div>
-          <h1 className="font-display text-3xl font-extrabold">
+          <h1 className="font-display text-3xl font-semibold">
             Scegli la nuova password
           </h1>
         </div>
@@ -63,7 +63,7 @@ export default function ResetPasswordPage() {
             className="ink-field"
           />
           {error && (
-            <p className="rounded-2xl border-2 border-ink bg-tomato-50 p-3 text-sm font-bold">
+            <p className="rounded-2xl border border-line-strong bg-tomato-50 p-3 text-sm font-bold">
               {error}
             </p>
           )}

@@ -73,14 +73,14 @@ export default async function AccountPage() {
         >
           <Icon name="home" />
         </Link>
-        <h1 className="font-display text-3xl font-extrabold">
+        <h1 className="font-display text-3xl font-semibold">
           Il tuo account
         </h1>
       </header>
 
       {/* Profilo */}
       <section className="ink-card p-6">
-        <h2 className="mb-1 font-display text-2xl font-extrabold">Profilo</h2>
+        <h2 className="mb-1 font-display text-2xl font-semibold">Profilo</h2>
         <p className="mb-4 text-sm font-semibold text-ink-soft">
           {user.email}
           {memberSince && ` · con noi dal ${memberSince}`}
@@ -90,24 +90,24 @@ export default async function AccountPage() {
 
       {/* Piano e utilizzo */}
       <section className="ink-card mt-6 p-6">
-        <h2 className="mb-4 font-display text-2xl font-extrabold">Piano e utilizzo</h2>
+        <h2 className="mb-4 font-display text-2xl font-semibold">Piano e utilizzo</h2>
         <div className="mb-4 grid grid-cols-3 gap-3 text-center">
-          <div className="rounded-2xl border-2 border-ink bg-canvas p-3">
-            <p className="font-display text-3xl font-extrabold">
+          <div className="rounded-2xl border border-line-strong bg-canvas p-3">
+            <p className="font-display text-3xl font-semibold">
               <Emoji char={quota.plan === "premium" ? "⭐" : "🖍️"} size={36} decorative />
             </p>
             <p className="text-xs font-extrabold text-ink-soft">
               {quota.plan === "premium" ? "Premium" : "Free"}
             </p>
           </div>
-          <div className="rounded-2xl border-2 border-ink bg-canvas p-3">
-            <p className="font-display text-3xl font-extrabold">
+          <div className="rounded-2xl border border-line-strong bg-canvas p-3">
+            <p className="font-display text-3xl font-semibold">
               {quota.usedToday}/{quota.limit}
             </p>
             <p className="text-xs font-extrabold text-ink-soft">oggi</p>
           </div>
-          <div className="rounded-2xl border-2 border-ink bg-canvas p-3">
-            <p className="font-display text-3xl font-extrabold">
+          <div className="rounded-2xl border border-line-strong bg-canvas p-3">
+            <p className="font-display text-3xl font-semibold">
               {drawingsCount ?? 0}
             </p>
             <p className="text-xs font-extrabold text-ink-soft">disegni totali</p>
@@ -130,7 +130,7 @@ export default async function AccountPage() {
 
       {/* Bambini */}
       <section className="ink-card mt-6 p-6">
-        <h2 className="mb-1 font-display text-2xl font-extrabold">I tuoi bambini</h2>
+        <h2 className="mb-1 font-display text-2xl font-semibold">I tuoi bambini</h2>
         <p className="mb-4 text-sm font-semibold text-ink-soft">
           Crea un profilo per ogni bimbo: nella home scegli chi sta disegnando
           e ognuno ritrova i propri disegni.
@@ -140,7 +140,7 @@ export default async function AccountPage() {
 
       {/* Cancello parentale */}
       <section className="ink-card mt-6 p-6">
-        <h2 className="mb-1 font-display text-2xl font-extrabold">PIN genitore</h2>
+        <h2 className="mb-1 font-display text-2xl font-semibold">PIN genitore</h2>
         <p className="mb-4 text-sm font-semibold text-ink-soft">
           {parentProfile?.parent_pin_hash
             ? "Questa area è protetta dal tuo PIN. Puoi cambiarlo qui."
@@ -151,12 +151,12 @@ export default async function AccountPage() {
 
       {/* Sicurezza */}
       <section className="ink-card mt-6 p-6">
-        <h2 className="mb-4 font-display text-2xl font-extrabold">Cambia email</h2>
+        <h2 className="mb-4 font-display text-2xl font-semibold">Cambia email</h2>
         <EmailForm currentEmail={user.email ?? ""} />
       </section>
 
       <section className="ink-card mt-6 p-6">
-        <h2 className="mb-4 font-display text-2xl font-extrabold">Cambia password</h2>
+        <h2 className="mb-4 font-display text-2xl font-semibold">Cambia password</h2>
         <PasswordForm />
       </section>
 

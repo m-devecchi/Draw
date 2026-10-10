@@ -48,7 +48,7 @@ export function ParentGateForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {!hasPin && challenge && (
-        <p className="text-center font-display text-4xl font-extrabold">
+        <p className="text-center font-display text-4xl font-semibold">
           {challenge.a} × {challenge.b} = ?
         </p>
       )}
@@ -64,7 +64,7 @@ export function ParentGateForm({
         className="ink-field text-center text-2xl tracking-[0.4em]"
       />
       {error && (
-        <p className="rounded-2xl border-2 border-ink bg-tomato-50 p-3 text-center text-sm font-bold">
+        <p className="rounded-2xl border border-line-strong bg-tomato-50 p-3 text-center text-sm font-bold">
           {error}
         </p>
       )}

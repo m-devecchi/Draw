@@ -10,6 +10,7 @@ import { HomeHero, Scribble, SectionTitle } from "@/components/fun/HomeHero";
 import { Logo } from "@/components/fun/Logo";
 import { demoStore, type DemoDrawing } from "@/lib/demo-store";
 import { SAMPLE_DRAWINGS } from "@/lib/samples";
+import { refineLines } from "@/lib/refine-lines";
 
 // Home della modalità PoC: niente login, disegni salvati sul dispositivo.
 export function DemoHome() {
@@ -38,7 +39,7 @@ export function DemoHome() {
     <main className="mx-auto max-w-5xl px-4 pb-10 pt-5 sm:px-6 sm:pt-8">
       <header className="mb-6 flex items-center justify-between gap-3">
         <Logo />
-        <span className="ink-chip -rotate-2 bg-mint-50">Prova senza account</span>
+        <span className="ink-chip bg-mint-50">Prova senza account</span>
       </header>
 
       <HomeHero
@@ -72,10 +73,10 @@ export function DemoHome() {
                 className="ink-card drawing-card block w-full p-2.5 text-left"
               >
                 <div
-                  className="coloring-svg pointer-events-none overflow-hidden rounded-2xl border-2 border-ink/15"
-                  dangerouslySetInnerHTML={{ __html: s.content }}
+                  className="coloring-svg pointer-events-none overflow-hidden rounded-2xl border border-line"
+                  dangerouslySetInnerHTML={{ __html: refineLines(s.content) }}
                 />
-                <p className="mt-2 line-clamp-2 px-1 font-display text-[1.02rem] font-bold leading-tight">
+                <p className="mt-2 line-clamp-2 px-1 font-display text-[1.02rem] font-semibold leading-tight">
                   {s.prompt}
                 </p>
               </button>

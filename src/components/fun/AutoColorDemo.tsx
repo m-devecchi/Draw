@@ -3,16 +3,17 @@
 import { useEffect, useRef } from "react";
 import { indexRegions } from "@/lib/svg-regions";
 import { spreadFill } from "@/lib/spread-fill";
+import { refineLines } from "@/lib/refine-lines";
 
 const COLORS = [
-  "#4cc9f0",
-  "#ffd23f",
-  "#2ec4a0",
-  "#ff5e5b",
-  "#8b5cf6",
-  "#ff8fcf",
-  "#ff9f43",
-  "#a8e05f",
+  "#a5cae3",
+  "#f4d27c",
+  "#a6cb8c",
+  "#efb2ae",
+  "#bba8d8",
+  "#efa877",
+  "#a6d2c4",
+  "#d69bb7",
 ];
 
 /**
@@ -32,7 +33,7 @@ export function AutoColorDemo({
   useEffect(() => {
     const container = ref.current;
     if (!container) return;
-    container.innerHTML = content;
+    container.innerHTML = refineLines(content);
     const count = indexRegions(container);
     const regions = [
       ...container.querySelectorAll<SVGGraphicsElement>("[data-colorable='1']"),
@@ -69,10 +70,10 @@ export function AutoColorDemo({
               y: box.y + box.height * (0.3 + Math.random() * 0.4),
             }
           : null;
-        spreadFill(el, local, 520);
+        spreadFill(el, local, 900);
         el.setAttribute("fill", COLORS[step % COLORS.length]);
         step += 1;
-        timer = setTimeout(next, step === 1 ? 700 : 420);
+        timer = setTimeout(next, step === 1 ? 900 : 560);
       } else {
         // Pausa per ammirare, poi si ricomincia da un foglio bianco
         timer = setTimeout(() => {
