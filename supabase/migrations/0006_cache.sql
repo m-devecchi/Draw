@@ -45,6 +45,11 @@ create or replace function public.bump_template_uses(template uuid)
 returns void
 language sql
 security definer
+set search_path = ''
 as $$
   update public.drawing_templates set uses = uses + 1 where id = template;
 $$;
+
+-- La chiama solo il server: nessun client deve poter gonfiare i contatori.
+revoke execute on function public.bump_template_uses(uuid)
+  from public, anon, authenticated;
