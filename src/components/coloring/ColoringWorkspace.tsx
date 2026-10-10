@@ -19,6 +19,7 @@ import { ColorPalette } from "./ColorPalette";
 import { FreehandLayer } from "./FreehandLayer";
 import { Confetti } from "./Confetti";
 import { PinchZoom } from "./PinchZoom";
+import { Splash, type SplashHandle } from "./Splash";
 import { ERASER } from "./palette";
 import { FloodFillCanvas, type FloodFillHandle } from "./FloodFillCanvas";
 import { SvgColoring, type SvgColoringHandle } from "./SvgColoring";
@@ -120,6 +121,10 @@ export function ColoringWorkspace({
   }, [fills, regionCount]);
 
   const svgRef = useRef<SvgColoringHandle>(null);
+  const splashRef = useRef<SplashHandle>(null);
+  // Ultimo punto toccato: lo schizzo di colore parte da lì.
+  const lastPointer = useRef<{ x: number; y: number } | null>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
   const rasterRef = useRef<FloodFillHandle>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const colorRef = useRef(color);
@@ -180,6 +185,13 @@ export function ColoringWorkspace({
     [scheduleSave]
   );
 
+  function burstAtPointer(color: string, sparkle: boolean) {
+    const pt = lastPointer.current;
+    const box = rootRef.current?.getBoundingClientRect();
+    if (!pt || !box) return;
+    splashRef.current?.burst(pt.x - box.left, pt.y - box.top, color, sparkle);
+  }
+
   // Gli effetti (suoni, coriandoli, cronologia) stanno FUORI dall'updater
   // di setFills: React puo' rieseguire un updater, e una festa doppia o un
   // suono doppio si sentirebbero.
@@ -194,11 +206,13 @@ export function ColoringWorkspace({
         if (next[String(region)] === undefined) return; // gia' bianca
         delete next[String(region)];
         playErase();
+        burstAtPointer("#d6d3d1", false);
       } else {
         const painted = encodeFill(chosen, effectRef.current);
         if (next[String(region)] === painted) return; // gia' cosi'
         next[String(region)] = painted;
         playFill(Object.keys(next).length);
+        burstAtPointer(chosen, effectRef.current !== "flat");
       }
 
       setHistory((h) => [
@@ -254,10 +268,23 @@ export function ColoringWorkspace({
   }
 
   const floatingBtn =
-    "pointer-events-auto flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-xl shadow-lg backdrop-blur transition active:scale-90";
+    "pointer-events-auto flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-xl shadow-[0_4px_0_rgba(58,46,42,0.12),0_8px_20px_-6px_rgba(58,46,42,0.35)] ring-1 ring-black/5 backdrop-blur transition hover:-translate-y-0.5 active:translate-y-0.5 active:scale-90";
 
   return (
-    <div className="fixed inset-0 overflow-hidden bg-white">
+    <div
+      ref={rootRef}
+      className="fixed inset-0 overflow-hidden bg-white"
+      onPointerDownCapture={(e) => {
+        lastPointer.current = { x: e.clientX, y: e.clientY };
+      }}
+      onClickCapture={(e) => {
+        // Un click "sintetico" (tastiera, test) non ha coordinate utili:
+        // si tiene buono solo quello con una posizione vera.
+        if (e.clientX || e.clientY) {
+          lastPointer.current = { x: e.clientX, y: e.clientY };
+        }
+      }}
+    >
       {/* Disegno a tutto schermo: due dita per lo zoom, trascina per spostare */}
       <PinchZoom panEnabled={tool !== "draw"}>
         {kind === "svg" ? (
@@ -285,6 +312,8 @@ export function ColoringWorkspace({
 
       {/* Coriandoli quando il disegno e' completo */}
       <Confetti trigger={confettiTrigger} />
+      <Splash ref={splashRef} />
+      {confettiTrigger > 0 && <BravoBanner key={confettiTrigger} />}
 
       {/* Barra in alto: indietro, titolo, azioni */}
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center gap-2 p-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
@@ -296,7 +325,7 @@ export function ColoringWorkspace({
           🏠
         </Link>
         {prompt && (
-          <span className="pointer-events-auto max-w-[40vw] truncate rounded-full bg-white/90 px-4 py-2 text-sm font-extrabold text-stone-600 shadow-lg backdrop-blur">
+          <span className="pointer-events-auto max-w-[40vw] truncate rounded-full bg-white/90 px-4 py-2 font-display text-base font-semibold text-stone-600 shadow-lg ring-1 ring-black/5 backdrop-blur">
             {prompt}
           </span>
         )}
@@ -390,6 +419,32 @@ export function ColoringWorkspace({
           swatchSize={setup.swatchSize}
         />
       </div>
+    </div>
+  );
+}
+
+const BRAVO_WORDS = ["Bravo!", "Che bello!", "Fantastico!", "Capolavoro!"];
+
+// Scritta gigante che salta fuori a disegno finito, poi se ne va da sola.
+function BravoBanner() {
+  const [word] = useState(
+    () => BRAVO_WORDS[Math.floor(Math.random() * BRAVO_WORDS.length)]
+  );
+  return (
+    <div
+      aria-live="polite"
+      className="bravo-banner pointer-events-none absolute left-1/2 top-1/2 z-30 flex flex-col items-center"
+    >
+      <span className="text-6xl drop-shadow-lg">🏆</span>
+      <span
+        className="rainbow-text font-display text-6xl font-bold sm:text-7xl"
+        style={{
+          WebkitTextStroke: "2px rgba(255,255,255,0.9)",
+          filter: "drop-shadow(0 6px 0 rgba(58,46,42,0.18))",
+        }}
+      >
+        {word}
+      </span>
     </div>
   );
 }

@@ -7,6 +7,15 @@ import { DrawingThumb } from "./DrawingThumb";
 import { demoStore } from "@/lib/demo-store";
 import type { Stroke } from "@/lib/strokes";
 
+// Inclinazioni e colori del nastro: la bacheca sembra fatta a mano.
+const TILTS = [-2, 1.5, -1, 2.2, -1.6, 0.8];
+const TAPES = [
+  "rgba(255,206,62,0.7)",
+  "rgba(255,138,212,0.6)",
+  "rgba(78,167,255,0.55)",
+  "rgba(88,204,109,0.55)",
+];
+
 export interface GalleryDrawing {
   id: string;
   prompt: string;
@@ -76,7 +85,7 @@ export function DrawingGallery({
             setSelected(new Set());
           }}
           aria-pressed={selecting}
-          className={`rounded-full px-4 py-2 text-sm font-bold shadow transition active:scale-95 ${
+          className={`btn-candy rounded-full px-4 py-2 text-sm font-bold ${
             selecting ? "bg-crayon-yellow" : "bg-white text-stone-500"
           }`}
         >
@@ -94,14 +103,15 @@ export function DrawingGallery({
                     : new Set(drawings.map((d) => d.id))
                 )
               }
-              className="rounded-full bg-white px-4 py-2 text-sm font-bold text-stone-500 shadow transition active:scale-95"
+              className="btn-candy rounded-full bg-white px-4 py-2 text-sm font-bold text-stone-500"
             >
               {selected.size === drawings.length ? "Nessuno" : "Tutti"}
             </button>
             {selectedIds.length > 0 && (
               <Link
                 href={`/print/insieme?ids=${selectedIds.join(",")}`}
-                className="rounded-full bg-crayon-green px-5 py-2 text-sm font-extrabold text-white shadow-lg transition active:scale-95"
+                style={{ "--candy-edge": "#3a9c4c" } as React.CSSProperties}
+                className="btn-candy rounded-full bg-crayon-green px-5 py-2 text-sm font-extrabold text-white"
               >
                 🖨️ Stampa {selectedIds.length}{" "}
                 {selectedIds.length === 1 ? "disegno" : "disegni"}
@@ -112,16 +122,25 @@ export function DrawingGallery({
       </div>
 
       <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-        {drawings.map((d) => {
+        {drawings.map((d, i) => {
           const isSelected = selected.has(d.id);
+          const look = {
+            "--tilt": `${TILTS[i % TILTS.length]}deg`,
+            "--tape": TAPES[i % TAPES.length],
+          } as React.CSSProperties;
           return (
-            <li key={d.id} className="relative">
+            <li
+              key={d.id}
+              className="pop-in relative"
+              style={{ "--i": Math.min(i, 12) } as React.CSSProperties}
+            >
               {selecting ? (
                 <button
                   type="button"
                   onClick={() => toggle(d.id)}
                   aria-pressed={isSelected}
-                  className={`block w-full rounded-3xl bg-white p-3 text-left shadow transition active:scale-95 ${
+                  style={look}
+                  className={`polaroid card-sticker block w-full rounded-3xl bg-white p-3 text-left active:scale-95 ${
                     isSelected ? "ring-4 ring-crayon-green" : ""
                   }`}
                 >
@@ -147,7 +166,8 @@ export function DrawingGallery({
                 <>
                   <Link
                     href={`/color/${d.id}${hrefSuffix}`}
-                    className="block rounded-3xl bg-white p-3 shadow transition hover:shadow-lg active:scale-95"
+                    style={look}
+                    className="polaroid polaroid-tape card-sticker relative block rounded-3xl bg-white p-3 hover:shadow-2xl active:scale-95"
                   >
                     <DrawingThumb
                       content={d.content}
@@ -181,7 +201,7 @@ export function DrawingGallery({
               )}
 
               {confirming === d.id && (
-                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-3xl bg-white/95 p-3 text-center backdrop-blur">
+                <div className="pop-in absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-3xl bg-white/95 p-3 text-center backdrop-blur">
                   <p className="text-sm font-bold text-stone-600">
                     Butto via questo disegno?
                   </p>

@@ -30,13 +30,13 @@ export function AgeSelect({
               disabled={disabled}
               onClick={() => onChange(band)}
               aria-pressed={active}
-              className={`flex flex-col items-center gap-0.5 rounded-2xl px-2 py-2 transition active:scale-95 disabled:opacity-40 ${
+              className={`wiggle-on-hover flex flex-col items-center gap-0.5 rounded-2xl px-2 py-2 transition active:scale-95 disabled:opacity-40 ${
                 active
-                  ? "bg-crayon-yellow shadow-md ring-2 ring-stone-600/40"
-                  : "bg-stone-50 hover:bg-crayon-yellow/30"
+                  ? "-translate-y-0.5 bg-crayon-yellow shadow-[0_4px_0_#e0a800] ring-2 ring-white"
+                  : "bg-stone-50 shadow-[0_3px_0_rgba(58,46,42,0.07)] hover:bg-crayon-yellow/30"
               }`}
             >
-              <span className="text-2xl">{setup.icon}</span>
+              <span className="wiggle-target text-2xl">{setup.icon}</span>
               <span className="text-xs font-extrabold text-stone-600">
                 {setup.label}
               </span>

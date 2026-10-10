@@ -6,6 +6,9 @@ import { KidSwitcher } from "@/components/KidSwitcher";
 import { PromptForm } from "@/components/PromptForm";
 import { UpgradeButton } from "@/components/UpgradeButton";
 import { DemoHome } from "@/components/demo/DemoHome";
+import { EmptyGallery } from "@/components/fun/EmptyGallery";
+import { Logo } from "@/components/fun/Logo";
+import { PlayfulBackdrop } from "@/components/fun/PlayfulBackdrop";
 import { isDemoMode } from "@/lib/config";
 import { parseStrokes } from "@/lib/strokes";
 import { getQuotaStatus } from "@/lib/quota";
@@ -70,17 +73,16 @@ export default async function HomePage({
   const kidById = new Map((kids ?? []).map((k) => [k.id, k]));
 
   return (
-    <main className="mx-auto max-w-3xl p-4 pb-16 sm:p-6">
+    <main className="relative mx-auto max-w-3xl p-4 pb-16 sm:p-6">
+      <PlayfulBackdrop />
       <header className="mb-6 flex items-center justify-between">
-        <h1 className="text-3xl font-extrabold text-crayon-purple">
-          🖍️ Colora
-        </h1>
+        <Logo />
         <div className="flex items-center gap-3">
           <span
             className={`rounded-full px-3 py-1 text-xs font-bold ${
               quota.plan === "premium"
-                ? "bg-crayon-yellow"
-                : "bg-stone-200 text-stone-600"
+                ? "bg-crayon-yellow shadow-[0_3px_0_#e0a800]"
+                : "bg-white text-stone-600 shadow-[0_3px_0_#e7e5e4]"
             }`}
           >
             {quota.plan === "premium" ? "⭐ Premium" : "Free"}
@@ -89,18 +91,22 @@ export default async function HomePage({
           <Link
             href="/parent-gate?next=/account"
             aria-label="Area genitori"
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-lg shadow transition active:scale-90"
+            className="btn-candy flex h-11 w-11 items-center justify-center rounded-full bg-white text-lg"
           >
             🔒
           </Link>
         </div>
       </header>
 
-      <section className="rounded-3xl bg-white p-6 shadow-xl">
-        <h2 className="mb-4 text-2xl font-extrabold">
-          {activeKidId
-            ? `${kidById.get(activeKidId)?.avatar} Cosa vuoi colorare, ${kidById.get(activeKidId)?.name}?`
-            : "Cosa vuoi colorare oggi?"}
+      <section className="card-sticker pop-in rounded-[2rem] bg-white/95 p-6 backdrop-blur">
+        <h2 className="mb-4 font-display text-3xl font-semibold leading-tight">
+          {activeKidId ? (
+            `${kidById.get(activeKidId)?.avatar} Cosa vuoi colorare, ${kidById.get(activeKidId)?.name}?`
+          ) : (
+            <>
+              Cosa vuoi <span className="rainbow-text">colorare</span> oggi?
+            </>
+          )}
         </h2>
         <PromptForm remaining={quota.remaining} kidId={activeKidId} />
         <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -116,18 +122,18 @@ export default async function HomePage({
       )}
 
       <section className="mt-8">
-        <h2 className="mb-3 text-xl font-extrabold">
+        <h2 className="mb-3 font-display text-2xl font-semibold">
           {activeKidId
             ? `I disegni di ${kidById.get(activeKidId)?.name ?? ""}`
             : "I tuoi disegni"}
         </h2>
         {!drawings?.length ? (
-          <div className="rounded-3xl bg-white/60 p-8 text-center text-stone-400">
+          <EmptyGallery>
             {activeKidId ? (
               <>
                 <p>
                   {kidById.get(activeKidId)?.name} non ha ancora disegni
-                  suoi. 🎨
+                  suoi.
                 </p>
                 <p className="mt-1 text-sm">
                   Creane uno qui sopra, oppure{" "}
@@ -138,9 +144,11 @@ export default async function HomePage({
                 </p>
               </>
             ) : (
-              <p>Ancora nessun disegno: creane uno qui sopra! 🎨</p>
+              <p className="font-bold">
+                Ancora nessun disegno: creane uno qui sopra!
+              </p>
             )}
-          </div>
+          </EmptyGallery>
         ) : (
           <DrawingGallery
             mode="cloud"

@@ -107,12 +107,13 @@ export function PromptForm({
           onChange={(e) => setPrompt(e.target.value)}
           placeholder="Es. un elefantino che fa il bagno"
           disabled={loading}
-          className="flex-1 rounded-2xl border-2 border-stone-200 px-4 py-3 text-lg outline-none focus:border-crayon-blue disabled:bg-stone-50"
+          className="flex-1 rounded-2xl border-[3px] border-stone-200 bg-stone-50/60 px-4 py-3 text-lg font-semibold outline-none transition placeholder:text-stone-300 focus:border-crayon-blue focus:bg-white focus:shadow-[0_0_0_5px_rgba(78,167,255,0.18)] disabled:bg-stone-50"
         />
         <button
           type="submit"
           disabled={loading || remaining <= 0}
-          className="rounded-2xl bg-crayon-green px-6 py-3 text-lg font-extrabold text-white shadow-lg transition active:scale-95 disabled:opacity-40"
+          style={{ "--candy-edge": "#3a9c4c" } as React.CSSProperties}
+          className="btn-candy rounded-2xl bg-crayon-green px-7 py-3 font-display text-xl font-bold tracking-wide text-white disabled:opacity-40"
         >
           {loading ? "Sto disegnando... ✏️" : "Crea!"}
         </button>
@@ -144,8 +145,8 @@ const LOADER_STEPS = [
   "Ci siamo quasi! 🎨",
 ];
 
-// Attesa giocosa: matite che rimbalzano e messaggi che si alternano,
-// così i secondi passano meno lentamente per un bambino.
+// Attesa giocosa: una matita che traccia una linea arcobaleno e messaggi
+// che si alternano, così i secondi passano meno lentamente per un bambino.
 function DrawingLoader() {
   const [step, setStep] = useState(0);
 
@@ -159,21 +160,34 @@ function DrawingLoader() {
 
   return (
     <div
-      className="mt-4 flex flex-col items-center gap-3 rounded-3xl bg-crayon-yellow/20 p-6"
+      className="mt-4 flex flex-col items-center gap-3 overflow-hidden rounded-3xl bg-gradient-to-br from-crayon-yellow/25 via-white to-crayon-blue/15 p-6"
       aria-live="polite"
     >
-      <div className="flex gap-2 text-3xl">
-        {["🖍️", "✏️", "🖌️"].map((emoji, i) => (
-          <span
-            key={emoji}
-            className="crayon-bounce"
-            style={{ animationDelay: `${i * 160}ms` }}
-          >
-            {emoji}
-          </span>
-        ))}
+      <div className="relative h-[80px] w-[290px] max-w-full" aria-hidden="true">
+        <svg viewBox="0 0 290 80" className="absolute inset-0 h-full w-full">
+          <defs>
+            <linearGradient id="loader-rainbow" x1="0" x2="1">
+              <stop offset="0" stopColor="#ff5c5c" />
+              <stop offset="0.25" stopColor="#ffce3e" />
+              <stop offset="0.5" stopColor="#58cc6d" />
+              <stop offset="0.75" stopColor="#4ea7ff" />
+              <stop offset="1" stopColor="#a06bff" />
+            </linearGradient>
+          </defs>
+          <path
+            className="draw-squiggle"
+            d="M10 40 C 40 5, 70 75, 100 40 S 160 5, 190 40 S 250 75, 280 40"
+            fill="none"
+            stroke="url(#loader-rainbow)"
+            strokeWidth="9"
+            strokeLinecap="round"
+          />
+        </svg>
+        <span className="pencil-ride absolute left-0 top-0 -translate-y-3 text-3xl">
+          ✏️
+        </span>
       </div>
-      <p className="text-sm font-extrabold text-crayon-purple">
+      <p className="font-display text-lg font-semibold text-crayon-purple">
         {LOADER_STEPS[step]}
       </p>
     </div>

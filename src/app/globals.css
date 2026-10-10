@@ -1,7 +1,9 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Nunito", "Segoe UI", system-ui, sans-serif;
+  --font-sans: var(--font-nunito), "Nunito", "Segoe UI", system-ui, sans-serif;
+  --font-display: var(--font-fredoka), "Fredoka", var(--font-nunito),
+    system-ui, sans-serif;
   --color-crayon-red: #ff5c5c;
   --color-crayon-yellow: #ffce3e;
   --color-crayon-blue: #4ea7ff;
@@ -15,9 +17,375 @@ body {
 }
 
 body {
-  background: #fff8ef;
+  /* Carta da disegno: crema caldo con una trama di puntini leggera */
+  background-color: #fff8ef;
+  background-image: radial-gradient(
+    rgba(160, 107, 255, 0.09) 1.2px,
+    transparent 1.3px
+  );
+  background-size: 22px 22px;
   color: #3a2e2a;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* ── Sfondo giocoso della home ───────────────────────────────────────── */
+
+/* Macchie di colore sfocate che respirano piano dietro alle schede */
+.blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(48px);
+  opacity: 0.45;
+  animation: blob-drift 18s ease-in-out infinite alternate;
+}
+
+@keyframes blob-drift {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(30px, -20px) scale(1.12);
+  }
+  100% {
+    transform: translate(-20px, 25px) scale(0.95);
+  }
+}
+
+/* Scarabocchi (stelle, nuvole, spirali) che galleggiano */
+.doodle {
+  position: absolute;
+  animation: doodle-float 7s ease-in-out infinite;
+}
+
+@keyframes doodle-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--r, 0deg));
+  }
+  50% {
+    transform: translateY(-14px) rotate(calc(var(--r, 0deg) + 8deg));
+  }
+}
+
+/* ── Logo arcobaleno: ogni lettera salta per conto suo ───────────────── */
+.logo-letter {
+  display: inline-block;
+  animation: letter-hop 3.2s ease-in-out infinite;
+  text-shadow:
+    0 3px 0 rgba(58, 46, 42, 0.18),
+    0 0 0 transparent;
+}
+
+@keyframes letter-hop {
+  0%,
+  70%,
+  100% {
+    transform: translateY(0) rotate(0);
+  }
+  78% {
+    transform: translateY(-7px) rotate(-6deg);
+  }
+  86% {
+    transform: translateY(0) rotate(4deg);
+  }
+}
+
+/* ── Bottoni "caramella": bordo spesso sotto che si schiaccia ────────── */
+.btn-candy {
+  position: relative;
+  box-shadow:
+    0 5px 0 var(--candy-edge, rgba(0, 0, 0, 0.18)),
+    0 10px 18px -6px rgba(58, 46, 42, 0.35);
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease,
+    filter 120ms ease;
+}
+
+.btn-candy::after {
+  /* riflesso lucido in alto */
+  content: "";
+  position: absolute;
+  inset: 3px 10% auto;
+  height: 38%;
+  border-radius: 9999px;
+  background: linear-gradient(rgba(255, 255, 255, 0.45), transparent);
+  pointer-events: none;
+}
+
+.btn-candy:hover:not(:disabled) {
+  filter: brightness(1.05) saturate(1.1);
+  transform: translateY(-1px);
+}
+
+.btn-candy:active:not(:disabled) {
+  transform: translateY(4px);
+  box-shadow:
+    0 1px 0 var(--candy-edge, rgba(0, 0, 0, 0.18)),
+    0 3px 6px -3px rgba(58, 46, 42, 0.35);
+}
+
+/* ── Schede "adesivo" ────────────────────────────────────────────────── */
+.card-sticker {
+  border: 3px solid #fff;
+  box-shadow:
+    0 0 0 2px rgba(58, 46, 42, 0.06),
+    0 18px 40px -18px rgba(90, 60, 140, 0.35),
+    0 4px 0 rgba(58, 46, 42, 0.06);
+}
+
+/* Ingresso a "pop" con ritardo scalato (--i = posizione) */
+.pop-in {
+  animation: pop-in 520ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: calc(var(--i, 0) * 45ms);
+}
+
+@keyframes pop-in {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.85);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Polaroid appese: leggermente storte, si raddrizzano al passaggio */
+.polaroid {
+  transform: rotate(var(--tilt, 0deg));
+  transition:
+    transform 260ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 200ms ease;
+}
+
+.polaroid:hover {
+  transform: rotate(0deg) translateY(-4px) scale(1.03);
+}
+
+/* Nastro adesivo in cima alla polaroid (solo CSS, niente SVG) */
+.polaroid-tape::before {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  width: 64px;
+  height: 20px;
+  transform: translateX(-50%) rotate(-3deg);
+  background: var(--tape, rgba(255, 206, 62, 0.65));
+  border-radius: 3px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Idee: l'emoji dondola quando il dito ci passa sopra */
+.wiggle-on-hover:hover .wiggle-target,
+.wiggle-on-hover[aria-pressed="true"] .wiggle-target {
+  animation: wiggle 600ms ease-in-out;
+}
+
+@keyframes wiggle {
+  0%,
+  100% {
+    transform: rotate(0) scale(1);
+  }
+  25% {
+    transform: rotate(-14deg) scale(1.15);
+  }
+  50% {
+    transform: rotate(10deg) scale(1.15);
+  }
+  75% {
+    transform: rotate(-6deg) scale(1.08);
+  }
+}
+
+/* Testo con sfumatura arcobaleno che scorre */
+.rainbow-text {
+  background: linear-gradient(
+    90deg,
+    #ff5c5c,
+    #ff9f43,
+    #ffce3e,
+    #58cc6d,
+    #4ea7ff,
+    #a06bff,
+    #ff5c5c
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: rainbow-slide 6s linear infinite;
+}
+
+@keyframes rainbow-slide {
+  to {
+    background-position: 200% center;
+  }
+}
+
+/* Matitone della palette: lucido, come una caramella */
+.swatch-gloss {
+  background-image:
+    radial-gradient(
+      circle at 32% 28%,
+      rgba(255, 255, 255, 0.75) 0 14%,
+      rgba(255, 255, 255, 0) 32%
+    ),
+    radial-gradient(
+      circle at 70% 80%,
+      rgba(0, 0, 0, 0.18),
+      rgba(0, 0, 0, 0) 55%
+    );
+}
+
+/* ── Schizzo di colore nel punto toccato ─────────────────────────────── */
+.splash-ring {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  border-radius: 9999px;
+  border: 4px solid currentColor;
+  pointer-events: none;
+  animation: splash-ring 520ms ease-out forwards;
+}
+
+@keyframes splash-ring {
+  0% {
+    transform: scale(0.3);
+    opacity: 0.95;
+  }
+  100% {
+    transform: scale(5.5);
+    opacity: 0;
+    border-width: 1px;
+  }
+}
+
+.splash-dot {
+  position: absolute;
+  width: var(--s, 10px);
+  height: var(--s, 10px);
+  margin: calc(var(--s, 10px) / -2) 0 0 calc(var(--s, 10px) / -2);
+  border-radius: 9999px;
+  background: currentColor;
+  pointer-events: none;
+  animation: splash-dot 620ms cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+}
+
+@keyframes splash-dot {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--dx), var(--dy)) scale(0.2);
+    opacity: 0;
+  }
+}
+
+.splash-star {
+  position: absolute;
+  font-size: 18px;
+  line-height: 1;
+  margin: -9px 0 0 -9px;
+  pointer-events: none;
+  animation: splash-star 760ms ease-out forwards;
+}
+
+@keyframes splash-star {
+  0% {
+    transform: translate(0, 0) scale(0.2) rotate(0);
+    opacity: 1;
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--dx), var(--dy)) scale(1.1) rotate(160deg);
+    opacity: 0;
+  }
+}
+
+/* ── Festa a disegno completato ──────────────────────────────────────── */
+.bravo-banner {
+  animation: bravo 2600ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes bravo {
+  0% {
+    transform: translate(-50%, -50%) scale(0) rotate(-20deg);
+    opacity: 0;
+  }
+  18% {
+    transform: translate(-50%, -50%) scale(1.15) rotate(4deg);
+    opacity: 1;
+  }
+  28% {
+    transform: translate(-50%, -50%) scale(1) rotate(-2deg);
+  }
+  80% {
+    transform: translate(-50%, -50%) scale(1) rotate(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -60%) scale(0.85);
+    opacity: 0;
+  }
+}
+
+/* Matita che disegna una linea ondulata durante l'attesa */
+.draw-squiggle {
+  stroke-dasharray: 420;
+  stroke-dashoffset: 420;
+  animation: draw-squiggle 2.2s ease-in-out infinite;
+}
+
+@keyframes draw-squiggle {
+  0% {
+    stroke-dashoffset: 420;
+  }
+  60%,
+  80% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: -420;
+  }
+}
+
+.pencil-ride {
+  offset-path: path("M10 40 C 40 5, 70 75, 100 40 S 160 5, 190 40 S 250 75, 280 40");
+  animation: pencil-ride 2.2s ease-in-out infinite;
+}
+
+@keyframes pencil-ride {
+  0% {
+    offset-distance: 0%;
+  }
+  60%,
+  100% {
+    offset-distance: 100%;
+  }
+}
+
+/* Chi preferisce meno movimento non riceve animazioni continue */
+@media (prefers-reduced-motion: reduce) {
+  .blob,
+  .doodle,
+  .logo-letter,
+  .rainbow-text,
+  .draw-squiggle,
+  .pencil-ride,
+  .crayon-bounce {
+    animation: none !important;
+  }
+  .draw-squiggle {
+    stroke-dashoffset: 0;
+  }
 }
 
 /* Le aree del disegno reagiscono al tocco */

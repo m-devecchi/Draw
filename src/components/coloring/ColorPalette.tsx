@@ -30,7 +30,7 @@ export function ColorPalette({
   const showEffects = effects.length > 1;
 
   const swatch = (active: boolean) =>
-    `${swatchSize} shrink-0 rounded-full border-4 shadow-md transition-transform active:scale-90 ${
+    `swatch-gloss ${swatchSize} shrink-0 rounded-full border-4 shadow-[0_3px_0_rgba(58,46,42,0.18)] transition-transform hover:-translate-y-1 active:scale-90 ${
       active
         ? "swatch-picked -translate-y-2 scale-125 border-white ring-4 ring-stone-700/70"
         : "border-white/70"
@@ -66,7 +66,7 @@ export function ColorPalette({
         </div>
       )}
 
-      <div className="flex items-center gap-2.5 overflow-x-auto rounded-full bg-white/85 px-4 py-3 shadow-2xl ring-1 ring-black/5 backdrop-blur-md [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex items-center gap-2.5 overflow-x-auto rounded-full bg-white/85 px-4 pb-3 pt-6 shadow-2xl ring-1 ring-black/5 backdrop-blur-md [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {showEffects && (
           <>
             <button

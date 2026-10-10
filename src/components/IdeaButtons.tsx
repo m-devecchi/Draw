@@ -18,6 +18,9 @@ export const IDEAS = [
   { emoji: "🐻", label: "orsetto", prompt: "Un orsetto con il miele" },
 ] as const;
 
+// Un pastello di sfondo per ogni idea, a rotazione.
+const TINTS = ["#fff1c2", "#ffe0e0", "#dcefff", "#dcf6e1", "#efe4ff", "#ffe6f5"];
+
 export function IdeaButtons({
   selected,
   onPick,
@@ -29,22 +32,29 @@ export function IdeaButtons({
 }) {
   return (
     <ul className="grid grid-cols-4 gap-2 sm:grid-cols-6">
-      {IDEAS.map((idea) => {
+      {IDEAS.map((idea, i) => {
         const active = selected === idea.prompt;
         return (
-          <li key={idea.label}>
+          <li
+            key={idea.label}
+            className="pop-in"
+            style={{ "--i": i } as React.CSSProperties}
+          >
             <button
               type="button"
               disabled={disabled}
               onClick={() => onPick(idea.prompt)}
               aria-pressed={active}
-              className={`flex w-full flex-col items-center gap-0.5 rounded-2xl px-1 py-2 transition active:scale-90 disabled:opacity-40 ${
+              style={active ? undefined : { backgroundColor: TINTS[i % TINTS.length] }}
+              className={`wiggle-on-hover flex w-full flex-col items-center gap-0.5 rounded-2xl px-1 py-2 transition hover:-translate-y-0.5 active:scale-90 disabled:opacity-40 ${
                 active
-                  ? "bg-crayon-yellow shadow-md ring-2 ring-stone-600/40"
-                  : "bg-stone-50 hover:bg-crayon-yellow/30"
+                  ? "bg-crayon-yellow shadow-[0_4px_0_#e0a800] ring-2 ring-white"
+                  : "shadow-[0_3px_0_rgba(58,46,42,0.08)]"
               }`}
             >
-              <span className="text-3xl">{idea.emoji}</span>
+              <span className="wiggle-target text-3xl drop-shadow-sm">
+                {idea.emoji}
+              </span>
               <span className="text-[11px] font-bold text-stone-500">
                 {idea.label}
               </span>
