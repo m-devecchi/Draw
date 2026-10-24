@@ -8,7 +8,10 @@ load
 : "${DB_CLUSTER_ARN:?esegui prima 01-aurora.sh}"
 : "${COGNITO_USER_POOL_ARN:?esegui prima 03-cognito.sh}"
 
-ROLE="${APP_NAME}-amplify-compute"
+# Un solo compute role per app Amplify: se dev e produzione stanno nella
+# stessa app, imposta COMPUTE_ROLE_NAME con lo stesso nome in entrambi i
+# config e il ruolo riceve le policy di tutti e due gli ambienti.
+ROLE="${COMPUTE_ROLE_NAME:-${APP_NAME}-amplify-compute}"
 POLICY="${APP_NAME}-app-access"
 
 say "Policy $POLICY"

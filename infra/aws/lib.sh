@@ -3,15 +3,21 @@
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-OUT="$HERE/.out"
-mkdir -p "$OUT"
 
-if [[ ! -f "$HERE/config.env" ]]; then
-  echo "Manca infra/aws/config.env: copia config.env.example e compilalo." >&2
+# Un file di configurazione per ambiente: di serie config.env, oppure
+#   CONFIG=config.dev.env ./01-aurora.sh
+CONFIG_FILE="$HERE/${CONFIG:-config.env}"
+if [[ ! -f "$CONFIG_FILE" ]]; then
+  echo "Manca $CONFIG_FILE: copia config.env.example e compilalo." >&2
   exit 1
 fi
-# shellcheck disable=SC1091
-source "$HERE/config.env"
+# shellcheck disable=SC1090
+source "$CONFIG_FILE"
+
+# I valori prodotti stanno in una cartella per ambiente (dal nome APP_NAME),
+# cosi' dev e produzione non si sovrascrivono.
+OUT="$HERE/.out/$APP_NAME"
+mkdir -p "$OUT"
 
 export AWS_REGION AWS_DEFAULT_REGION="$AWS_REGION"
 export AWS_PAGER=""

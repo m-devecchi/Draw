@@ -43,12 +43,35 @@ cd infra/aws
 ```
 
 Tutti gli script si possono rilanciare: saltano ciò che esiste già. I valori
-prodotti (ARN, id) finiscono in `infra/aws/.out/` (ignorata da git).
+prodotti (ARN, id) finiscono in `infra/aws/.out/<APP_NAME>/` (ignorata da git).
+
+## Più ambienti (sviluppo e produzione)
+
+Ogni ambiente ha il suo file di configurazione, con un `APP_NAME` diverso
+(es. `colora-dev` e `colora`) e il proprio `APP_URL`:
+
+```bash
+cp config.env.example config.dev.env    # APP_NAME=colora-dev, APP_URL=<url del branch develop>
+CONFIG=config.dev.env ./01-aurora.sh
+CONFIG=config.dev.env ./02-schema.sh
+CONFIG=config.dev.env ./03-cognito.sh
+CONFIG=config.dev.env ./04-iam.sh
+```
+
+Si ripete con `config.env` per la produzione. Risorse e valori restano
+separati (cluster, user pool e `.out/<APP_NAME>/` distinti).
+
+Su Amplify, imposta le variabili di ogni ambiente **per branch**
+(Environment variables → *Add variable override* → scegli il branch), così
+`develop` usa il database di sviluppo e `main` quello di produzione. Se i due
+branch stanno nella stessa app Amplify, usa lo stesso `COMPUTE_ROLE_NAME` in
+entrambi i config: il ruolo avrà le policy di tutti e due i database.
+Un ambiente in pausa costa solo lo storage (pochi centesimi).
 
 ## Configurare Amplify
 
 1. **Variabili d'ambiente** (Amplify → App settings → Environment variables):
-   incolla il contenuto di `.out/amplify-env.txt`, più `ANTHROPIC_API_KEY` e
+   incolla il contenuto di `.out/<APP_NAME>/amplify-env.txt`, più `ANTHROPIC_API_KEY` e
    le altre di `.env.example` che usi (Stripe, limiti).
 2. **Compute role** (App settings → IAM roles): scegli
    `<APP_NAME>-amplify-compute`. È il ruolo che permette all'app di parlare
