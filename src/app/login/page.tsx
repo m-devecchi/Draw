@@ -2,13 +2,24 @@
 
 import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { AutoColorDemo } from "@/components/fun/AutoColorDemo";
 import { Logo } from "@/components/fun/Logo";
 import { SAMPLE_DRAWINGS } from "@/lib/samples";
 
 const DEMO =
   SAMPLE_DRAWINGS.find((s) => s.slug === "castello") ?? SAMPLE_DRAWINGS[0];
+
+// POST JSON; se la risposta non è ok lancia un errore col messaggio del server.
+async function post(url: string, body: object) {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok) throw new Error(data?.error ?? "Qualcosa è andato storto, riprova.");
+  return data;
+}
 
 function LoginForm() {
   const router = useRouter();
@@ -28,89 +39,35 @@ function LoginForm() {
     setError(null);
     setInfo(null);
     setLoading(true);
-    const supabase = createClient();
 
     try {
-      if (mode === "signin") {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (error) throw error;
-        router.push(next);
-        router.refresh();
-      } else {
+      if (mode === "signup") {
         // Il server crea l'account già confermato; poi si entra subito.
-        const res = await fetch("/api/auth/signup", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
-        });
-        const result = await res.json().catch(() => null);
-        if (!res.ok) {
-          throw new Error(result?.error ?? "Registrazione non riuscita, riprova.");
-        }
-
-        if (result?.confirm) {
-          // Conferma via email richiesta (REQUIRE_EMAIL_CONFIRMATION=true)
-          const { data, error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-              emailRedirectTo: `${window.location.origin}/auth/callback`,
-            },
-          });
-          if (error) throw error;
-          if (!data.session) {
-            setInfo("Controlla la tua email per confermare la registrazione.");
-            return;
-          }
-        } else {
-          const { error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
-          if (error) throw error;
-        }
-        router.push(next);
-        router.refresh();
+        await post("/api/auth/signup", { email, password });
       }
+      await post("/api/auth/login", { email, password });
+      router.push(next);
+      router.refresh();
     } catch (err) {
       setError(
-        err instanceof Error && err.message === "Invalid login credentials"
-          ? "Email o password non corretti."
-          : err instanceof Error && err.message === "Email not confirmed"
-            ? "Questo account non è ancora confermato: scrivici e lo sblocchiamo."
-            : err instanceof Error
-            ? err.message
-            : "Qualcosa è andato storto, riprova."
+        err instanceof Error
+          ? err.message
+          : "Qualcosa è andato storto, riprova."
       );
     } finally {
       setLoading(false);
     }
   }
 
-  // Login con Google / Apple (i provider vanno abilitati su Supabase).
-  async function handleOAuth(provider: "google" | "apple") {
+  // Login con Google / Apple: si passa dalla pagina di accesso di Cognito
+  // (i provider vanno abilitati sullo user pool).
+  function handleOAuth(provider: "google" | "apple") {
     setError(null);
     setOauthLoading(provider);
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
-      },
-    });
-    if (error) {
-      setOauthLoading(null);
-      setError(
-        `Accesso con ${provider === "google" ? "Google" : "Apple"} non disponibile al momento.`
-      );
-    }
-    // In caso di successo il browser viene reindirizzato al provider.
+    window.location.href = `/auth/oauth?provider=${provider}&next=${encodeURIComponent(next)}`;
   }
 
-  // Invia l'email di recupero password.
+  // Manda il codice di recupero e porta alla pagina dove inserirlo.
   async function handleForgotPassword() {
     setError(null);
     setInfo(null);
@@ -118,15 +75,14 @@ function LoginForm() {
       setError("Scrivi prima la tua email qui sopra, poi ripremi il link.");
       return;
     }
-    const supabase = createClient();
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/callback?next=/account/reset-password`,
-    });
-    if (error) {
-      setError("Invio non riuscito, riprova tra qualche minuto.");
-    } else {
-      setInfo(
-        "Ti abbiamo mandato un'email: apri il link per scegliere una nuova password (controlla anche lo spam)."
+    try {
+      await post("/api/auth/forgot", { email });
+      router.push(`/login/reset?email=${encodeURIComponent(email)}`);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Invio non riuscito, riprova tra qualche minuto."
       );
     }
   }

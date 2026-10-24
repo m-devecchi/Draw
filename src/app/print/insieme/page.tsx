@@ -1,9 +1,10 @@
 import { redirect } from "next/navigation";
 import { DemoPrintBatch } from "@/components/demo/DemoPrintBatch";
 import { PrintView } from "@/components/print/PrintView";
+import { getCurrentUser } from "@/lib/auth/server";
+import { getDrawingsByIds } from "@/lib/db/repo";
 import { isDemoMode } from "@/lib/config";
 import { parseStrokes } from "@/lib/strokes";
-import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
@@ -27,18 +28,11 @@ export default async function PrintBatchPage({
     return <DemoPrintBatch ids={ids} />;
   }
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  // La RLS restituisce solo i disegni dell'utente.
-  const { data } = await supabase
-    .from("drawings")
-    .select("id, prompt, content, fills, strokes")
-    .in("id", ids);
-  if (!data?.length) redirect("/");
+  const data = await getDrawingsByIds(user.id, ids);
+  if (!data.length) redirect("/");
 
   // Si rispetta l'ordine in cui il genitore li ha scelti.
   const byId = new Map(data.map((d) => [d.id, d]));
@@ -49,7 +43,7 @@ export default async function PrintBatchPage({
       id: d.id,
       prompt: d.prompt,
       content: d.content,
-      fills: (d.fills ?? {}) as Record<string, string>,
+      fills: d.fills,
       strokes: parseStrokes(d.strokes),
     }));
 

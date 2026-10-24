@@ -17,11 +17,10 @@ export const PARENT_COOKIE = "colora_parent";
 const UNLOCK_MINUTES = 15;
 
 function secret(): string {
-  const s =
-    process.env.PARENT_GATE_SECRET ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const s = process.env.PARENT_GATE_SECRET;
   if (!s) {
     throw new Error(
-      "Cancello parentale non configurato: manca PARENT_GATE_SECRET (o SUPABASE_SERVICE_ROLE_KEY)"
+      "Cancello parentale non configurato: manca PARENT_GATE_SECRET"
     );
   }
   return s;

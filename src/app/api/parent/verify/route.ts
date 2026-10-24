@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { getCurrentUser } from "@/lib/auth/server";
+import { getProfile } from "@/lib/db/repo";
 import { isDemoMode } from "@/lib/config";
 import {
   PARENT_COOKIE,
@@ -7,8 +9,6 @@ import {
   verifyMathChallenge,
   verifyPin,
 } from "@/lib/parent-gate";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
 
 const bodySchema = z.union([
   z.object({ pin: z.string().min(4).max(12) }),
@@ -49,10 +49,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Richiesta non valida" }, { status: 400 });
   }
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) {
     return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
   }
@@ -64,13 +61,8 @@ export async function POST(request: Request) {
     );
   }
 
-  const admin = createAdminClient();
-  const { data: profile } = await admin
-    .from("profiles")
-    .select("parent_pin_hash")
-    .eq("id", user.id)
-    .single();
-  const pinHash: string | null = profile?.parent_pin_hash ?? null;
+  const profile = await getProfile(user.id);
+  const pinHash: string | null = profile?.parentPinHash ?? null;
 
   let ok = false;
   if ("pin" in parsed.data) {

@@ -1,4 +1,4 @@
-import { createAdminClient } from "@/lib/supabase/admin";
+import { countGenerationsSince, getProfile } from "@/lib/db/repo";
 
 export type Plan = "free" | "premium";
 
@@ -32,20 +32,13 @@ function startOfTodayUtc(): string {
 }
 
 export async function getQuotaStatus(userId: string): Promise<QuotaStatus> {
-  const admin = createAdminClient();
-
-  const [{ data: profile }, { count }] = await Promise.all([
-    admin.from("profiles").select("plan").eq("id", userId).single(),
-    admin
-      .from("generations")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", userId)
-      .gte("created_at", startOfTodayUtc()),
+  const [profile, usedToday] = await Promise.all([
+    getProfile(userId),
+    countGenerationsSince(userId, startOfTodayUtc()),
   ]);
 
   const plan: Plan = profile?.plan === "premium" ? "premium" : "free";
   const limit = dailyLimit(plan);
-  const usedToday = count ?? 0;
 
   return {
     plan,

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/auth/server";
+import { deleteDrawing, updateDrawing } from "@/lib/db/repo";
 
 // Salvataggio dei colori applicati: mappa indice-regione → riempimento.
 // Il riempimento è un colore hex con un effetto facoltativo in coda
@@ -28,10 +29,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) {
     return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
   }
@@ -44,15 +42,16 @@ export async function PATCH(
     return NextResponse.json({ error: "Dati non validi" }, { status: 400 });
   }
 
-  const update: Record<string, unknown> = {
-    fills: parsed.data.fills,
-    updated_at: new Date().toISOString(),
-  };
-  if (parsed.data.strokes) update.strokes = parsed.data.strokes;
-
-  // La RLS garantisce che si possano aggiornare solo i propri disegni.
-  const { error } = await supabase.from("drawings").update(update).eq("id", id);
-  if (error) {
+  // Si aggiornano solo i disegni dell'utente: se l'id non e' suo, 404.
+  try {
+    const found = await updateDrawing(user.id, id, {
+      fills: parsed.data.fills,
+      strokes: parsed.data.strokes,
+    });
+    if (!found) {
+      return NextResponse.json({ error: "Disegno non trovato" }, { status: 404 });
+    }
+  } catch {
     return NextResponse.json({ error: "Salvataggio fallito" }, { status: 500 });
   }
   return NextResponse.json({ ok: true });
@@ -63,16 +62,14 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) {
     return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
   }
 
-  const { error } = await supabase.from("drawings").delete().eq("id", id);
-  if (error) {
+  try {
+    await deleteDrawing(user.id, id);
+  } catch {
     return NextResponse.json({ error: "Cancellazione fallita" }, { status: 500 });
   }
   return NextResponse.json({ ok: true });

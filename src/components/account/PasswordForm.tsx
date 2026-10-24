@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 
 export function PasswordForm() {
+  const [current, setCurrent] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [state, setState] = useState<"idle" | "saving" | "saved">("idle");
@@ -19,13 +19,18 @@ export function PasswordForm() {
       return setError("Le due password non coincidono.");
     }
     setState("saving");
-    const supabase = createClient();
-    const { error } = await supabase.auth.updateUser({ password });
-    if (error) {
+    const res = await fetch("/api/account/password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ current, password }),
+    }).catch(() => null);
+    if (!res?.ok) {
+      const body = await res?.json().catch(() => null);
       setState("idle");
-      setError("Cambio non riuscito: prova a uscire e rientrare, poi riprova.");
+      setError(body?.error ?? "Cambio non riuscito, riprova.");
       return;
     }
+    setCurrent("");
     setPassword("");
     setConfirm("");
     setState("saved");
@@ -33,6 +38,14 @@ export function PasswordForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
+      <input
+        type="password"
+        value={current}
+        onChange={(e) => setCurrent(e.target.value)}
+        placeholder="Password attuale"
+        autoComplete="current-password"
+        className="ink-field !py-2.5"
+      />
       <div className="flex flex-col gap-3 sm:flex-row">
         <input
           type="password"
@@ -52,7 +65,7 @@ export function PasswordForm() {
         />
         <button
           type="submit"
-          disabled={state === "saving" || !password}
+          disabled={state === "saving" || !password || !current}
           className="ink-btn ink-btn-dark px-5 py-2.5"
         >
           {state === "saving" ? "..." : "Cambia"}

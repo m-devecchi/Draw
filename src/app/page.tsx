@@ -12,10 +12,11 @@ import { HomeHero, Scribble, SectionTitle } from "@/components/fun/HomeHero";
 import { Logo } from "@/components/fun/Logo";
 import { Emoji } from "@/components/ui/Emoji";
 import { Icon } from "@/components/ui/Icon";
+import { getCurrentUser } from "@/lib/auth/server";
 import { isDemoMode } from "@/lib/config";
+import { listDrawings, listKids } from "@/lib/db/repo";
 import { parseStrokes } from "@/lib/strokes";
 import { getQuotaStatus } from "@/lib/quota";
-import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
@@ -26,54 +27,20 @@ export default async function HomePage({
 }) {
   if (isDemoMode()) return <DemoHome />;
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) redirect("/login");
 
   // Bambino attivo: arriva da ?kid=<id> nell'URL e filtra la galleria.
-  // Se la migrazione 0002 non è ancora applicata, kids è null e la
-  // funzionalità resta semplicemente spenta.
-  const { data: kids } = await supabase
-    .from("kid_profiles")
-    .select("id, name, avatar")
-    .order("created_at");
-  const kidsEnabled = Array.isArray(kids);
+  const kids = await listKids(user.id);
   const requestedKid = (await searchParams).kid ?? null;
   const activeKidId =
-    kids?.some((k) => k.id === requestedKid) === true ? requestedKid : null;
+    kids.some((k) => k.id === requestedKid) === true ? requestedKid : null;
 
-  interface DrawingRow {
-    id: string;
-    prompt: string;
-    kind: string;
-    created_at: string;
-    kid_id?: string | null;
-    content: string;
-    fills: Record<string, string> | null;
-    strokes?: unknown;
-  }
-
-  let drawingsQuery = supabase
-    .from("drawings")
-    .select(
-      kidsEnabled
-        ? "id, prompt, kind, created_at, kid_id, content, fills, strokes"
-        : ("id, prompt, kind, created_at, content, fills, strokes" as string)
-    )
-    .order("created_at", { ascending: false })
-    .limit(30);
-  if (activeKidId) {
-    drawingsQuery = drawingsQuery.eq("kid_id", activeKidId);
-  }
-
-  const [quota, drawingsRes] = await Promise.all([
+  const [quota, drawings] = await Promise.all([
     getQuotaStatus(user.id),
-    drawingsQuery,
+    listDrawings(user.id, { kidId: activeKidId, limit: 30 }),
   ]);
-  const drawings = (drawingsRes.data ?? []) as unknown as DrawingRow[];
-  const kidById = new Map((kids ?? []).map((k) => [k.id, k]));
+  const kidById = new Map(kids.map((k) => [k.id, k]));
 
   const activeKid = activeKidId ? kidById.get(activeKidId) : undefined;
 
@@ -125,9 +92,9 @@ export default async function HomePage({
         </div>
       </HomeHero>
 
-      {(kids?.length ?? 0) > 0 && (
+      {kids.length > 0 && (
         <div className="mt-8">
-          <KidSwitcher kids={kids ?? []} activeKidId={activeKidId} />
+          <KidSwitcher kids={kids} activeKidId={activeKidId} />
         </div>
       )}
 
@@ -137,7 +104,7 @@ export default async function HomePage({
             activeKid ? `I disegni di ${activeKid.name}` : "I tuoi disegni"
           }
         />
-        {!drawings?.length ? (
+        {!drawings.length ? (
           <EmptyGallery>
             {activeKid ? (
               <>
@@ -166,9 +133,9 @@ export default async function HomePage({
               content: d.content,
               fills: d.fills ?? {},
               strokes: parseStrokes(d.strokes),
-              createdAt: d.created_at,
-              badge: d.kid_id
-                ? kidById.get(d.kid_id)?.avatar ?? undefined
+              createdAt: d.createdAt,
+              badge: d.kidId
+                ? kidById.get(d.kidId)?.avatar ?? undefined
                 : undefined,
             }))}
           />

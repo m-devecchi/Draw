@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { isDemoMode, requireEmailConfirmation } from "@/lib/config";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createConfirmedUser } from "@/lib/auth/cognito-admin";
+import { CognitoError, friendlyError } from "@/lib/auth/cognito";
+import { isDemoMode } from "@/lib/config";
 
 const bodySchema = z.object({
   email: z.string().trim().toLowerCase().email("Email non valida"),
@@ -24,17 +25,12 @@ function tooMany(ip: string): boolean {
 }
 
 /**
- * Registrazione senza conferma via email: il server crea l'account già
- * confermato (service role), poi il client accede con email e password.
- * Se la conferma è richiesta risponde { confirm: true } e il client usa
- * il flusso classico di Supabase.
+ * Registrazione senza conferma via email: il server crea l'utente su
+ * Cognito già confermato, poi il client accede con email e password.
  */
 export async function POST(request: Request) {
   if (isDemoMode()) {
     return NextResponse.json({ error: "Login non attivo" }, { status: 404 });
-  }
-  if (requireEmailConfirmation()) {
-    return NextResponse.json({ confirm: true });
   }
 
   const parsed = bodySchema.safeParse(await request.json().catch(() => null));
@@ -55,21 +51,15 @@ export async function POST(request: Request) {
   }
 
   const { email, password } = parsed.data;
-  const admin = createAdminClient();
-  const { error } = await admin.auth.admin.createUser({
-    email,
-    password,
-    email_confirm: true,
-  });
-
-  if (error) {
+  try {
+    await createConfirmedUser(email, password);
+  } catch (err) {
     const exists =
-      error.status === 422 ||
-      /already (been )?registered|already exists/i.test(error.message);
+      err instanceof Error && err.name === "UsernameExistsException";
     return NextResponse.json(
       {
         error: exists
-          ? "Esiste già un account con questa email: accedi."
+          ? friendlyError(new CognitoError("UsernameExistsException", ""))
           : "Registrazione non riuscita, riprova.",
       },
       { status: exists ? 409 : 500 }

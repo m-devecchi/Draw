@@ -1,18 +1,25 @@
-import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { refreshSession } from "@/lib/auth/cognito";
+import {
+  ACCESS_COOKIE,
+  ID_COOKIE,
+  REFRESH_COOKIE,
+  writeSession,
+} from "@/lib/auth/session";
+import { verifyIdToken } from "@/lib/auth/tokens";
 import { isDemoMode } from "@/lib/config";
 
 // Rotte raggiungibili senza login.
 const PUBLIC_PATHS = [
   "/login",
   "/auth",
-  "/api/auth/signup",
+  "/api/auth",
   "/api/billing/webhook",
   "/manifest.webmanifest",
 ];
 
 export async function middleware(request: NextRequest) {
-  // Modalità PoC (Supabase non configurato): nessuna autenticazione.
+  // Modalità PoC (backend non configurato): nessuna autenticazione.
   if (isDemoMode()) {
     if (request.nextUrl.pathname === "/login") {
       const url = request.nextUrl.clone();
@@ -25,31 +32,27 @@ export async function middleware(request: NextRequest) {
 
   let response = NextResponse.next({ request });
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          );
-          response = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          );
-        },
-      },
-    }
-  );
+  const idToken = request.cookies.get(ID_COOKIE)?.value;
+  let user = idToken ? await verifyIdToken(idToken) : null;
 
-  // Importante: rinfresca la sessione (non rimuovere).
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Token scaduto: si rinfresca col refresh token (valido ~30 giorni).
+  const refreshToken = request.cookies.get(REFRESH_COOKIE)?.value;
+  if (!user && refreshToken) {
+    try {
+      const tokens = await refreshSession(refreshToken);
+      user = await verifyIdToken(tokens.idToken);
+      if (user) {
+        // La richiesta in corso vede subito i token nuovi; il browser li
+        // riceve con la risposta.
+        request.cookies.set(ID_COOKIE, tokens.idToken);
+        request.cookies.set(ACCESS_COOKIE, tokens.accessToken);
+        response = NextResponse.next({ request });
+        writeSession(response.cookies, tokens);
+      }
+    } catch {
+      // Refresh token scaduto o revocato: si torna al login.
+    }
+  }
 
   const { pathname } = request.nextUrl;
   const isPublic = PUBLIC_PATHS.some(

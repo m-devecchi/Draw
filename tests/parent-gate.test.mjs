@@ -30,8 +30,8 @@ ok("hash non contiene il PIN in chiaro", !h.includes("4821"));
 const c = m.createMathChallenge();
 ok("risposta giusta accettata", m.verifyMathChallenge(c.a * c.b, c.token));
 ok("risposta sbagliata rifiutata", !m.verifyMathChallenge(c.a * c.b + 1, c.token));
-ok("token manomesso rifiutato", !m.verifyMathChallenge(c.a * c.b, c.token.replace(/.$/, "0")));
-ok("la risposta non e' nel token", !c.token.includes(String(c.a * c.b)));
+ok("token manomesso rifiutato", !m.verifyMathChallenge(c.a * c.b, c.token.replace(/.$/, (ch) => (ch === "0" ? "1" : "0"))));
+ok("la risposta non e' nel token", !c.token.split(".").includes(String(c.a * c.b)));
 
 // Token di sblocco: la firma deve reggere alla contraffazione
 const USER = "utente-123";

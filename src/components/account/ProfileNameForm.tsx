@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 
 export function ProfileNameForm({ initialName }: { initialName: string }) {
   const [name, setName] = useState(initialName);
@@ -12,16 +11,12 @@ export function ProfileNameForm({ initialName }: { initialName: string }) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setState("saving");
-    const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return setState("error");
-    const { error } = await supabase
-      .from("profiles")
-      .update({ display_name: name.trim() })
-      .eq("id", user.id);
-    setState(error ? "error" : "saved");
+    const res = await fetch("/api/account/profile", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ displayName: name.trim() }),
+    }).catch(() => null);
+    setState(res?.ok ? "saved" : "error");
   }
 
   return (

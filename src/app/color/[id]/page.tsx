@@ -1,9 +1,10 @@
 import { notFound, redirect } from "next/navigation";
 import { ColoringWorkspace } from "@/components/coloring/ColoringWorkspace";
 import { DemoColoring } from "@/components/demo/DemoColoring";
+import { getCurrentUser } from "@/lib/auth/server";
+import { getDrawing } from "@/lib/db/repo";
 import { isDemoMode } from "@/lib/config";
 import { parseStrokes } from "@/lib/strokes";
-import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
@@ -19,18 +20,10 @@ export default async function ColorPage({
     return <DemoColoring id={id} />;
   }
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  // La RLS restituisce solo i disegni dell'utente.
-  const { data: drawing } = await supabase
-    .from("drawings")
-    .select("id, prompt, kind, content, fills, strokes, age_band")
-    .eq("id", id)
-    .single();
+  const drawing = await getDrawing(user.id, id);
   if (!drawing) notFound();
 
   // Torna alla home mantenendo il bambino selezionato (solo un id valido).
@@ -44,11 +37,11 @@ export default async function ColorPage({
     <main>
       <ColoringWorkspace
         drawingId={drawing.id}
-        kind={drawing.kind as "svg" | "raster"}
+        kind={drawing.kind}
         content={drawing.content}
-        initialFills={(drawing.fills ?? {}) as Record<string, string>}
+        initialFills={drawing.fills}
         initialStrokes={parseStrokes(drawing.strokes)}
-        ageBand={(drawing as { age_band?: string | null }).age_band}
+        ageBand={drawing.ageBand}
         prompt={drawing.prompt}
         backHref={backHref}
       />

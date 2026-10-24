@@ -1,4 +1,10 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
+import {
+  bumpTemplateUses,
+  findTemplates,
+  insertTemplate,
+  ownedTemplateIds,
+  type TemplateRow,
+} from "./db/repo";
 import { isReusable, normalizePrompt } from "./prompt-key";
 
 // Quanti disegni diversi si tengono per lo stesso soggetto: chiedendo due
@@ -6,11 +12,7 @@ import { isReusable, normalizePrompt } from "./prompt-key";
 // senso pagarne uno nuovo all'infinito.
 const MAX_VARIANTI = 3;
 
-export interface CachedTemplate {
-  id: string;
-  content: string;
-  kind: "svg" | "raster";
-}
+export type CachedTemplate = TemplateRow;
 
 export interface CacheLookup {
   /** Disegno già pronto da riusare, se c'è. */
@@ -19,6 +21,14 @@ export interface CacheLookup {
   key: string | null;
 }
 
+/** Accesso ai dati della cache: iniettabile, così i test non toccano il DB. */
+export interface CacheStore {
+  findTemplates(key: string, ageBand: string): Promise<CachedTemplate[]>;
+  ownedTemplateIds(userId: string, ids: string[]): Promise<string[]>;
+}
+
+const dbStore: CacheStore = { findTemplates, ownedTemplateIds };
+
 /**
  * Cerca un disegno già generato per questa richiesta.
  *
@@ -26,41 +36,34 @@ export interface CacheLookup {
  * il tetto, restituisce null: gliene verrà disegnata una nuova, così non
  * si ritrova due volte lo stesso foglio.
  *
- * Tollera l'assenza della tabella (migrazione 0006 non ancora applicata):
- * in quel caso si genera normalmente, senza rompere nulla.
+ * Se la cache non risponde (database in errore) si genera normalmente,
+ * senza rompere nulla.
  */
 export async function findReusable(
-  admin: SupabaseClient,
   userId: string,
   prompt: string,
-  ageBand: string
+  ageBand: string,
+  store: CacheStore = dbStore
 ): Promise<CacheLookup> {
   const key = normalizePrompt(prompt);
   if (!isReusable(key)) return { template: null, key: null };
 
   try {
-    const { data: templates, error } = await admin
-      .from("drawing_templates")
-      .select("id, content, kind")
-      .eq("prompt_key", key)
-      .eq("age_band", ageBand);
-    if (error || !templates?.length) return { template: null, key };
+    const templates = await store.findTemplates(key, ageBand);
+    if (!templates.length) return { template: null, key };
 
     // Quali di questi l'utente ha già?
-    const { data: propri } = await admin
-      .from("drawings")
-      .select("template_id")
-      .eq("user_id", userId)
-      .in(
-        "template_id",
+    const gia = new Set(
+      await store.ownedTemplateIds(
+        userId,
         templates.map((t) => t.id)
-      );
-    const gia = new Set((propri ?? []).map((d) => d.template_id));
+      )
+    );
 
     const nuovi = templates.filter((t) => !gia.has(t.id));
     if (nuovi.length) {
       return {
-        template: nuovi[Math.floor(Math.random() * nuovi.length)] as CachedTemplate,
+        template: nuovi[Math.floor(Math.random() * nuovi.length)],
         key,
       };
     }
@@ -69,9 +72,7 @@ export async function findReusable(
     // si riusa comunque uno dei suoi.
     if (templates.length < MAX_VARIANTI) return { template: null, key };
     return {
-      template: templates[
-        Math.floor(Math.random() * templates.length)
-      ] as CachedTemplate,
+      template: templates[Math.floor(Math.random() * templates.length)],
       key,
     };
   } catch {
@@ -80,41 +81,26 @@ export async function findReusable(
 }
 
 /** Registra un disegno appena generato perché possa essere riusato. */
-export async function saveTemplate(
-  admin: SupabaseClient,
-  params: {
-    key: string | null;
-    prompt: string;
-    ageBand: string;
-    provider: string;
-    kind: string;
-    content: string;
-  }
-): Promise<string | null> {
+export async function saveTemplate(params: {
+  key: string | null;
+  prompt: string;
+  ageBand: string;
+  provider: string;
+  kind: string;
+  content: string;
+}): Promise<string | null> {
   if (!params.key) return null;
   try {
-    const { data } = await admin
-      .from("drawing_templates")
-      .insert({
-        prompt_key: params.key,
-        prompt: params.prompt,
-        age_band: params.ageBand,
-        provider: params.provider,
-        kind: params.kind,
-        content: params.content,
-      })
-      .select("id")
-      .single();
-    return data?.id ?? null;
+    return await insertTemplate({ ...params, key: params.key });
   } catch {
-    return null; // migrazione non applicata: si prosegue senza riuso
+    return null; // si prosegue senza riuso
   }
 }
 
 /** Segna un riuso (serve solo a misurare quanto la cache sta lavorando). */
-export async function bumpUses(admin: SupabaseClient, templateId: string) {
+export async function bumpUses(templateId: string) {
   try {
-    await admin.rpc("bump_template_uses", { template: templateId });
+    await bumpTemplateUses(templateId);
   } catch {
     // contatore non essenziale
   }

@@ -29,3 +29,7 @@ next-env.d.ts
 # capacitor native projects (generati con `npx cap add`)
 /ios
 /android
+
+# output degli script AWS (ARN, id: niente di segreto, ma specifico dell account)
+infra/aws/.out/
+infra/aws/config.env

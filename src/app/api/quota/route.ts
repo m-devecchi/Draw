@@ -1,12 +1,9 @@
 import { NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/auth/server";
 import { getQuotaStatus } from "@/lib/quota";
-import { createClient } from "@/lib/supabase/server";
 
 export async function GET() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) {
     return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
   }

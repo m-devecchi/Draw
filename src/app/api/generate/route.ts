@@ -7,9 +7,15 @@ import {
   findReusable,
   saveTemplate,
 } from "@/lib/drawing-cache";
+import { getCurrentUser } from "@/lib/auth/server";
+import {
+  deleteGeneration,
+  ensureProfile,
+  insertDrawing,
+  insertGeneration,
+  kidBelongsTo,
+} from "@/lib/db/repo";
 import { getQuotaStatus, parseLimit } from "@/lib/quota";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
 
 export const maxDuration = 300; // la generazione può richiedere qualche minuto
 
@@ -87,18 +93,28 @@ export async function POST(request: Request) {
     return handleDemo(request, demoParsed.data.prompt, demoParsed.data.ageBand);
   }
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) {
     return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
   }
 
-  const { prompt } = demoParsed.data;
+  try {
+    // Garantisce il profilo (le generazioni vi sono collegate da una FK).
+    await ensureProfile(user.id, user.email);
+    return await generateForUser(user.id, demoParsed.data);
+  } catch {
+    return NextResponse.json({ error: "Errore interno, riprova" }, { status: 500 });
+  }
+}
+
+async function generateForUser(
+  userId: string,
+  data: z.infer<typeof bodySchema>
+) {
+  const { prompt, ageBand } = data;
 
   // Controllo quota lato server: 2/giorno per il piano free.
-  const quota = await getQuotaStatus(user.id);
+  const quota = await getQuotaStatus(userId);
   if (quota.remaining <= 0) {
     return NextResponse.json(
       {
@@ -113,13 +129,11 @@ export async function POST(request: Request) {
     );
   }
 
-  const admin = createAdminClient();
   const provider = getGenerationProvider();
-  const ageBand = demoParsed.data.ageBand;
 
   // Un disegno da colorare non è personale: se questo soggetto è già stato
   // disegnato lo si riusa, senza chiamare (e pagare) il modello.
-  const { template, key } = await findReusable(admin, user.id, prompt, ageBand);
+  const { template, key } = await findReusable(userId, prompt, ageBand);
 
   // Un riuso non costa nulla: volendo si può non farlo pesare sulla quota
   // (CACHE_HITS_FREE=true), così gli utenti gratuiti ottengono di più
@@ -130,23 +144,11 @@ export async function POST(request: Request) {
   // la quota conta i tentativi, così richieste concorrenti non la aggirano.
   let generationId: string | null = null;
   if (!riusoGratuito) {
-    const { data: generation, error: genError } = await admin
-      .from("generations")
-      .insert({
-        user_id: user.id,
-        provider: provider.name,
-        prompt,
-        ...(template ? { cached: true } : {}),
-      })
-      .select("id")
-      .single();
-    if (genError) {
-      return NextResponse.json(
-        { error: "Errore interno, riprova" },
-        { status: 500 }
-      );
-    }
-    generationId = generation.id;
+    generationId = await insertGeneration(userId, {
+      provider: provider.name,
+      prompt,
+      cached: Boolean(template),
+    });
   }
 
   try {
@@ -156,22 +158,13 @@ export async function POST(request: Request) {
       : await provider.generate(prompt, { ageBand });
 
     // Bambino richiesto dal client, accettato solo se appartiene all'utente.
-    const requestedKid = demoParsed.data.kidId;
-    let kidId: string | null = null;
-    if (requestedKid) {
-      const { data: kid } = await admin
-        .from("kid_profiles")
-        .select("id")
-        .eq("id", requestedKid)
-        .eq("user_id", user.id)
-        .maybeSingle();
-      kidId = kid?.id ?? null;
-    }
+    const kidId =
+      data.kidId && (await kidBelongsTo(userId, data.kidId)) ? data.kidId : null;
 
     // Disegno appena creato: si registra perché altri possano riusarlo.
     const templateId = template
       ? template.id
-      : await saveTemplate(admin, {
+      : await saveTemplate({
           key,
           prompt,
           ageBand,
@@ -180,54 +173,23 @@ export async function POST(request: Request) {
           content: result.content,
         });
 
-    // kid_id e template_id inclusi solo se valorizzati: così l'insert
-    // funziona anche prima che le migrazioni siano applicate.
-    const base = {
-      user_id: user.id,
+    const id = await insertDrawing(userId, {
       prompt,
       provider: provider.name,
       kind: result.kind,
       content: result.content,
-      ...(kidId ? { kid_id: kidId } : {}),
-      ...(templateId ? { template_id: templateId } : {}),
-    };
+      ageBand,
+      kidId,
+      templateId,
+    });
 
-    // Primo tentativo con l'età; se la migrazione 0005 non è ancora
-    // applicata la colonna non esiste e si riprova senza, invece di far
-    // fallire la creazione del disegno.
-    let { data: drawing, error: drawError } = await admin
-      .from("drawings")
-      .insert({ ...base, age_band: ageBand })
-      .select("id")
-      .single();
-    // La colonna manca finché non si applica la migrazione: si riprova
-    // senza i campi nuovi invece di far fallire la creazione.
-    if (drawError?.message?.includes("template_id")) {
-      delete (base as Record<string, unknown>).template_id;
-      ({ data: drawing, error: drawError } = await admin
-        .from("drawings")
-        .insert({ ...base, age_band: ageBand })
-        .select("id")
-        .single());
-    }
-    if (drawError?.message?.includes("age_band")) {
-      ({ data: drawing, error: drawError } = await admin
-        .from("drawings")
-        .insert(base)
-        .select("id")
-        .single());
-    }
-    if (drawError || !drawing) {
-      throw new Error(drawError?.message ?? "insert fallita");
-    }
+    if (template) await bumpUses(template.id);
 
-    if (template) await bumpUses(admin, template.id);
-
-    return NextResponse.json({ id: drawing.id, cached: Boolean(template) });
+    return NextResponse.json({ id, cached: Boolean(template) });
   } catch (err) {
     // Generazione fallita: l'evento viene rimosso per non consumare quota.
     if (generationId) {
-      await admin.from("generations").delete().eq("id", generationId);
+      await deleteGeneration(userId, generationId).catch(() => {});
     }
     const message =
       err instanceof Error ? err.message : "Generazione non riuscita";

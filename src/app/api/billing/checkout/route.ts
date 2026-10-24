@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/auth/server";
+import { getProfile, setStripeCustomer } from "@/lib/db/repo";
 import { isParentUnlocked } from "@/lib/parent-gate";
 import { getStripe, isBillingConfigured } from "@/lib/stripe";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
 
 // Crea una sessione di Stripe Checkout per l'abbonamento Premium.
 export async function POST() {
@@ -13,10 +13,7 @@ export async function POST() {
     );
   }
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) {
     return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
   }
@@ -30,27 +27,19 @@ export async function POST() {
   }
 
   const stripe = getStripe()!;
-  const admin = createAdminClient();
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
   // Riusa (o crea) il customer Stripe collegato al profilo.
-  const { data: profile } = await admin
-    .from("profiles")
-    .select("stripe_customer_id")
-    .eq("id", user.id)
-    .single();
+  const profile = await getProfile(user.id);
 
-  let customerId = profile?.stripe_customer_id ?? null;
+  let customerId = profile?.stripeCustomerId ?? null;
   if (!customerId) {
     const customer = await stripe.customers.create({
       email: user.email ?? undefined,
-      metadata: { supabase_user_id: user.id },
+      metadata: { user_id: user.id },
     });
     customerId = customer.id;
-    await admin
-      .from("profiles")
-      .update({ stripe_customer_id: customerId })
-      .eq("id", user.id);
+    await setStripeCustomer(user.id, customerId);
   }
 
   const session = await stripe.checkout.sessions.create({
@@ -59,7 +48,7 @@ export async function POST() {
     line_items: [{ price: process.env.STRIPE_PRICE_ID!, quantity: 1 }],
     success_url: `${appUrl}/?upgraded=1`,
     cancel_url: `${appUrl}/`,
-    metadata: { supabase_user_id: user.id },
+    metadata: { user_id: user.id },
   });
 
   return NextResponse.json({ url: session.url });

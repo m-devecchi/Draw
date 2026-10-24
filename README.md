@@ -12,7 +12,9 @@ Capacitor), con **login**, **quota gratuita di 2 disegni al giorno** e
 | --- | --- | --- |
 | Frontend + API | **Next.js 15** (App Router, TypeScript, Tailwind 4) | Un solo deployment serve web, PWA e app native |
 | Mobile | **PWA** installabile + **Capacitor** | Il wrapper nativo carica l'app pubblicata (`CAP_SERVER_URL`) |
-| Auth + DB | **Supabase** (Postgres + RLS) | Profili, disegni, eventi di generazione |
+| Auth | **Amazon Cognito** | Email + password, Google/Apple; sessione in cookie httpOnly |
+| DB | **Aurora PostgreSQL Serverless v2** (Data API) | Si mette in pausa da solo; schema in `db/schema.sql` |
+| Hosting | **AWS Amplify** | Next.js SSR; accede ad Aurora/Cognito col ruolo IAM di calcolo |
 | Generazione | **Provider intercambiabili** (`src/lib/generation/`) | `claude-svg` attivo; `raster` pronto da implementare |
 | Pagamenti | **Stripe** (predisposto) | Endpoint attivi solo quando le chiavi sono configurate |
 
@@ -54,13 +56,14 @@ essere generosi.
 
 ### Quote e piani
 
-- Ogni generazione registra un evento in `public.generations` (scritto solo
-  dal server con service role): è la fonte di verità della quota.
+- Ogni generazione registra un evento nella tabella `generations` (scritta
+  solo dal server): è la fonte di verità della quota.
 - Piano `free`: `FREE_DAILY_LIMIT` (default **2**) disegni al giorno, reset a
   mezzanotte UTC. Piano `premium`: `PREMIUM_DAILY_LIMIT` (default 50, come
   protezione anti-abuso).
-- Il piano dell'utente vive in `public.profiles.plan` e può essere modificato
-  **solo dal server** (un trigger blocca l'auto-promozione via RLS).
+- Il piano dell'utente vive in `profiles.plan` e può essere modificato
+  **solo dal server** (il browser non parla mai col database: passa sempre
+  dalle API dell'app).
 - Il webhook Stripe aggiorna il piano su `checkout.session.completed`,
   `customer.subscription.updated` e `customer.subscription.deleted`.
 
@@ -71,7 +74,7 @@ modalità demo con **4 disegni di esempio precaricati**: la coloritura si
 prova subito, senza nessuna chiave.
 
 Per generare disegni nuovi da un prompt serve solo una API key Anthropic —
-niente Supabase, niente Stripe:
+niente AWS, niente Stripe:
 
 ```bash
 npm install
@@ -82,7 +85,7 @@ npm run dev
 Apri http://localhost:3000: l'app parte in **modalità demo** (nessun login,
 disegni salvati sul dispositivo, limite `DEMO_DAILY_LIMIT` per IP, default
 10/giorno). La stessa codebase è già quella di arrivo: quando configurerai le
-variabili Supabase, login/quota/persistenza si attivano da soli, e con le
+variabili AWS (Cognito + Aurora), login/quota/persistenza si attivano da soli, e con le
 chiavi Stripe anche il Premium. Nessuna migrazione di codice tra PoC e
 prodotto.
 
@@ -94,32 +97,24 @@ prodotto.
 npm install
 ```
 
-### 2. Supabase
+### 2. AWS (Cognito + Aurora)
 
-1. Crea un progetto su [supabase.com](https://supabase.com).
-2. Esegui **in ordine** le migrazioni in `supabase/migrations/`
-   (`0001_init.sql`, poi `0002_kids.sql` per i profili bambino) nel SQL
-   Editor del dashboard, oppure `supabase db push` con la CLI.
-3. In **Authentication → Providers** abilita Email (ed eventualmente
-   Google/Apple: il callback è già pronto su `/auth/callback`).
+Gli script in [`infra/aws/`](infra/aws/README.md) creano tutto con la AWS CLI:
+database Aurora Serverless v2 che va in pausa da solo, tabelle, user pool
+Cognito, ruolo IAM per Amplify e un budget con avviso email. La guida passo
+passo, i costi e il login con Google/Apple sono in
+[`infra/aws/README.md`](infra/aws/README.md).
 
-#### Login con Google / Apple
+In locale, senza AWS, basta un Postgres qualsiasi:
 
-I pulsanti nella pagina di login funzionano appena abiliti i provider su
-Supabase (**Authentication → Providers**):
+```bash
+createdb colora && psql colora -f db/schema.sql
+# .env.local: DATABASE_URL=postgres://localhost/colora
+```
 
-- **Google**: crea le credenziali OAuth su
-  [console.cloud.google.com](https://console.cloud.google.com/apis/credentials)
-  (tipo "Web application"), aggiungi come redirect URI quello mostrato da
-  Supabase (`https://<ref>.supabase.co/auth/v1/callback`) e incolla Client ID
-  e Secret su Supabase.
-- **Apple**: richiede l'account Apple Developer (99 $/anno); su Supabase
-  trovi la guida per Service ID, chiave e team. Nota per gli store: se
-  pubblichi l'app su App Store con altri login social, "Sign in with Apple"
-  è obbligatorio (linee guida Apple 4.8).
-
-Finché un provider non è configurato, il pulsante mostra un messaggio di
-non disponibilità: nessun errore, nessuna configurazione richiesta.
+Il login richiede comunque uno user pool Cognito (`COGNITO_USER_POOL_ID`,
+`COGNITO_CLIENT_ID`, `COGNITO_DOMAIN`): si può usare quello di sviluppo
+creato dagli script.
 
 ### 3. Variabili d'ambiente
 
@@ -127,7 +122,7 @@ non disponibilità: nessun errore, nessuna configurazione richiesta.
 cp .env.example .env.local
 ```
 
-Compila almeno le variabili Supabase e `ANTHROPIC_API_KEY`
+Compila almeno le variabili Cognito e database e `ANTHROPIC_API_KEY`
 ([console.anthropic.com](https://console.anthropic.com)). Stripe è opzionale:
 senza chiavi il pulsante "Passa a Premium" mostra che i pagamenti non sono
 attivi.
@@ -140,49 +135,17 @@ npm run build      # build di produzione
 npm run typecheck  # controllo TypeScript
 ```
 
-## ☁️ Deploy su Vercel + Supabase (produzione)
+## ☁️ Deploy su AWS Amplify (produzione)
 
-### 1. Supabase (≈5 minuti)
+1. Esegui gli script di [`infra/aws/`](infra/aws/README.md) (circa 15 minuti,
+   la maggior parte è l'attesa di Aurora).
+2. Su Amplify incolla le variabili che lo script `04-iam-budget.sh` ti
+   stampa, assegna il *compute role* e aggiungi lo snippet di `amplify.yml`
+   (stessa guida).
+3. Rifai il deploy. Con Cognito e Aurora configurati l'app parte in modalità
+   completa (login + quota 2/giorno); senza, parte in modalità demo.
 
-1. Vai su [supabase.com](https://supabase.com) → **New project** (regione:
-   `eu-central-1` Francoforte, la più vicina all'Italia).
-2. Quando il progetto è pronto: **SQL Editor** → incolla tutto il contenuto di
-   [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql) →
-   **Run**.
-3. **Project Settings → API**: copia `Project URL`, `anon public` e
-   `service_role` (serviranno su Vercel).
-
-### 2. Vercel (≈5 minuti)
-
-1. Vai su [vercel.com/new](https://vercel.com/new) → **Import Git
-   Repository** → seleziona `m-devecchi/Draw` (autorizza GitHub se
-   richiesto). Framework: Next.js, rilevato automaticamente — non toccare
-   nulla.
-2. In **Environment Variables** aggiungi:
-
-   | Nome | Valore |
-   | --- | --- |
-   | `ANTHROPIC_API_KEY` | la tua key da [console.anthropic.com](https://console.anthropic.com) |
-   | `NEXT_PUBLIC_SUPABASE_URL` | `Project URL` di Supabase |
-   | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | chiave `anon public` |
-   | `SUPABASE_SERVICE_ROLE_KEY` | chiave `service_role` |
-   | `NEXT_PUBLIC_APP_URL` | l'URL di produzione, es. `https://colora.vercel.app` (puoi aggiungerlo dopo il primo deploy) |
-
-3. **Deploy**. Con le variabili Supabase presenti l'app parte direttamente in
-   modalità completa (login + quota 2/giorno); senza, parte in modalità demo.
-
-### 3. Collega l'auth di Supabase all'URL di produzione
-
-In Supabase → **Authentication → URL Configuration**:
-
-- **Site URL**: `https://<il-tuo-progetto>.vercel.app`
-- **Redirect URLs**: aggiungi `https://<il-tuo-progetto>.vercel.app/auth/callback`
-
-Senza questo passaggio i link di conferma email puntano a `localhost`.
-
-### Aggiornamenti
-
-Ogni `git push` sul branch di default fa partire un nuovo deploy automatico.
+Ogni `git push` sul branch collegato ad Amplify fa partire un nuovo deploy.
 
 ## 🖨️ Stampa su carta (uso principale)
 
@@ -305,7 +268,7 @@ src/
     page.tsx                 # home: prompt + quota + galleria
     login/page.tsx           # accesso / registrazione
     color/[id]/page.tsx      # pagina di coloritura
-    auth/                    # callback conferma email/OAuth, signout
+    auth/                    # login Google/Apple (Cognito), callback, signout
     api/
       generate/route.ts      # genera disegno (controllo quota server-side)
       quota/route.ts         # stato quota
@@ -315,23 +278,28 @@ src/
     coloring/                # workspace, palette, SVG tap-to-fill, flood fill
   lib/
     generation/              # astrazione provider + claude-svg + sanificazione
-    supabase/                # client browser/server/admin
+    auth/                    # Cognito: login, token, sessione a cookie
+    db/                      # client Aurora (Data API) / pg + query dell'app
     quota.ts                 # calcolo quota giornaliera
     stripe.ts                # init Stripe (opzionale)
-  middleware.ts              # refresh sessione + protezione rotte
-supabase/migrations/         # schema Postgres + RLS
+  middleware.ts              # verifica/rinnovo sessione + protezione rotte
+db/schema.sql                # schema Postgres (Aurora)
+infra/aws/                   # script di creazione dell'infrastruttura AWS
 capacitor.config.ts          # wrapper nativo iOS/Android
 public/                      # manifest PWA, service worker, icone
 ```
 
 ## Sicurezza
 
-- **RLS ovunque**: ogni utente vede solo i propri dati; disegni e generazioni
-  vengono creati solo dal server.
+- **Isolamento per utente nel livello dati** (`src/lib/db/repo.ts`): ogni
+  query su dati personali filtra per `user_id`; il browser non ha mai
+  accesso diretto al database, che non è raggiungibile da Internet.
+  Disegni e generazioni vengono creati solo dal server.
 - **SVG sanificato** lato server (niente script, event handler, riferimenti
   esterni) prima del salvataggio e del rendering inline.
-- **Chiavi solo server**: `ANTHROPIC_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY` e
-  `STRIPE_SECRET_KEY` non raggiungono mai il client.
+- **Chiavi solo server**: `ANTHROPIC_API_KEY` e `STRIPE_SECRET_KEY` non
+  raggiungono mai il client; Aurora e Cognito si raggiungono col ruolo IAM
+  di Amplify, senza chiavi AWS nelle variabili d'ambiente.
 - Header di sicurezza HTTP in `next.config.ts`; webhook Stripe verificato con
   firma.
 

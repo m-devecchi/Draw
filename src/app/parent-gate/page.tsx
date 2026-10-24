@@ -1,10 +1,10 @@
 import { Emoji } from "@/components/ui/Emoji";
 import { redirect } from "next/navigation";
 import { ParentGateForm } from "@/components/parent/ParentGateForm";
+import { getCurrentUser } from "@/lib/auth/server";
+import { getProfile } from "@/lib/db/repo";
 import { isDemoMode } from "@/lib/config";
 import { createMathChallenge, isParentUnlocked } from "@/lib/parent-gate";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
@@ -22,22 +22,13 @@ export default async function ParentGatePage({
 }) {
   if (isDemoMode()) redirect("/");
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) redirect("/login");
 
   const next = safeNext((await searchParams).next);
   if (await isParentUnlocked(user.id)) redirect(next);
 
-  const admin = createAdminClient();
-  const { data: profile } = await admin
-    .from("profiles")
-    .select("parent_pin_hash")
-    .eq("id", user.id)
-    .single();
-  const hasPin = Boolean(profile?.parent_pin_hash);
+  const hasPin = Boolean((await getProfile(user.id))?.parentPinHash);
 
   return (
     <main className="flex min-h-dvh items-center justify-center p-6">

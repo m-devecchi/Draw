@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
+import { setPlanByCustomer } from "@/lib/db/repo";
 import { getStripe } from "@/lib/stripe";
-import { createAdminClient } from "@/lib/supabase/admin";
 
 // Webhook Stripe: unica fonte di verità per lo stato dell'abbonamento.
 // Configurare l'endpoint su Stripe con gli eventi:
@@ -28,19 +28,6 @@ export async function POST(request: Request) {
     );
   } catch {
     return NextResponse.json({ error: "Firma non valida" }, { status: 400 });
-  }
-
-  const admin = createAdminClient();
-
-  async function setPlanByCustomer(
-    customerId: string,
-    plan: "free" | "premium",
-    subscriptionId: string | null
-  ) {
-    await admin
-      .from("profiles")
-      .update({ plan, stripe_subscription_id: subscriptionId })
-      .eq("stripe_customer_id", customerId);
   }
 
   switch (event.type) {

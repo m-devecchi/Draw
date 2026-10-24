@@ -3,7 +3,6 @@
 import { Emoji } from "@/components/ui/Emoji";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 
 export interface KidProfile {
   id: string;
@@ -13,7 +12,7 @@ export interface KidProfile {
 
 const AVATARS = ["🦁", "🐰", "🦊", "🐼", "🐸", "🦄", "🐙", "🐝"] as const;
 
-// Gestione dei profili bambino (CRUD diretto via RLS: ogni genitore vede
+// Gestione dei profili bambino (le API filtrano per utente: ogni genitore vede
 // e modifica solo i propri).
 export function KidProfiles({ initialKids }: { initialKids: KidProfile[] }) {
   const router = useRouter();
@@ -30,21 +29,17 @@ export function KidProfiles({ initialKids }: { initialKids: KidProfile[] }) {
     if (!name.trim()) return;
     setLoading(true);
     setError(null);
-    const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return setLoading(false);
-    const { data, error } = await supabase
-      .from("kid_profiles")
-      .insert({ user_id: user.id, name: name.trim(), avatar })
-      .select("id, name, avatar")
-      .single();
+    const res = await fetch("/api/kids", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: name.trim(), avatar }),
+    }).catch(() => null);
+    const data: KidProfile | null = res?.ok
+      ? await res.json().catch(() => null)
+      : null;
     setLoading(false);
-    if (error || !data) {
-      setError(
-        "Aggiunta non riuscita. Se è la prima volta: va applicata la migrazione 0002_kids.sql su Supabase."
-      );
+    if (!data) {
+      setError("Aggiunta non riuscita, riprova.");
       return;
     }
     setKids((k) => [...k, data]);
@@ -53,9 +48,10 @@ export function KidProfiles({ initialKids }: { initialKids: KidProfile[] }) {
   }
 
   async function handleRemove(id: string) {
-    const supabase = createClient();
-    const { error } = await supabase.from("kid_profiles").delete().eq("id", id);
-    if (!error) {
+    const res = await fetch(`/api/kids/${id}`, { method: "DELETE" }).catch(
+      () => null
+    );
+    if (res?.ok) {
       setKids((k) => k.filter((kid) => kid.id !== id));
       router.refresh();
     }

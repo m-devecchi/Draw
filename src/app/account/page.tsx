@@ -10,21 +10,18 @@ import { ProfileNameForm } from "@/components/account/ProfileNameForm";
 import { UpgradeButton } from "@/components/UpgradeButton";
 import { ParentLockButton } from "@/components/parent/ParentLockButton";
 import { ParentPinForm } from "@/components/parent/ParentPinForm";
+import { getCurrentUser } from "@/lib/auth/server";
 import { isDemoMode } from "@/lib/config";
+import { countDrawings, getProfile, listKids } from "@/lib/db/repo";
 import { isParentUnlocked } from "@/lib/parent-gate";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { getQuotaStatus } from "@/lib/quota";
-import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
 export default async function AccountPage() {
   if (isDemoMode()) redirect("/");
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) redirect("/login");
 
   // Cancello parentale: l'area impostazioni non è per i bambini.
@@ -32,31 +29,15 @@ export default async function AccountPage() {
     redirect("/parent-gate?next=/account");
   }
 
-  const { data: parentProfile } = await createAdminClient()
-    .from("profiles")
-    .select("parent_pin_hash")
-    .eq("id", user.id)
-    .single();
+  const [quota, profile, drawingsCount, kids] = await Promise.all([
+    getQuotaStatus(user.id),
+    getProfile(user.id),
+    countDrawings(user.id),
+    listKids(user.id),
+  ]);
 
-  const [quota, { data: profile }, { count: drawingsCount }, { data: kids }] =
-    await Promise.all([
-      getQuotaStatus(user.id),
-      supabase
-        .from("profiles")
-        .select("display_name, created_at")
-        .eq("id", user.id)
-        .single(),
-      supabase
-        .from("drawings")
-        .select("id", { count: "exact", head: true }),
-      supabase
-        .from("kid_profiles")
-        .select("id, name, avatar")
-        .order("created_at"),
-    ]);
-
-  const memberSince = profile?.created_at
-    ? new Date(profile.created_at).toLocaleDateString("it-IT", {
+  const memberSince = profile?.createdAt
+    ? new Date(profile.createdAt).toLocaleDateString("it-IT", {
         day: "numeric",
         month: "long",
         year: "numeric",
@@ -85,7 +66,7 @@ export default async function AccountPage() {
           {user.email}
           {memberSince && ` · con noi dal ${memberSince}`}
         </p>
-        <ProfileNameForm initialName={profile?.display_name ?? ""} />
+        <ProfileNameForm initialName={profile?.displayName ?? ""} />
       </section>
 
       {/* Piano e utilizzo */}
@@ -108,7 +89,7 @@ export default async function AccountPage() {
           </div>
           <div className="rounded-2xl border border-line-strong bg-canvas p-3">
             <p className="font-display text-3xl font-semibold">
-              {drawingsCount ?? 0}
+              {drawingsCount}
             </p>
             <p className="text-xs font-extrabold text-ink-soft">disegni totali</p>
           </div>
@@ -135,18 +116,18 @@ export default async function AccountPage() {
           Crea un profilo per ogni bimbo: nella home scegli chi sta disegnando
           e ognuno ritrova i propri disegni.
         </p>
-        <KidProfiles initialKids={kids ?? []} />
+        <KidProfiles initialKids={kids} />
       </section>
 
       {/* Cancello parentale */}
       <section className="ink-card mt-6 p-6">
         <h2 className="mb-1 font-display text-2xl font-semibold">PIN genitore</h2>
         <p className="mb-4 text-sm font-semibold text-ink-soft">
-          {parentProfile?.parent_pin_hash
+          {profile?.parentPinHash
             ? "Questa area è protetta dal tuo PIN. Puoi cambiarlo qui."
             : "Senza PIN l'area genitori è protetta solo da una domanda di matematica. Imposta un PIN: è più sicuro."}
         </p>
-        <ParentPinForm hasPin={Boolean(parentProfile?.parent_pin_hash)} />
+        <ParentPinForm hasPin={Boolean(profile?.parentPinHash)} />
       </section>
 
       {/* Sicurezza */}
