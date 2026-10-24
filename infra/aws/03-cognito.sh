@@ -88,4 +88,4 @@ if [[ ${#PROVIDERS[@]} -gt 1 ]]; then
   echo "Nel pannello di Google/Apple, come URI di reindirizzamento autorizzato usa:"
   echo "  https://${DOMAIN_HOST}/oauth2/idpresponse"
 fi
-echo "Prossimo passo: ./04-iam-budget.sh"
+echo "Prossimo passo: ./04-iam.sh"

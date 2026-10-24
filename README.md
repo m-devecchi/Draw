@@ -101,7 +101,7 @@ npm install
 
 Gli script in [`infra/aws/`](infra/aws/README.md) creano tutto con la AWS CLI:
 database Aurora Serverless v2 che va in pausa da solo, tabelle, user pool
-Cognito, ruolo IAM per Amplify e un budget con avviso email. La guida passo
+Cognito e ruolo IAM per Amplify. La guida passo
 passo, i costi e il login con Google/Apple sono in
 [`infra/aws/README.md`](infra/aws/README.md).
 
@@ -139,7 +139,7 @@ npm run typecheck  # controllo TypeScript
 
 1. Esegui gli script di [`infra/aws/`](infra/aws/README.md) (circa 15 minuti,
    la maggior parte è l'attesa di Aurora).
-2. Su Amplify incolla le variabili che lo script `04-iam-budget.sh` ti
+2. Su Amplify incolla le variabili che lo script `04-iam.sh` ti
    stampa, assegna il *compute role* e aggiungi lo snippet di `amplify.yml`
    (stessa guida).
 3. Rifai il deploy. Con Cognito e Aurora configurati l'app parte in modalità

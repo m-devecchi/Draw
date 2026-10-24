@@ -2,8 +2,7 @@
 # 1) Ruolo IAM per Amplify ("compute role"): l'unico modo in cui l'app
 #    ottiene il permesso di parlare con Aurora e Cognito. Niente chiavi AWS
 #    da copiare nelle variabili d'ambiente.
-# 2) Budget mensile con avviso email: il tetto dei 5 euro.
-# 3) Riepilogo delle variabili d'ambiente da mettere su Amplify.
+# 2) Riepilogo delle variabili d'ambiente da mettere su Amplify.
 source "$(dirname "$0")/lib.sh"
 load
 : "${DB_CLUSTER_ARN:?esegui prima 01-aurora.sh}"
@@ -68,33 +67,6 @@ aws iam get-role --role-name "$ROLE" >/dev/null 2>&1 \
 aws iam attach-role-policy --role-name "$ROLE" --policy-arn "$POLICY_ARN"
 ROLE_ARN="arn:aws:iam::${ACCOUNT_ID}:role/${ROLE}"
 save AMPLIFY_COMPUTE_ROLE_ARN "$ROLE_ARN"
-
-say "Budget mensile: ${BUDGET_USD} USD, avvisi a ${BUDGET_EMAIL}"
-if ! aws budgets describe-budget --account-id "$ACCOUNT_ID" --budget-name "${APP_NAME}-mensile" >/dev/null 2>&1; then
-  cat > "$OUT/budget.json" <<JSON
-{
-  "BudgetName": "${APP_NAME}-mensile",
-  "BudgetLimit": { "Amount": "${BUDGET_USD}", "Unit": "USD" },
-  "TimeUnit": "MONTHLY",
-  "BudgetType": "COST"
-}
-JSON
-  cat > "$OUT/notifications.json" <<JSON
-[
-  {
-    "Notification": { "NotificationType": "ACTUAL", "ComparisonOperator": "GREATER_THAN", "Threshold": 60, "ThresholdType": "PERCENTAGE" },
-    "Subscribers": [{ "SubscriptionType": "EMAIL", "Address": "${BUDGET_EMAIL}" }]
-  },
-  {
-    "Notification": { "NotificationType": "FORECASTED", "ComparisonOperator": "GREATER_THAN", "Threshold": 100, "ThresholdType": "PERCENTAGE" },
-    "Subscribers": [{ "SubscriptionType": "EMAIL", "Address": "${BUDGET_EMAIL}" }]
-  }
-]
-JSON
-  aws budgets create-budget --account-id "$ACCOUNT_ID" \
-    --budget "file://$OUT/budget.json" \
-    --notifications-with-subscribers "file://$OUT/notifications.json"
-fi
 
 say "Variabili d'ambiente per Amplify"
 PARENT_SECRET="$(openssl rand -hex 32)"

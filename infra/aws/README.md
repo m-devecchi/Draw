@@ -8,13 +8,13 @@ Cosa crea questa cartella, con la AWS CLI:
 | **Data API** di Aurora | 0,35 $ ogni milione di richieste (a questa scala: centesimi) |
 | **Secrets Manager** (password del DB, gestita da Aurora) | ~0,40 $/mese |
 | **Cognito** (login) | gratis fino a 10.000 utenti attivi al mese |
-| **IAM**, **Budgets** (avviso a 60% e previsione 100%) | gratis |
+| **IAM** | gratis |
 | **Amplify Hosting** (già attivo) | come ora |
 
 Stima totale a poco traffico: **2-5 €/mese**, quasi tutto calcolo di Aurora e
 dipende da quante ore al giorno il DB resta sveglio. I prezzi cambiano:
 controlla [aws.amazon.com/rds/aurora/pricing](https://aws.amazon.com/rds/aurora/pricing/).
-Il budget da 5 $ ti avvisa via email se ti avvicini al tetto.
+Il budget di spesa non lo crea lo script: usa quello che hai già impostato su AWS Budgets.
 
 > **Pausa automatica**: dopo `AURORA_PAUSE_SECONDS` (default 5 minuti) senza
 > richieste il database si ferma. La prima richiesta dopo la pausa aspetta
@@ -26,11 +26,11 @@ Il budget da 5 $ ti avvisa via email se ti avvicini al tetto.
 ## Prima di cominciare
 
 - AWS CLI v2 configurata (`aws configure`) con un utente che può creare RDS,
-  Cognito, IAM, Secrets Manager e Budgets.
+  Cognito, IAM e Secrets Manager.
 - Node 22+ (serve a `02-schema.sh`) e `npm install` già fatto nella root.
 - `cp infra/aws/config.env.example infra/aws/config.env` e compila: regione
-  (la stessa di Amplify), `APP_URL`, un prefisso unico per il dominio Cognito,
-  la tua email per il budget.
+  (la stessa di Amplify), `APP_URL` e un prefisso unico per il dominio Cognito.
+  
 
 ## Passi
 
@@ -39,7 +39,7 @@ cd infra/aws
 ./01-aurora.sh        # cluster + istanza + Data API (~10 minuti, quasi tutta attesa)
 ./02-schema.sh        # crea le tabelle da db/schema.sql (sveglia il DB: ~30 s)
 ./03-cognito.sh       # user pool, app client, dominio di accesso (+ Google/Apple se configurati)
-./04-iam-budget.sh    # ruolo per Amplify, budget, elenco variabili d'ambiente
+./04-iam.sh    # ruolo IAM per Amplify ed elenco variabili d'ambiente
 ```
 
 Tutti gli script si possono rilanciare: saltano ciò che esiste già. I valori
