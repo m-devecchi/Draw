@@ -1,0 +1,22 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - npm ci
+    build:
+      commands:
+        # Amplify rende le variabili d'ambiente disponibili solo durante il
+        # build: le si copia in .env.production perche' Next.js le renda
+        # visibili anche al server (e al middleware) quando l'app gira.
+        - touch .env.production
+        - env | grep -E '^(COGNITO_|DB_|PARENT_GATE_SECRET|ANTHROPIC_API_KEY|GENERATION_|STRIPE_|FREE_DAILY_LIMIT|PREMIUM_DAILY_LIMIT|DEMO_DAILY_LIMIT|CACHE_HITS_FREE|NEXT_PUBLIC_)' >> .env.production || true
+        - npm run build
+  artifacts:
+    baseDirectory: .next
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
+      - .next/cache/**/*

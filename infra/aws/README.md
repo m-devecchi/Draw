@@ -79,31 +79,11 @@ Un ambiente in pausa costa solo lo storage (pochi centesimi).
    variabili.
 3. **Variabili al server a runtime**: Amplify rende le variabili disponibili
    solo in fase di build; per il server (e il middleware) vanno scritte in
-   `.env.production`. Nelle impostazioni di build (o in un `amplify.yml` alla
-   radice) la fase `build` diventa:
-
-   ```yaml
-   version: 1
-   frontend:
-     phases:
-       preBuild:
-         commands:
-           - npm ci
-       build:
-         commands:
-           - env | grep -E '^(COGNITO_|DB_|PARENT_GATE_SECRET|ANTHROPIC_API_KEY|GENERATION_|STRIPE_|FREE_DAILY_LIMIT|PREMIUM_DAILY_LIMIT|CACHE_HITS_FREE|NEXT_PUBLIC_)' >> .env.production
-           - npm run build
-     artifacts:
-       baseDirectory: .next
-       files:
-         - '**/*'
-     cache:
-       paths:
-         - node_modules/**/*
-         - .next/cache/**/*
-   ```
-
-   Se hai già un `amplify.yml`, aggiungi solo la riga `env | grep ...`.
+   `.env.production`. Lo fa già il file [`amplify.yml`](../../amplify.yml) alla
+   radice del repository (la riga `env | grep ... >> .env.production`): non
+   serve fare altro. Attenzione: un `amplify.yml` nel repo ha la precedenza
+   sulle impostazioni di build della console. Se aggiungi variabili con un
+   prefisso nuovo, includilo nel `grep` di quel file.
 4. **Rifai il deploy.** Con `COGNITO_*` e `DB_*` presenti l'app esce dalla
    modalità demo e mostra il login.
 
